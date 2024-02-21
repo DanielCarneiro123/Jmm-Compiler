@@ -10,6 +10,8 @@ LCURLY : '{' ;
 RCURLY : '}' ;
 LPAREN : '(' ;
 RPAREN : ')' ;
+LSTRAIGHT : '[' ;
+RSTRAIGHT : ']' ;
 MUL : '*' ;
 ADD : '+' ;
 
@@ -17,6 +19,8 @@ CLASS : 'class' ;
 INT : 'int' ;
 PUBLIC : 'public' ;
 RETURN : 'return' ;
+EXTENDS : 'extends' ;
+
 
 INTEGER : [0-9] ;
 ID : [a-zA-Z]+ ;
@@ -24,30 +28,30 @@ ID : [a-zA-Z]+ ;
 WS : [ \t\n\r\f]+ -> skip ;
 
 program
-    : importDeclaration* classDecl EOF
+    : importDeclaration* classDeclaration EOF
     ;
 
 importDeclaration : 'import' ID ( '.' ID )* SEMI ;
 
-classDecl
-    : CLASS name=ID
-        LCURLY
-        methodDecl*
-        RCURLY
+
+classDeclaration
+    : CLASS className=ID (EXTENDS classExtends=ID)? '{' (varDeclaration)* (methodDeclaration)* '}' #ClassStatement
     ;
 
-varDecl
+varDeclaration
     : type name=ID SEMI
+    | type name=ID op=LSTRAIGHT op=RSTRAIGHT SEMI
     ;
+
 
 type
     : name= INT ;
 
-methodDecl locals[boolean isPublic=false]
+methodDeclaration locals[boolean isPublic=false]
     : (PUBLIC {$isPublic=true;})?
         type name=ID
         LPAREN param RPAREN
-        LCURLY varDecl* stmt* RCURLY
+        LCURLY varDeclaration* stmt* RCURLY
     ;
 
 param
