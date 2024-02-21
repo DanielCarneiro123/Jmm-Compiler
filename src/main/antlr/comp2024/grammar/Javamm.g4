@@ -32,7 +32,6 @@ importDeclaration : 'import' ID ( '.' ID )* SEMI ;
 classDecl
     : CLASS name=ID
         LCURLY
-
         methodDecl*
         RCURLY
     ;
