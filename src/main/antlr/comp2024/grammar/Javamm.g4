@@ -27,10 +27,12 @@ program
     : classDecl EOF
     ;
 
+importDeclaration : 'import' ID ( '.' ID )* SEMI ;
 
 classDecl
     : CLASS name=ID
         LCURLY
+        importDeclaration*
         methodDecl*
         RCURLY
     ;
