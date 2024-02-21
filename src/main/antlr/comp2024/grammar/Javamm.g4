@@ -24,7 +24,7 @@ ID : [a-zA-Z]+ ;
 WS : [ \t\n\r\f]+ -> skip ;
 
 program
-    : classDecl EOF
+    : importDeclaration* classDecl EOF
     ;
 
 importDeclaration : 'import' ID ( '.' ID )* SEMI ;
@@ -32,7 +32,7 @@ importDeclaration : 'import' ID ( '.' ID )* SEMI ;
 classDecl
     : CLASS name=ID
         LCURLY
-        importDeclaration*
+
         methodDecl*
         RCURLY
     ;
