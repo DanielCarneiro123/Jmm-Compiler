@@ -50,14 +50,16 @@ ID : [a-zA-Z]+ ;
 WS : [ \t\n\r\f]+ -> skip ;
 
 program
-    : importDeclaration* classDeclaration EOF
+    : stmt + EOF
+    | (importDeclaration)* classDeclaration EOF
     ;
 
-importDeclaration : IMPORT ID ( '.' ID )* SEMI ;
-
+importDeclaration
+    : IMPORT value+=ID ('.' value+=ID)* SEMI #ImportStmt
+    ;
 
 classDeclaration
-    : CLASS className=ID (EXTENDS classExtends=ID)? LCURLY (varDeclaration)* (methodDecl)* RCURLY
+    : CLASS className=ID (EXTENDS extendedClass=ID)? LCURLY (varDeclaration)* (methodDecl)* RCURLY #ClassStmt
     ;
 
 varDeclaration
