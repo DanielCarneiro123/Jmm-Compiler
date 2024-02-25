@@ -15,6 +15,7 @@ RSTRAIGHT : ']' ;
 MUL : '*' ;
 ADD : '+' ;
 COMMA : ',' ;
+ELLIPSIS : '...' ;
 TRUE : 'true' ;
 FALSE : 'false' ;
 
@@ -44,8 +45,8 @@ MAIN : 'main' ;
 VOID : 'void' ;
 NEW : 'new' ;
 
-INTEGER : [0-9] ;
-ID : [a-zA-Z]+ ;
+INTEGER : [0] | ([1-9][0-9]*);
+ID : [a-zA-Z_$]([a-zA-Z_0-9$])* ;
 
 WS : [ \t\n\r\f]+ -> skip ;
 
@@ -59,10 +60,10 @@ importDeclaration
     ;
 
 classDeclaration
-    : CLASS className=ID (EXTENDS extendedClass=ID)? LCURLY (varDeclaration)* (methodDecl)* RCURLY #ClassStmt
+    : CLASS className=ID (EXTENDS extendedClass=ID)? LCURLY (varDecl)* (methodDecl)* RCURLY SEMI? #ClassStmt
     ;
 
-varDeclaration
+varDecl
     : type name=ID SEMI
     | type name=ID op=LSTRAIGHT op=RSTRAIGHT SEMI
     ;
@@ -79,6 +80,7 @@ type
 
 argument
     : type argName=ID (COMMA argument)*
+    | type ELLIPSIS argName=ID
     ;
 
 returnStmt
@@ -86,8 +88,8 @@ returnStmt
     ;
 
 methodDecl
-    : (PUBLIC)? type methodName=ID LPAREN (argument)* RPAREN LCURLY (varDeclaration)* (stmt)* returnStmt RCURLY
-    | (PUBLIC)? STATIC VOID MAIN LPAREN STRING LSTRAIGHT LSTRAIGHT RSTRAIGHT argName=ID RPAREN LCURLY (varDeclaration)* (stmt)* RCURLY
+    : (PUBLIC)? type methodName=ID LPAREN (argument)* RPAREN LCURLY (varDecl)* (stmt)* returnStmt RCURLY
+    | (PUBLIC)? STATIC VOID MAIN LPAREN STRING LSTRAIGHT RSTRAIGHT argName=ID RPAREN LCURLY (varDecl)* (stmt)* RCURLY
     ;
 
 stmt
@@ -111,9 +113,10 @@ elseexpr
 
 expr
     : LPAREN expr RPAREN #Parentesis
-    | NEW INT LSTRAIGHT expr RSTRAIGHT #ArrayDeclaration
+    | NEW type LSTRAIGHT expr RSTRAIGHT #ArrayDeclaration
     | NEW classname=ID LPAREN (expr (COMMA expr) *)? RPAREN #NewClass
     | expr LSTRAIGHT expr RSTRAIGHT #ArraySubscript
+    | LSTRAIGHT (expr (COMMA expr) *)? RSTRAIGHT #Arraydefinition //perguntar ao luis onde tem
     | className=ID expr   #ClassInstantiation
     | expr '.' value=ID LPAREN (expr (COMMA expr) *)? RPAREN #FunctionCall
     | expr '.' LENGTH #Length
@@ -129,8 +132,5 @@ expr
     | value=TRUE #Identifier
     | value=FALSE #Identifier
     | value=ID #Identifier
-    | value=ID op=('++' | '--') #Increment
     ;
-
-
 
