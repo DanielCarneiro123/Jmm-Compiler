@@ -57,7 +57,7 @@ importDeclaration : IMPORT ID ( '.' ID )* SEMI ;
 
 
 classDeclaration
-    : CLASS className=ID (EXTENDS classExtends=ID)? LCURLY (varDeclaration)* (methodDeclaration)* RCURLY #ClassStatement
+    : CLASS className=ID (EXTENDS classExtends=ID)? LCURLY (varDeclaration)* (methodDecl)* RCURLY
     ;
 
 varDeclaration
@@ -65,67 +65,67 @@ varDeclaration
     | type name=ID op=LSTRAIGHT op=RSTRAIGHT SEMI
     ;
 
+type
+    : type LSTRAIGHT RSTRAIGHT  #Array
+    | value=DOUBLE             #Double
+    | value=FLOAT              #Float
+    | value=BOOLEAN            #Boolean
+    | value=INT                #Int
+    | value=STRING             #String
+    | value=ID                  #Id
+    ;
+
 argument
     : type argName=ID (COMMA argument)*
     ;
 
 returnStmt
-    : RETURN expression SEMI
+    : RETURN expr SEMI
     ;
 
-methodDeclaration
-    : (PUBLIC)? type methodName=ID LPAREN (argument)* RPAREN LCURLY (varDeclaration)* (statement)* returnStmt RCURLY
-    | (PUBLIC)? STATIC VOID MAIN LPAREN STRING LSTRAIGHT LSTRAIGHT RSTRAIGHT argName=ID RPAREN LCURLY (varDeclaration)* (statement)* RCURLY
+methodDecl
+    : (PUBLIC)? type methodName=ID LPAREN (argument)* RPAREN LCURLY (varDeclaration)* (stmt)* returnStmt RCURLY
+    | (PUBLIC)? STATIC VOID MAIN LPAREN STRING LSTRAIGHT LSTRAIGHT RSTRAIGHT argName=ID RPAREN LCURLY (varDeclaration)* (stmt)* RCURLY
     ;
 
-type
-    : type LSTRAIGHT RSTRAIGHT  #Array
-    | value= DOUBLE             #Double
-    | value= FLOAT              #Float
-    | value= BOOLEAN            #Boolean
-    | value= INT                #Int
-    | value= STRING             #String
-    | value=ID                  #Id
+stmt
+    : expr SEMI #ExprStmt
+    | LCURLY ( stmt )* RCURLY #Brackets
+    | ifexpr (elseifexpr)* (elseexpr)? #IfStmt
+    | FOR LPAREN stmt expr SEMI expr RPAREN stmt #ForStmt
+    | WHILE LPAREN expr RPAREN stmt #WhileStmt
+    | var=ID EQUALS expr SEMI #Assignment
+    | var=ID LSTRAIGHT expr RSTRAIGHT EQUALS expr SEMI #ArrayAssign
     ;
 
-statement
-    : expression SEMI #ExprStmt
-    | LCURLY ( statement )* RCURLY #Brackets
-    | ifExpression (elseifExpression)* (elseExpression)? #IfStmt
-    | FOR LPAREN statement expression SEMI expression RPAREN statement #ForStmt
-    | WHILE LPAREN expression RPAREN statement #WhileStmt
-    | var=ID EQUALS expression SEMI #Assignment
-    | var=ID LSTRAIGHT expression RSTRAIGHT EQUALS expression SEMI #ArrayAssign
-    ;
+ifexpr
+    : IF LPAREN expr RPAREN stmt;
 
-ifExpression
-    : IF LPAREN expression RPAREN statement;
+elseifexpr
+    : ELSEIF LPAREN expr RPAREN stmt;
 
-elseifExpression
-    : ELSEIF LPAREN expression RPAREN statement;
+elseexpr
+    : ELSE stmt;
 
-elseExpression
-    : ELSE statement;
-
-expression
-    : LPAREN expression RPAREN #Parentesis
-    | NEW INT LSTRAIGHT expression RSTRAIGHT #ArrayDeclaration
-    | NEW classname=ID LPAREN (expression (COMMA expression) *)? RPAREN #NewClass
-    | expression LSTRAIGHT expression RSTRAIGHT #ArraySubscript
-    | className=ID expression   #ClassInstantiation
-    | expression '.' value=ID LPAREN (expression (COMMA expression) *)? RPAREN #FunctionCall
-    | expression '.' LENGTH #Length
-    | value = THIS #Object
-    | value = '!' expression #Negation
-    | expression op=('*' | '/') expression #BinaryOp
-    | expression op=('+' | '-') expression #BinaryOp
-    | expression op=('<' | '>') expression #BinaryOp
-    | expression op=('<=' | '>=' | '==' | '!=' | '+=' | '-=' | '*=' | '/=') expression #BinaryOp
-    | expression op='&&' expression #BinaryOp
-    | expression op='||' expression #BinaryOp
+expr
+    : LPAREN expr RPAREN #Parentesis
+    | NEW INT LSTRAIGHT expr RSTRAIGHT #ArrayDeclaration
+    | NEW classname=ID LPAREN (expr (COMMA expr) *)? RPAREN #NewClass
+    | expr LSTRAIGHT expr RSTRAIGHT #ArraySubscript
+    | className=ID expr   #ClassInstantiation
+    | expr '.' value=ID LPAREN (expr (COMMA expr) *)? RPAREN #FunctionCall
+    | expr '.' LENGTH #Length
+    | value=THIS #Object
+    | value='!' expr #Negation
+    | expr op=('*' | '/') expr #BinaryOp
+    | expr op=('+' | '-') expr #BinaryOp
+    | expr op=('<' | '>') expr #BinaryOp
+    | expr op=('<=' | '>=' | '==' | '!=' | '+=' | '-=' | '*=' | '/=') expr #BinaryOp
+    | expr op='&&' expr #BinaryOp
+    | expr op='||' expr #BinaryOp
     | value=INTEGER #Integer
-    | value = TRUE #Identifier
-    | value = FALSE #Identifier
+    | value=TRUE #Identifier
+    | value=FALSE #Identifier
     | value=ID #Identifier
     | value=ID op=('++' | '--') #Increment
     ;
