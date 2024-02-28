@@ -51,16 +51,15 @@ ID : [a-zA-Z_$]([a-zA-Z_0-9$])* ;
 WS : [ \t\n\r\f]+ -> skip ;
 
 program
-    : stmt + EOF
-    | (importDeclaration)* classDeclaration EOF
+    : (importDeclaration)* c=classDeclaration EOF
     ;
 
 importDeclaration
-    : IMPORT value+=ID ('.' value+=ID)* SEMI #ImportStmt
+    : IMPORT value+=ID ('.' value+=ID)* SEMI
     ;
 
 classDeclaration
-    : CLASS className=ID (EXTENDS extendedClass=ID)? LCURLY (varDecl)* (methodDecl)* RCURLY SEMI? #ClassStmt
+    : CLASS className=ID (EXTENDS extendedClass=ID)? LCURLY (varDecl)* (methodDecl)* RCURLY SEMI?
     ;
 
 varDecl
@@ -70,12 +69,10 @@ varDecl
 
 type
     : type LSTRAIGHT RSTRAIGHT  #Array
-    | value=DOUBLE             #Double
-    | value=FLOAT              #Float
     | value=BOOLEAN            #Boolean
     | value=INT                #Int
-    | value=STRING             #String
     | value=ID                  #Id
+    | value=STRING              #String
     ;
 
 argument
@@ -88,7 +85,7 @@ returnStmt
     ;
 
 methodDecl
-    : (PUBLIC)? type methodName=ID LPAREN (argument)* RPAREN LCURLY (varDecl)* (stmt)* returnStmt RCURLY
+    : (PUBLIC)? type name=ID LPAREN (argument)* RPAREN LCURLY (varDecl)* (stmt)* returnStmt RCURLY
     | (PUBLIC)? STATIC VOID MAIN LPAREN STRING LSTRAIGHT RSTRAIGHT argName=ID RPAREN LCURLY (varDecl)* (stmt)* RCURLY
     ;
 

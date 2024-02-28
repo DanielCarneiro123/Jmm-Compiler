@@ -8,7 +8,8 @@ import java.util.Set;
 
 public enum Kind {
     PROGRAM,
-    CLASS_DECL,
+    IMPORT_DECLARATION,
+    CLASS_DECLARATION,
     VAR_DECL,
     TYPE,
     METHOD_DECL,
@@ -17,7 +18,37 @@ public enum Kind {
     RETURN_STMT,
     BINARY_EXPR,
     INTEGER_LITERAL,
-    VAR_REF_EXPR;
+    VAR_REF_EXPR,
+    ARRAY,
+    BOOLEAN,
+    INT,
+    ID,
+    ARGUMENT,
+    STRING,
+    STMT,
+    EXPR_STMT,
+    BRACKETS,
+    IF_STMT,
+    FOR_STMT,
+    WHILE_STMT,
+    ASSIGMENT,
+    ARRAY_ASSIGN,
+    IFEXPR,
+    ELSEIFEXPR,
+    EXPR,
+    PARENTESIS,
+    ARRAY_DECLARATION,
+    NEW_CLASS,
+    ARRAY_SUBSCRIPT,
+    ARRAYDEFINITION,
+    CLASS_INSTANTIATION,
+    FUNCTION_CALL,
+    LENGTH,
+    OBJECT,
+    NEGATION,
+    BINARY_OP,
+    INTEGER,
+    IDENTIFIER;
 
 
     private static final Set<Kind> STATEMENTS = Set.of(ASSIGN_STMT, RETURN_STMT);
