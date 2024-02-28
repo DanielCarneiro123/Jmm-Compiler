@@ -1,52 +1,74 @@
-package pt.up.fe.comp.initial;
+package pt.up.fe.comp2024.symboltable;
 
-import org.junit.Test;
-import pt.up.fe.comp.TestUtils;
-import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
-import pt.up.fe.specs.util.SpecsIo;
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
+import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
+import pt.up.fe.comp.jmm.analysis.table.Type;
+import pt.up.fe.comp2024.ast.TypeUtils;
+import pt.up.fe.specs.util.exceptions.NotImplementedException;
 
-import static org.junit.Assert.assertEquals;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
-/**
- * Test variable lookup.
- */
-public class SymbolTableTest {
+public class JmmSymbolTable implements SymbolTable {
 
-    static JmmSemanticsResult getSemanticsResult(String filename) {
-        return TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/initial/symboltable/" + filename));
+    private final String className;
+    private final List<String> methods;
+    private final Map<String, Type> returnTypes;
+    private final Map<String, List<Symbol>> params;
+    private final Map<String, List<Symbol>> locals;
+
+    public JmmSymbolTable(String className,
+                          List<String> methods,
+                          Map<String, Type> returnTypes,
+                          Map<String, List<Symbol>> params,
+                          Map<String, List<Symbol>> locals) {
+        this.className = className;
+        this.methods = methods;
+        this.returnTypes = returnTypes;
+        this.params = params;
+        this.locals = locals;
     }
 
-    static JmmSemanticsResult test(String filename, boolean fail) {
-        var semantics = getSemanticsResult(filename);
-        if (fail) {
-            TestUtils.mustFail(semantics.getReports());
-        } else {
-            TestUtils.noErrors(semantics.getReports());
-        }
-        return semantics;
+    @Override
+    public List<String> getImports() {
+        throw new NotImplementedException();
     }
 
-
-    @Test
-    public void Class() {
-        var semantics = test("Class.jmm", false);
-        assertEquals("Class", semantics.getSymbolTable().getClassName());
+    @Override
+    public String getClassName() {
+        return className;
     }
 
+    @Override
+    public String getSuper() {
+        throw new NotImplementedException();
+    }
 
-    @Test
-    public void Methods() {
-        var semantics = test("Methods.jmm", false);
-        var st = semantics.getSymbolTable();
-        var methods = st.getMethods();
-        assertEquals(1, methods.size());
+    @Override
+    public List<Symbol> getFields() {
+        throw new NotImplementedException();
+    }
 
-        var method = methods.get(0);
-        var ret = st.getReturnType(method);
-        assertEquals("Method with return type int", "int", ret.getName());
+    @Override
+    public List<String> getMethods() {
+        return Collections.unmodifiableList(methods);
+    }
 
-        var numParameters = st.getParameters(method).size();
-        assertEquals("Method " + method + " parameters", 1, numParameters);
+    @Override
+    public Type getReturnType(String methodSignature) {
+        // TODO: Simple implementation that needs to be expanded
+        return new Type(TypeUtils.getIntTypeName(), false);
+    }
+
+    @Override
+    public List<Symbol> getParameters(String methodSignature) {
+        return Collections.unmodifiableList(params.get(methodSignature));
+    }
+
+    @Override
+    public List<Symbol> getLocalVariables(String methodSignature) {
+        return Collections.unmodifiableList(locals.get(methodSignature));
     }
 
 }
