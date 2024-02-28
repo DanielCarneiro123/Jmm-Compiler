@@ -25,14 +25,12 @@ public class JmmSymbolTableBuilder {
 
         var fields = buildFields(classDecl);
 
-        //var methods = buildMethods(classDecl);
-        var methods = new ArrayList<String>();
-        /*var returnTypes = buildReturnTypes(classDecl);
-        var params = buildParams(classDecl);
+        var methods = buildMethods(classDecl);
+        var returnTypes = buildReturnTypes(classDecl);
+        /*var params = buildParams(classDecl);
         var locals = buildLocals(classDecl);*/
         var superClass = classDecl.hasAttribute("extendedClass") ? classDecl.get("extendedClass") : "";
 
-        Map<String, Type> returnTypes = new HashMap<>();
         Map<String, List<Symbol>> params = new HashMap<>();
         Map<String, List<Symbol>> locals = new HashMap<>();
 
@@ -62,9 +60,15 @@ public class JmmSymbolTableBuilder {
         // TODO: Simple implementation that needs to be expanded
 
         Map<String, Type> map = new HashMap<>();
+        var method_decls = classDecl.getChildren(METHOD_DECL);
+        for (JmmNode methods: method_decls){
+            JmmNode fstChild = methods.getChildren().get(0);
+            if(!fstChild.getChildren().get(0).hasAttribute("value")){
+                map.put(methods.get("name"), new Type(methods.getJmmChild(0).get("value"), true));
+            }
 
-        classDecl.getChildren(METHOD_DECL).stream()
-                .forEach(method -> map.put(method.get("name"), new Type(TypeUtils.getIntTypeName(), false)));
+        }
+
 
         return map;
     }
@@ -94,14 +98,16 @@ public class JmmSymbolTableBuilder {
         return map;
     }
 
-    private static Map<String, Type> buildMethods(JmmNode classDecl) {
+    private static List<String> buildMethods(JmmNode classDecl) {
 
-        Map<String, Type> map = new HashMap<>();
+        List<String> lista = new ArrayList<>();
+        var method_decls = classDecl.getChildren(METHOD_DECL);
 
-        classDecl.getChildren(METHOD_DECL).stream()
-                .forEach(method -> map.put(method.get("name"), new Type(TypeUtils.getIntTypeName(), false)));
+        for (JmmNode imp : method_decls) {
+            lista.add(imp.get("name"));
+        }
+        return lista;
 
-        return map;
     }
 
 
@@ -114,5 +120,6 @@ public class JmmSymbolTableBuilder {
                 .map(varDecl -> new Symbol(intType, varDecl.get("name")))
                 .toList();
     }
+
 
 }

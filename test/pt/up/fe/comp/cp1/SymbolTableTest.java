@@ -80,10 +80,10 @@ public class SymbolTableTest {
         var methods = st.getMethods();
         assertEquals(5, methods.size());
         var checkInt = 0;
+        var checkAll = 0;
         var checkBool = 0;
         var checkObj = 0;
-        var checkAll = 0;
-        System.out.println("METHODS: " + methods);
+         System.out.println("METHODS: " + methods);
         for (var m : methods) {
             var ret = st.getReturnType(m);
             var numParameters = st.getParameters(m).size();
