@@ -64,8 +64,8 @@ varDecl
     | type name=ID op=LSTRAIGHT op=RSTRAIGHT SEMI
     ;
 
-type
-    : array=INT LSTRAIGHT RSTRAIGHT  #Array
+type locals[boolean isArray=false]
+    : value=INT LSTRAIGHT RSTRAIGHT {$isArray=true;} #Array
     | value=BOOLEAN            #Boolean
     | value=INT                #Int
     | value=ID                  #Id
@@ -73,8 +73,8 @@ type
     ;
 
 argument
-    : type argName=ID (COMMA argument)*
-    | type ELLIPSIS argName=ID
+    : type name=ID
+    | type ELLIPSIS name=ID
     ;
 
 returnStmt
@@ -82,7 +82,7 @@ returnStmt
     ;
 
 methodDecl
-    : (PUBLIC)? type name=ID LPAREN (argument)* RPAREN LCURLY (varDecl)* (stmt)* returnStmt RCURLY
+    : (PUBLIC)? type name=ID LPAREN (argument (COMMA argument)*)? RPAREN LCURLY (varDecl)* (stmt)* returnStmt RCURLY
     | (PUBLIC)? STATIC type name=ID LPAREN type LSTRAIGHT RSTRAIGHT argName=ID RPAREN LCURLY (varDecl)* (stmt)* RCURLY
     ;
 
