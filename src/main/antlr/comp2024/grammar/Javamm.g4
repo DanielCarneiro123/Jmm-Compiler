@@ -45,6 +45,8 @@ NEW : 'new' ;
 INTEGER : [0] | ([1-9][0-9]*);
 ID : [a-zA-Z_$]([a-zA-Z_0-9$])* ;
 
+SINGLE_COMMENT : '//' .*? '\n' -> skip ;
+MULTI_COMMENT : '/*' .*? '*/' -> skip ;
 WS : [ \t\n\r\f]+ -> skip ;
 
 program
@@ -89,7 +91,7 @@ methodDecl
 stmt
     : expr SEMI #ExprStmt
     | LCURLY ( stmt )* RCURLY #Brackets
-    | ifexpr (elseifexpr)* (elseexpr)? #IfStmt
+    | ifexpr (elseifexpr)* (elseexpr) #IfStmt
     | FOR LPAREN stmt expr SEMI expr RPAREN stmt #ForStmt
     | WHILE LPAREN expr RPAREN stmt #WhileStmt
     | var=ID EQUALS expr SEMI #Assignment
