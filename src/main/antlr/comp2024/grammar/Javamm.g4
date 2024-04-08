@@ -22,8 +22,6 @@ FALSE : 'false' ;
 
 CLASS : 'class' ;
 INT : 'int' ;
-DOUBLE : 'double' ;
-FLOAT : 'float' ;
 BOOLEAN : 'boolean' ;
 PUBLIC : 'public' ;
 RETURN : 'return' ;
@@ -36,7 +34,6 @@ FOR : 'for' ;
 WHILE : 'while' ;
 IF : 'if';
 ELSE : 'else';
-ELSEIF : 'else if';
 
 IMPORT : 'import' ;
 STATIC : 'static' ;
@@ -63,7 +60,6 @@ classDeclaration
 
 varDecl
     : type name=ID SEMI
-    | type name=ID op=LSTRAIGHT op=RSTRAIGHT SEMI
     ;
 
 type locals[boolean isArray=false]
@@ -91,7 +87,7 @@ methodDecl
 stmt
     : expr SEMI #ExprStmt
     | LCURLY ( stmt )* RCURLY #Brackets
-    | ifexpr (elseifexpr)* (elseexpr) #IfStmt
+    | ifexpr (elseexpr) #IfStmt
     | FOR LPAREN stmt expr SEMI expr RPAREN stmt #ForStmt
     | WHILE LPAREN expr RPAREN stmt #WhileStmt
     | var=ID EQUALS expr SEMI #Assignment
@@ -101,8 +97,6 @@ stmt
 ifexpr
     : IF LPAREN expr RPAREN stmt;
 
-elseifexpr
-    : ELSEIF LPAREN expr RPAREN stmt;
 
 elseexpr
     : ELSE stmt;
