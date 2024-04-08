@@ -28,10 +28,9 @@ public class JmmSymbolTableBuilder {
         var methods = buildMethods(classDecl);
         var returnTypes = buildReturnTypes(classDecl);
         var params = buildParams(classDecl);
-        /*var locals = buildLocals(classDecl);*/
+        var locals = buildLocals(classDecl);
         var superClass = classDecl.hasAttribute("extendedClass") ? classDecl.get("extendedClass") : "";
 
-        Map<String, List<Symbol>> locals = new HashMap<>();
 
         return new JmmSymbolTable(imports, superClass, fields, className, methods, returnTypes, params, locals);
     }
@@ -40,7 +39,7 @@ public class JmmSymbolTableBuilder {
         var importNodes = program.getChildren(IMPORT_DECLARATION);
         List<String> list = new ArrayList<>();
         for (JmmNode imp : importNodes) {
-            list.add(imp.get("value"));
+            list.add(imp.get("ID"));
         }
         return list;
     }
@@ -89,6 +88,11 @@ public class JmmSymbolTableBuilder {
         for (JmmNode method: method_decls){
             List<Symbol> list = new ArrayList<>();
 
+            var varDecls = method.getChildren(VAR_DECL);
+
+            for (JmmNode var_decl : varDecls) {
+                list.add(new Symbol(new Type(var_decl.getJmmChild(0).get("value"), Boolean.parseBoolean(var_decl.getJmmChild(0).get("isArray"))), var_decl.get("name")));
+            }
             map.put(method.get("name"), list);
         }
 
