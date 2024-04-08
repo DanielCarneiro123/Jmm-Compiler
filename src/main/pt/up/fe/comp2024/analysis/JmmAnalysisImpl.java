@@ -23,7 +23,7 @@ public class JmmAnalysisImpl implements JmmAnalysis {
 
     public JmmAnalysisImpl() {
 
-        this.analysisPasses = List.of(new WrongArrayAcess()/*, new ClassNotImported(), new UndeclaredVariable(), new ArrayArithmeticCheck()*/);
+        this.analysisPasses = List.of(new WrongArrayAcess(), new ClassNotImported(), new UndeclaredVariable(), new ArrayArithmeticCheck());
 
     }
 
