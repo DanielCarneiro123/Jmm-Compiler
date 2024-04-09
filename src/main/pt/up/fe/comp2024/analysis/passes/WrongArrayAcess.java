@@ -23,21 +23,9 @@ public class WrongArrayAcess extends AnalysisVisitor {
         JmmNode leftOperand = arrayDecl.getChildren().get(0); //para dar erro este tem de começar por ser Arraydefinition
         String varNameToCheck = arrayDecl.get("className");
 
-        if (leftOperand.getKind().equals("Arraydefinition")){
-            for (var parameter : table.getParameters(method)){
-                if (parameter.getType().getName().equals(varNameToCheck) && !parameter.getType().isArray()){
-                    String message = "It is not an array";
-                    addReport(Report.newError(
-                            Stage.SEMANTIC,
-                            NodeUtils.getLine(arrayDecl),
-                            NodeUtils.getColumn(arrayDecl),
-                            message,
-                            null)
-                    );
-                    return null;                }
-            }
-            for (var localVariable : table.getLocalVariables(method)){
-                if (localVariable.getName().equals(varNameToCheck) && !localVariable.getType().isArray()){
+        if (leftOperand.getKind().equals("Arraydefinition")) {
+            for (var parameter : table.getParameters(method)) {
+                if (parameter.getType().getName().equals(varNameToCheck) && !parameter.getType().isArray()) {
                     String message = "It is not an array";
                     addReport(Report.newError(
                             Stage.SEMANTIC,
@@ -48,6 +36,34 @@ public class WrongArrayAcess extends AnalysisVisitor {
                     );
                     return null;
                 }
+            }
+            for (var localVariable : table.getLocalVariables(method)) {
+                if (localVariable.getName().equals(varNameToCheck) && !localVariable.getType().isArray()) {
+                    String message = "It is not an array";
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(arrayDecl),
+                            NodeUtils.getColumn(arrayDecl),
+                            message,
+                            null)
+                    );
+                    return null;
+                }
+            }
+            JmmNode childOperand = leftOperand.getChildren().get(0);
+            Type typeChildOperand = getExprType(childOperand, table, method);
+            String typeName = typeChildOperand.getName();
+
+            if (!typeName.equals("int")) {
+                String message = "Array Index not int";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(arrayDecl),
+                        NodeUtils.getColumn(arrayDecl),
+                        message,
+                        null)
+                );
+                return null;
             }
         }
 

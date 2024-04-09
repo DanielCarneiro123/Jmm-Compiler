@@ -59,12 +59,14 @@ public class SemanticAnalysisTest {
     public void arrayIndexNotInt() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayIndexNotInt.jmm"));
         TestUtils.mustFail(result);
+        System.out.println(result.getReports());
     }
 
     @Test
     public void assignIntToBool() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/AssignIntToBool.jmm"));
         TestUtils.mustFail(result);
+        System.out.println(result.getReports());
     }
 
     @Test
