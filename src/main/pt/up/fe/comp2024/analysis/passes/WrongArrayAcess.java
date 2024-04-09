@@ -8,23 +8,30 @@ import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
+import pt.up.fe.specs.util.SpecsCheck;
 
 import static pt.up.fe.comp2024.ast.TypeUtils.getExprType;
 
 public class WrongArrayAcess extends AnalysisVisitor {
-
+    private String currentMethod;
     @Override
     public void buildVisitor() {
         addVisit(Kind.CLASS_INSTANTIATION, this::visitWrongArray);
+        addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
+    }
+
+    private Void visitMethodDecl(JmmNode method, SymbolTable table) {
+        currentMethod = method.get("name");
+        return null;
     }
 
     private Void visitWrongArray(JmmNode arrayDecl, SymbolTable table) {
-        String method = arrayDecl.getJmmParent().getJmmParent().get("name");
+        SpecsCheck.checkNotNull(currentMethod, () -> "Expected current method to be set");
         JmmNode leftOperand = arrayDecl.getChildren().get(0); //para dar erro este tem de começar por ser Arraydefinition
         String varNameToCheck = arrayDecl.get("className");
 
         if (leftOperand.getKind().equals("Arraydefinition")) {
-            for (var parameter : table.getParameters(method)) {
+            for (var parameter : table.getParameters(currentMethod)) {
                 if (parameter.getType().getName().equals(varNameToCheck) && !parameter.getType().isArray()) {
                     String message = "It is not an array";
                     addReport(Report.newError(
@@ -37,7 +44,7 @@ public class WrongArrayAcess extends AnalysisVisitor {
                     return null;
                 }
             }
-            for (var localVariable : table.getLocalVariables(method)) {
+            for (var localVariable : table.getLocalVariables(currentMethod)) {
                 if (localVariable.getName().equals(varNameToCheck) && !localVariable.getType().isArray()) {
                     String message = "It is not an array";
                     addReport(Report.newError(
@@ -51,7 +58,7 @@ public class WrongArrayAcess extends AnalysisVisitor {
                 }
             }
             JmmNode childOperand = leftOperand.getChildren().get(0);
-            Type typeChildOperand = getExprType(childOperand, table, method);
+            Type typeChildOperand = getExprType(childOperand, table, currentMethod);
             String typeName = typeChildOperand.getName();
 
             if (!typeName.equals("int")) {
