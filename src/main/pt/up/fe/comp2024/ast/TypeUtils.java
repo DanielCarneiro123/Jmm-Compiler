@@ -29,10 +29,20 @@ public class TypeUtils {
             case ARRAYDEFINITION -> new Type(INT_TYPE_NAME, true);
             case INTEGER -> new Type(INT_TYPE_NAME, false);
             case BINARY_EXPR -> getBinExprType(expr);
+            case BINARY_OP -> getBinExprType(expr);
+            case FUNCTION_CALL -> getFunctionType(expr, table);
+            //case NEW_CLASS -> new Type("object", false);
             default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
         };
 
         return type;
+    }
+
+    private static Type getFunctionType(JmmNode expr, SymbolTable table) {
+        String methodName = expr.get("value");
+        Type type = table.getReturnType(methodName);
+
+        return type; //aqui devia dar erro porque é um tipo que não existe (?)
     }
 
     private static Type getBinExprType(JmmNode binaryExpr) {
@@ -42,6 +52,7 @@ public class TypeUtils {
 
         return switch (operator) {
             case "+", "*" -> new Type(INT_TYPE_NAME, false);
+            case "==" -> new Type("boolean", false);
             default ->
                     throw new RuntimeException("Unknown operator '" + operator + "' of expression '" + binaryExpr + "'");
         };
@@ -51,10 +62,13 @@ public class TypeUtils {
     private static Type getVarExprType(JmmNode varRefExpr, SymbolTable table, String currMethod) {
         String varName = varRefExpr.get("value");
         var locals = table.getLocalVariables(currMethod);
-        for (var local: locals){
-            if (local.getName().equals(varName)){
+        for (var local : locals) {
+            if (local.getName().equals(varName)) {
                 return local.getType();
             }
+        }
+        if (varName.equals("true") || varName.equals("false")) {
+            return new Type("boolean", false);
         }
         return new Type(INT_TYPE_NAME, false);
     }
