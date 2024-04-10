@@ -57,7 +57,7 @@ public class ObjectAssign extends AnalysisVisitor {
                 if (local.getName().equals(assigmentName)) {
                     Type assigmentType = local.getType();
                     String assigmentTypeName = assigmentType.getName();
-                    if (!table.getImports().stream().anyMatch(param -> param.equals(assigmentTypeName))) {
+                    if (!table.getImports().stream().anyMatch(param -> param.equals(assigmentTypeName)) && !assigmentTypeName.equals("int") && !assigmentTypeName.equals("boolean")) {
                         String message = "Object is not imported";
                         addReport(Report.newError(
                                 Stage.SEMANTIC,
@@ -117,19 +117,6 @@ public class ObjectAssign extends AnalysisVisitor {
                     return null;
                 }
             }
-
-            /*
-            if (!table.getImports().stream().anyMatch(param -> param.equals(assigmentType))) {
-                String message = "Object is not imported";
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        NodeUtils.getLine(assigment),
-                        NodeUtils.getColumn(assigment),
-                        message,
-                        null)
-                );
-                return null;
-            }*/
         }
         return null;
     }

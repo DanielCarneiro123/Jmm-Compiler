@@ -9,14 +9,14 @@ import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 import pt.up.fe.specs.util.SpecsCheck;
 
-public class ClassNotImported extends AnalysisVisitor{
+public class ClassNotImported extends AnalysisVisitor {
 
     private String currentMethod;
 
 
     @Override
     public void buildVisitor() {
-        addVisit(Kind.IDENTIFIER, this::visitClassImport);
+        addVisit(Kind.FUNCTION_CALL, this::visitClassImport);
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
     }
 
@@ -32,20 +32,19 @@ public class ClassNotImported extends AnalysisVisitor{
         // Check if exists a parameter or variable declaration with the same name as the variable reference
         var varRefName = varRefExpr.get("value");
 
-        if (table.getImports().stream()
+        if (!table.getMethods().stream()
                 .anyMatch(param -> param.equals(varRefName))) {
+            var message = String.format("Class not imported", varRefName);
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(varRefExpr),
+                    NodeUtils.getColumn(varRefExpr),
+                    message,
+                    null)
+            );
+
             return null;
         }
-
-        // Create error report
-        var message = String.format("Class not imported", varRefName);
-        addReport(Report.newError(
-                Stage.SEMANTIC,
-                NodeUtils.getLine(varRefExpr),
-                NodeUtils.getColumn(varRefExpr),
-                message,
-                null)
-        );
 
         return null;
     }

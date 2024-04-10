@@ -45,22 +45,37 @@ public class IncompatibleArguments extends AnalysisVisitor {
         var functionCallValue = functionCall.get("value");
 
         if (!tem_imports) {
+            var sizeParamChamada = functionCall.getChildren().size();
             for (int i = 1; i < functionCall.getChildren().size(); i++) {
                 JmmNode child = functionCall.getChildren().get(i);
                 Type typeChild = getExprType(child, table, method);
+                var sizeParamFunc = table.getParameters(functionCallValue).size();
 
-                var teste = table.getParameters(functionCallValue).get(i - 1).getType();
-
-                if (!table.getParameters(functionCallValue).get(i - 1).getType().equals(typeChild)) {
-                    String message = "Incompatible Argument";
-                    addReport(Report.newError(
-                            Stage.SEMANTIC,
-                            NodeUtils.getLine(functionCall),
-                            NodeUtils.getColumn(functionCall),
-                            message,
-                            null)
-                    );
-                    return null;
+                if (!functionCallValue.equals("varargs") && sizeParamChamada != sizeParamFunc) {
+                    if (!table.getParameters(functionCallValue).get(i - 1).getType().equals(typeChild)) {
+                        String message = "Incompatible Argument";
+                        addReport(Report.newError(
+                                Stage.SEMANTIC,
+                                NodeUtils.getLine(functionCall),
+                                NodeUtils.getColumn(functionCall),
+                                message,
+                                null)
+                        );
+                        return null;
+                    }
+                }
+                if (functionCallValue.equals("varargs")) {
+                    if (!typeChild.getName().equals("int")) {
+                        String message = "Incompatible Argument";
+                        addReport(Report.newError(
+                                Stage.SEMANTIC,
+                                NodeUtils.getLine(functionCall),
+                                NodeUtils.getColumn(functionCall),
+                                message,
+                                null)
+                        );
+                        return null;
+                    }
                 }
             }
         }

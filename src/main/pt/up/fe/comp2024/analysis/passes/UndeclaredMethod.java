@@ -25,14 +25,14 @@ public class UndeclaredMethod extends AnalysisVisitor {
     }
 
     private Void visitImport_Extend(JmmNode classDecl, SymbolTable table) {
-        String extendedName = classDecl.getOptional("extendedClass").orElse("");
+        //String extendedName = classDecl.getOptional("extendedClass").orElse("");
         for (int i = 0; i < classDecl.getParent().getChildren().size() - 1; i++) {
             JmmNode child = classDecl.getParent().getChildren().get(i);
-            String childName = child.get("ID");
-            if (childName.equals(extendedName)) {
-                tem_imports = true;
-                return null;
-            }
+            //String childName = child.get("ID");
+            //if (childName.equals(extendedName)) {
+            tem_imports = true;
+            return null;
+            //}
         }
         tem_imports = false;
         return null;

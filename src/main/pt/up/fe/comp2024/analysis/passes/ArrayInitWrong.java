@@ -35,7 +35,7 @@ public class ArrayInitWrong extends AnalysisVisitor {
         var varRefChildType = getExprType(varRefExpr.getChildren().get(0), table, currentMethod);
 
         for (var parameter : table.getParameters(currentMethod)) {
-            if (parameter.getType().getName().equals(varRefName) && !parameter.getType().equals(varRefChildType)) {
+            if (parameter.getType().getName().equals(varRefName) && !parameter.getType().equals(varRefChildType) && varRefChildType.isArray()) {
                 String message = "It is not an array";
                 addReport(Report.newError(
                         Stage.SEMANTIC,
@@ -48,7 +48,7 @@ public class ArrayInitWrong extends AnalysisVisitor {
             }
         }
         for (var localVariable : table.getLocalVariables(currentMethod)) {
-            if (localVariable.getName().equals(varRefName) && !localVariable.getType().equals(varRefChildType)) {
+            if (localVariable.getName().equals(varRefName) && !localVariable.getType().equals(varRefChildType) && varRefChildType.isArray()) {
                 String message = "It is not an array";
                 addReport(Report.newError(
                         Stage.SEMANTIC,

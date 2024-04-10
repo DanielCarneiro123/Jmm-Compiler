@@ -27,7 +27,7 @@ public class TypeUtils {
         Type type = switch (kind) {
             case IDENTIFIER -> getVarExprType(expr, table, currMethod);
             case ARRAYDEFINITION -> new Type(INT_TYPE_NAME, true);
-            case INTEGER -> new Type(INT_TYPE_NAME, false);
+            case INTEGER, CLASS_INSTANTIATION -> new Type(INT_TYPE_NAME, false);
             case BINARY_EXPR -> getBinExprType(expr);
             case BINARY_OP -> getBinExprType(expr);
             case FUNCTION_CALL -> getFunctionType(expr, table);
