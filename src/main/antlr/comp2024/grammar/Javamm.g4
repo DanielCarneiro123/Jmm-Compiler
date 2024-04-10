@@ -68,11 +68,11 @@ type locals[boolean isArray=false]
     | value=INT                #Int
     | value=ID                  #Id
     | value=VOID                 #Void
+    | value=INT ELLIPSIS {$isArray=true;} #VarArg
     ;
 
 argument
     : type name=ID
-    | type ELLIPSIS name=ID
     ;
 
 returnStmt

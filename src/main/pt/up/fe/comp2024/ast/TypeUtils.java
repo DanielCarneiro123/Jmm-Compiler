@@ -31,7 +31,7 @@ public class TypeUtils {
             case BINARY_EXPR -> getBinExprType(expr);
             case BINARY_OP -> getBinExprType(expr);
             case FUNCTION_CALL -> getFunctionType(expr, table);
-            //case NEW_CLASS -> new Type("object", false);
+            case NEW_CLASS -> new Type(expr.get("classname"), false);
             default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
         };
 

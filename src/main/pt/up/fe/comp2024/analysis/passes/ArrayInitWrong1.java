@@ -1,6 +1,7 @@
 package pt.up.fe.comp2024.analysis.passes;
 
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
+import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.Stage;
@@ -11,14 +12,16 @@ import pt.up.fe.specs.util.SpecsCheck;
 
 import static pt.up.fe.comp2024.ast.TypeUtils.getExprType;
 
-public class ArrayInitWrong extends AnalysisVisitor {
+public class ArrayInitWrong1 extends AnalysisVisitor {
 
     private String currentMethod;
+    private Type varRefChildType;
 
     @Override
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.ASSIGNMENT, this::arrayWrong);
+        addVisit(Kind.ARRAYDEFINITION, this::arrayInitWrong);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
@@ -30,30 +33,23 @@ public class ArrayInitWrong extends AnalysisVisitor {
 
         SpecsCheck.checkNotNull(currentMethod, () -> "Expected current method to be set");
 
-        var varRefName = varRefExpr.get("var");
+        varRefChildType = getExprType(varRefExpr.getChildren().get(0), table, currentMethod);
 
-        var varRefChildType = getExprType(varRefExpr.getChildren().get(0), table, currentMethod);
+        return null;
+    }
 
-        for (var parameter : table.getParameters(currentMethod)) {
-            if (parameter.getType().getName().equals(varRefName) && !parameter.getType().equals(varRefChildType)) {
-                String message = "It is not an array";
+    private Void arrayInitWrong(JmmNode varDecl, SymbolTable table) {
+
+        SpecsCheck.checkNotNull(currentMethod, () -> "Expected current method to be set");
+
+        for (JmmNode child : varDecl.getChildren()) {
+            var x = getExprType(child, table, currentMethod).getName();
+            if (!getExprType(child, table, currentMethod).getName().equals(varRefChildType.getName())) {
+                String message = "Incorrect Array Type";
                 addReport(Report.newError(
                         Stage.SEMANTIC,
-                        NodeUtils.getLine(varRefExpr),
-                        NodeUtils.getColumn(varRefExpr),
-                        message,
-                        null)
-                );
-                return null;
-            }
-        }
-        for (var localVariable : table.getLocalVariables(currentMethod)) {
-            if (localVariable.getName().equals(varRefName) && !localVariable.getType().equals(varRefChildType)) {
-                String message = "It is not an array";
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        NodeUtils.getLine(varRefExpr),
-                        NodeUtils.getColumn(varRefExpr),
+                        NodeUtils.getLine(varDecl),
+                        NodeUtils.getColumn(varDecl),
                         message,
                         null)
                 );
@@ -62,6 +58,4 @@ public class ArrayInitWrong extends AnalysisVisitor {
         }
         return null;
     }
-
-
 }
