@@ -8,8 +8,14 @@ public class TypeUtils {
 
     private static final String INT_TYPE_NAME = "int";
 
+    private static final String BOOLEAN_TYPE_NAME = "boolean";
+
     public static String getIntTypeName() {
         return INT_TYPE_NAME;
+    }
+
+    public static String getBooleanTypeName() {
+        return BOOLEAN_TYPE_NAME;
     }
 
     /**
@@ -32,6 +38,8 @@ public class TypeUtils {
             case BINARY_OP -> getBinExprType(expr);
             case FUNCTION_CALL -> getFunctionType(expr, table);
             case NEW_CLASS -> new Type(expr.get("classname"), false);
+            case OBJECT -> new Type("object", false);
+            case TRUE, FALSE -> new Type(BOOLEAN_TYPE_NAME, false);
             default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
         };
 

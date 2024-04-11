@@ -48,7 +48,7 @@ public class WrongAssign extends AnalysisVisitor {
 
 
             for (var parameter : table.getLocalVariables(method)) {
-                if (parentOperand.get("var").equals(parameter.getName()) && !typeOperand.getName().equals(parameter.getType().getName()) && !typeOperand.getName().equals("object") && !table.getImports().stream().anyMatch(param -> param.equals(parentOperand.get("var"))) && !table.getImports().stream().anyMatch(param -> param.equals(parameter.getType().getName()))) {
+                if (parentOperand.getOptional("var").orElse("").equals(parameter.getName()) && !typeOperand.getName().equals(parameter.getType().getName()) && !typeOperand.getName().equals("object") && !table.getImports().stream().anyMatch(param -> param.equals(parentOperand.getOptional("var").orElse(""))) && !table.getImports().stream().anyMatch(param -> param.equals(parameter.getType().getName()))) {
                     String message = "Wrong Assign Types";
                     addReport(Report.newError(
                             Stage.SEMANTIC,

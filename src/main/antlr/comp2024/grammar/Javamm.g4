@@ -119,8 +119,8 @@ expr
     | expr op='&&' expr #BinaryOp
     | expr op='||' expr #BinaryOp
     | value=INTEGER #Integer
-    | value=TRUE #Identifier
-    | value=FALSE #Identifier
+    | value=TRUE #True
+    | value=FALSE #False
     | value=ID #Identifier
     ;
 

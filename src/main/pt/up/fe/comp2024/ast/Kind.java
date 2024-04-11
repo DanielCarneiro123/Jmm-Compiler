@@ -49,7 +49,9 @@ public enum Kind {
     INTEGER,
     UNKNOWN,
     IDENTIFIER,
-    ELLIPSIS;
+    ELLIPSIS,
+    TRUE,
+    FALSE;
 
     private static final Set<Kind> STATEMENTS = Set.of(ASSIGN_STMT, RETURN_STMT);
     private static final Set<Kind> EXPRESSIONS = Set.of(BINARY_EXPR, INTEGER_LITERAL, VAR_DECL);
