@@ -19,6 +19,22 @@ public class TypeUtils {
      * @param table
      * @return
      */
+
+    public static Type getExprType(JmmNode expr, SymbolTable table) {
+        // TODO: Simple implementation that needs to be expanded
+
+        var kind = Kind.fromString(expr.getKind());
+
+        Type type = switch (kind) {
+            case BINARY_EXPR -> getBinExprType(expr);
+            case IDENTIFIER -> getVarExprType(expr, table);
+            case INTEGER_LITERAL -> new Type(INT_TYPE_NAME, false);
+            default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
+        };
+
+        return type;
+    }
+
     public static Type getExprType(JmmNode expr, SymbolTable table, String currMethod) {
         // TODO: Simple implementation that needs to be expanded
 
@@ -72,6 +88,12 @@ public class TypeUtils {
         }
         return new Type(INT_TYPE_NAME, false);
     }
+
+    private static Type getVarExprType(JmmNode varRefExpr, SymbolTable table) {
+        // TODO: Simple implementation that needs to be expanded
+        return new Type(INT_TYPE_NAME, false);
+    }
+
 
 
     /**
