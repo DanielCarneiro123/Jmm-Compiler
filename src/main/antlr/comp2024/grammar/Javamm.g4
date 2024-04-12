@@ -68,11 +68,11 @@ type locals[boolean isArray=false]
     | value=INT                #Int
     | value=ID                  #Id
     | value=VOID                 #Void
+    | value=INT ELLIPSIS {$isArray=true;} #VarArg
     ;
 
 argument
     : type name=ID
-    | type ELLIPSIS name=ID
     ;
 
 returnStmt
@@ -83,6 +83,7 @@ methodDecl locals[boolean isPublic=false]
     : (PUBLIC {$isPublic=true;})? type name=ID LPAREN (argument (COMMA argument)*)? RPAREN LCURLY (varDecl)* (stmt)* returnStmt RCURLY
     | (PUBLIC {$isPublic=true;})? STATIC type name=ID LPAREN type LSTRAIGHT RSTRAIGHT argName=ID RPAREN LCURLY (varDecl)* (stmt)* RCURLY
     ;
+
 
 
 stmt
@@ -124,4 +125,3 @@ expr
     | value=FALSE #Identifier
     | value=ID #Identifier
     ;
-
