@@ -95,12 +95,13 @@ stmt
     ;
 
 ifexpr
-    : IF LPAREN expr RPAREN stmt;
+    : IF LPAREN expr RPAREN stmt
+    ;
 
 
 elseexpr
-    : ELSE stmt;
-
+    : ELSE stmt
+    ;
 expr
     : LPAREN expr RPAREN #Parentesis
     | NEW type LSTRAIGHT expr RSTRAIGHT #ArrayDeclaration

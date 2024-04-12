@@ -32,14 +32,16 @@ public class TypeUtils {
 
         Type type = switch (kind) {
             case IDENTIFIER -> getVarExprType(expr, table, currMethod);
-            case ARRAYDEFINITION -> new Type(INT_TYPE_NAME, true);
+            case ARRAYDEFINITION, ARRAY_DECLARATION -> new Type(INT_TYPE_NAME, true);
             case INTEGER, CLASS_INSTANTIATION -> new Type(INT_TYPE_NAME, false);
+            case IFEXPR, ELSEEXPR -> new Type(BOOLEAN_TYPE_NAME, false);
             case BINARY_EXPR -> getBinExprType(expr);
             case BINARY_OP -> getBinExprType(expr);
             case FUNCTION_CALL -> getFunctionType(expr, table);
             case NEW_CLASS -> new Type(expr.get("classname"), false);
             case OBJECT -> new Type("object", false);
             case TRUE, FALSE -> new Type(BOOLEAN_TYPE_NAME, false);
+            case BRACKETS -> new Type("brackets", false);
             default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
         };
 

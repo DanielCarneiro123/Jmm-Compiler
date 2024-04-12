@@ -33,7 +33,7 @@ public enum Kind {
     ASSIGNMENT,
     ARRAY_ASSIGN,
     IFEXPR,
-    ELSEIFEXPR,
+    ELSEEXPR,
     EXPR,
     PARENTESIS,
     ARRAY_DECLARATION,

@@ -23,7 +23,7 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
 
     private Void visitBinaryExpr(JmmNode binaryExpr, SymbolTable table) {
         String operator = binaryExpr.get("op");
-        String method = binaryExpr.getJmmParent().getJmmParent().get("name");
+        String method = binaryExpr.getJmmParent().getJmmParent().getOptional("name").orElse("");
         // Check if the operator is an arithmetic operation
         if (isArithmeticOperator(operator)) {
             // Check if any operand is an array
