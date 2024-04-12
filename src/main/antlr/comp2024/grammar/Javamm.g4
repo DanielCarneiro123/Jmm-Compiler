@@ -68,11 +68,11 @@ type locals[boolean isArray=false]
     | value=INT                #Int
     | value=ID                  #Id
     | value=VOID                 #Void
+    | value=INT ELLIPSIS {$isArray=true;} #VarArg
     ;
 
 argument
     : type name=ID
-    | type ELLIPSIS name=ID
     ;
 
 returnStmt
@@ -95,12 +95,13 @@ stmt
     ;
 
 ifexpr
-    : IF LPAREN expr RPAREN stmt;
+    : IF LPAREN expr RPAREN stmt
+    ;
 
 
 elseexpr
-    : ELSE stmt;
-
+    : ELSE stmt
+    ;
 expr
     : LPAREN expr RPAREN #Parentesis
     | NEW type LSTRAIGHT expr RSTRAIGHT #ArrayDeclaration
@@ -119,8 +120,8 @@ expr
     | expr op='&&' expr #BinaryOp
     | expr op='||' expr #BinaryOp
     | value=INTEGER #Integer
-    | value=TRUE #Identifier
-    | value=FALSE #Identifier
+    | value=TRUE #True
+    | value=FALSE #False
     | value=ID #Identifier
     ;
 

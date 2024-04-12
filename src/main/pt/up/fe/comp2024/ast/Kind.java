@@ -30,10 +30,10 @@ public enum Kind {
     IF_STMT,
     FOR_STMT,
     WHILE_STMT,
-    ASSIGMENT,
+    ASSIGNMENT,
     ARRAY_ASSIGN,
     IFEXPR,
-    ELSEIFEXPR,
+    ELSEEXPR,
     EXPR,
     PARENTESIS,
     ARRAY_DECLARATION,
@@ -48,7 +48,10 @@ public enum Kind {
     BINARY_OP,
     INTEGER,
     UNKNOWN,
-    IDENTIFIER;
+    IDENTIFIER,
+    ELLIPSIS,
+    TRUE,
+    FALSE;
 
     private static final Set<Kind> STATEMENTS = Set.of(ASSIGN_STMT, RETURN_STMT);
     private static final Set<Kind> EXPRESSIONS = Set.of(BINARY_EXPR, INTEGER_LITERAL, VAR_DECL);
