@@ -8,6 +8,7 @@ import pt.up.fe.specs.util.classmap.FunctionClassMap;
 import pt.up.fe.specs.util.exceptions.NotImplementedException;
 import pt.up.fe.specs.util.utilities.StringLines;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -73,15 +74,34 @@ public class JasminGenerator {
         var className = ollirResult.getOllirClass().getClassName();
         code.append(".class ").append(className).append(NL).append(NL);
 
-        // TODO: Hardcoded to Object, needs to be expanded
-        code.append(".super java/lang/Object").append(NL);
+        //adicionei isto para ir buscar o extended
+        var classExtended = ollirResult.getOllirClass().getSuperClass(); // se calhar vamos ter de ter um if par se não for extended
+        code.append(".super ").append(classExtended).append(NL);
+
+        var classFields = ollirResult.getOllirClass().getFields();
+        for (var field : classFields) {
+            var fieldAcessModifier = field.getFieldAccessModifier().name();
+            switch (field.getFieldAccessModifier().name()) {
+                case "PUBLIC":
+                    fieldAcessModifier = "public ";
+                    break;
+                case "PRIVATE":
+                    fieldAcessModifier = "private ";
+                    break;
+            }
+            var fieldName = field.getFieldName();
+            var fieldType = getJasminType(field.getFieldType().getTypeOfElement());
+            code.append(".field ").append(fieldAcessModifier).append(fieldName).append(" ").append(fieldType).append(NL);
+        }
+
+        // temos de fazer um if para este init mas ainda não percebi qual, supostamente vai ter de ser invokespecial Quicksort/<init>()V
 
         // generate a single constructor method
         var defaultConstructor = """
                 ;default constructor
                 .method public <init>()V
                     aload_0
-                    invokespecial java/lang/Object/<init>()V
+                    invokespecial java/lang/Object/ <init>()V
                     return
                 .end method
                 """;
@@ -118,12 +138,32 @@ public class JasminGenerator {
 
         var methodName = method.getMethodName();
 
-        // TODO: Hardcoded param types and return type, needs to be expanded
-        code.append("\n.method ").append(modifier).append(methodName).append("(I)I").append(NL);
+        // nome do método, este comentário de merda não foi pelo chatgpt
+        code.append("\n.method ").append(modifier).append(methodName)
+                .append("(");
 
-        // Add limits
-        code.append(TAB).append(".limit stack 99").append(NL);
-        code.append(TAB).append(".limit locals 99").append(NL);
+        // tipos dos parametros, este comentário de merda não foi pelo chatgpt
+        var parameterTypes = method.getParams();
+        for (int i = 0; i < parameterTypes.size(); i++) {
+            ElementType paramType = parameterTypes.get(i).getType().getTypeOfElement();
+            String paramJasminType = getJasminType(paramType);
+            code.append(paramJasminType);
+            if (i < parameterTypes.size() - 1) {
+                code.append(" ");
+            }
+        }
+        // tipo do retorno, este comentário de merda não foi pelo chatgpt
+        ElementType methodReturnType = method.getReturnType().getTypeOfElement();
+        String methodReturnJasminType = getJasminType(methodReturnType);
+        code.append(")").append(methodReturnJasminType).append(NL);
+
+        // aqui criei duas funções para calcular os limites
+
+        int maxStackSize = calculateMaxStackSize(method);//não sei se devemos chamar
+        int maxLocals = calculateMaxLocals(method);//não sei se devemos chamar
+        code.append(TAB).append(".limit stack ").append("99").append(NL);
+        code.append(TAB).append(".limit locals ").append("99").append(NL).append(NL);
+
 
         for (var inst : method.getInstructions()) {
             var instCode = StringLines.getLines(generators.apply(inst)).stream()
@@ -138,6 +178,56 @@ public class JasminGenerator {
         currentMethod = null;
 
         return code.toString();
+    }
+
+    private int calculateMaxStackSize(Method method) {
+        int maxStackSize = 0;
+        int currentStackSize = 0;
+
+        for (var inst : method.getInstructions()) {
+            switch (inst.getInstType().name()) { //este switch case ta mal
+                case "LOAD":
+                case "CONST":
+                    currentStackSize++;
+                    break;
+                case "ASSIGN":
+                case "RETURN":
+                    currentStackSize--;
+                    break;
+            }
+            if (currentStackSize > maxStackSize) {
+                maxStackSize = currentStackSize;
+            }
+        }
+
+        return maxStackSize;
+    }
+
+    private int calculateMaxLocals(Method method) {
+        int maxLocals = 0;
+
+        maxLocals += method.getParams().size();
+
+        for (var inst : method.getInstructions()) {
+            if (inst.getInstType().name().equals("ASSIGN") || inst.getInstType().name().equals("RETURN")) {
+                maxLocals++;
+            }
+        }
+
+        return maxLocals;
+    }
+
+    private String getJasminType(ElementType paramType) {
+        switch (paramType) {
+            case INT32:
+                return "I";
+            case BOOLEAN:
+                return "Z";
+            case VOID:
+                return "V";
+            default:
+                return "L" + "java/lang/String" + ";";
+        }
     }
 
     private String generateAssign(AssignInstruction assign) {
@@ -158,8 +248,17 @@ public class JasminGenerator {
         // get register
         var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
 
-        // TODO: Hardcoded for int type, needs to be expanded
-        code.append("istore ").append(reg).append(NL);
+        ElementType type = operand.getType().getTypeOfElement();
+        switch (type) {
+            case INT32:
+                code.append("istore_").append(reg).append(NL).append(NL);
+                break;
+            case BOOLEAN:
+                code.append("istore_").append(reg).append(NL).append(NL);
+                break;
+            default:
+                throw new NotImplementedException("Type not supported: " + type.name());
+        }
 
         return code.toString();
     }
@@ -169,13 +268,13 @@ public class JasminGenerator {
     }
 
     private String generateLiteral(LiteralElement literal) {
-        return "ldc " + literal.getLiteral() + NL;
+        return "iconst_" + literal.getLiteral() + NL;
     }
 
     private String generateOperand(Operand operand) {
         // get register
         var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
-        return "iload " + reg + NL;
+        return "iload_" + reg + NL;
     }
 
     private String generateBinaryOp(BinaryOpInstruction binaryOp) {
@@ -200,12 +299,29 @@ public class JasminGenerator {
     private String generateReturn(ReturnInstruction returnInst) {
         var code = new StringBuilder();
 
-        // TODO: Hardcoded to int return type, needs to be expanded
+        // generate code for the return value
+        if (returnInst.getOperand() != null) {
+            code.append(generators.apply(returnInst.getOperand()));
+        }
 
-        code.append(generators.apply(returnInst.getOperand()));
-        code.append("ireturn").append(NL);
+
+        ElementType returnType = returnInst.getReturnType().getTypeOfElement();
+        switch (returnType) {
+            case INT32:
+                code.append(NL).append("ireturn").append(NL);
+                break;
+            case BOOLEAN:
+                code.append(NL).append("ireturn").append(NL);
+                break;
+            case VOID:
+                code.append(NL).append("return").append(NL);
+                break;
+            default:
+                throw new NotImplementedException("Return type not supported: " + returnType.name());
+        }
 
         return code.toString();
     }
+
 
 }
