@@ -68,7 +68,7 @@ public class JasminGenerator {
     private String generateClassUnit(ClassUnit classUnit) {
 
         var code = new StringBuilder();
-
+        var imports = ollirResult.getOllirClass().getImports();
         // generate class name
         var className = ollirResult.getOllirClass().getClassName();
         code.append(".class ").append(className).append(NL).append(NL);
