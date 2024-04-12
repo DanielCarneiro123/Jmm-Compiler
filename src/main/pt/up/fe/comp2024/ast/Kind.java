@@ -30,7 +30,7 @@ public enum Kind {
     IF_STMT,
     FOR_STMT,
     WHILE_STMT,
-    ASSIGMENT,
+    ASSIGNMENT,
     ARRAY_ASSIGN,
     IFEXPR,
     ELSEIFEXPR,
