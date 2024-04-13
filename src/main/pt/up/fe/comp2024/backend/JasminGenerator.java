@@ -97,7 +97,7 @@ public class JasminGenerator {
 
         // generate a single constructor method
         boolean hasConstructor = false;
-        if (ollirResult.getOllirClass().getSuperClass() != "") {
+        if (ollirResult.getOllirClass().getSuperClass() != "") { //ter de ver se na class ha algum construtor, se nao hovuer vai se ao extend
             hasConstructor = true;
         }
 
@@ -153,9 +153,6 @@ public class JasminGenerator {
             ElementType paramType = parameterTypes.get(i).getType().getTypeOfElement();
             String paramJasminType = getJasminType(paramType);
             code.append(paramJasminType);
-            if (i < parameterTypes.size() - 1) {
-                code.append(" ");
-            }
         }
         // tipo do retorno, este comentário de merda não foi pelo chatgpt
         ElementType methodReturnType = method.getReturnType().getTypeOfElement();
