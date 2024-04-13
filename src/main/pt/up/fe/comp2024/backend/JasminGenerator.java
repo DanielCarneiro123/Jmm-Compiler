@@ -8,6 +8,7 @@ import pt.up.fe.specs.util.classmap.FunctionClassMap;
 import pt.up.fe.specs.util.exceptions.NotImplementedException;
 import pt.up.fe.specs.util.utilities.StringLines;
 
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,8 +42,11 @@ public class JasminGenerator {
 
         this.generators = new FunctionClassMap<>();
         generators.put(ClassUnit.class, this::generateClassUnit);
+        generators.put(PutFieldInstruction.class, this::generatePutFieldInstruction);
+        generators.put(GetFieldInstruction.class, this::generateGetFieldInstruction);
         generators.put(Method.class, this::generateMethod);
         generators.put(AssignInstruction.class, this::generateAssign);
+        generators.put(CallInstruction.class, this::generateCallInstruction);
         generators.put(SingleOpInstruction.class, this::generateSingleOp);
         generators.put(LiteralElement.class, this::generateLiteral);
         generators.put(Operand.class, this::generateOperand);
@@ -64,7 +68,6 @@ public class JasminGenerator {
         return code;
     }
 
-
     private String generateClassUnit(ClassUnit classUnit) {
 
         var code = new StringBuilder();
@@ -73,9 +76,15 @@ public class JasminGenerator {
         var className = ollirResult.getOllirClass().getClassName();
         code.append(".class ").append(className).append(NL).append(NL);
 
-        //adicionei isto para ir buscar o extended
-        var classExtended = ollirResult.getOllirClass().getSuperClass(); // se calhar vamos ter de ter um if par se não for extended
-        code.append(".super ").append(classExtended).append(NL);
+        if (ollirResult.getOllirClass().getSuperClass() != null) { //ter de ver se na class ha algum construtor, se nao hovuer vai se ao extend
+            var classExtended = ollirResult.getOllirClass().getSuperClass(); // se calhar vamos ter de ter um if par se não for extended
+            code.append(".super ").append(classExtended).append(NL);
+        }
+        else {
+            ollirResult.getOllirClass().setSuperClass("java/lang/Object");
+            code.append(".super ").append(ollirResult.getOllirClass().getSuperClass()).append(NL);
+            code.append(";default constructor").append(NL);
+        }
 
         var classFields = ollirResult.getOllirClass().getFields();
         for (var field : classFields) {
@@ -87,28 +96,23 @@ public class JasminGenerator {
                 case "PRIVATE":
                     fieldAcessModifier = "private ";
                     break;
+                case "DEFAULT":
+                    fieldAcessModifier = "";
+                    break;
             }
             var fieldName = field.getFieldName();
             var fieldType = getJasminType(field.getFieldType().getTypeOfElement());
             code.append(".field ").append(fieldAcessModifier).append(fieldName).append(" ").append(fieldType).append(NL);
         }
 
-        // temos de fazer um if para este init mas ainda não percebi qual, supostamente vai ter de ser invokespecial Quicksort/<init>()V
-
         // generate a single constructor method
-        boolean hasConstructor = false;
-        if (ollirResult.getOllirClass().getSuperClass() != "") { //ter de ver se na class ha algum construtor, se nao hovuer vai se ao extend
-            hasConstructor = true;
-        }
 
         code.append(".method public <init>()V").append(NL);
         code.append(TAB).append("aload_0").append(NL);
         code.append(TAB).append("invokespecial ");
-        if (hasConstructor) {
-            code.append(ollirResult.getOllirClass().getSuperClass()).append("/<init>()V").append(NL);
-        } else {
-            code.append("java/lang/Object/<init>()V").append(NL);
-        }
+
+        code.append(ollirResult.getOllirClass().getSuperClass()).append("/<init>()V").append(NL);
+
         code.append(TAB).append("return").append(NL);
         code.append(".end method").append(NL);
 
@@ -128,6 +132,35 @@ public class JasminGenerator {
         return code.toString();
     }
 
+    private String generatePutFieldInstruction(PutFieldInstruction putFieldInst) {
+        StringBuilder code = new StringBuilder();
+
+        var teste = putFieldInst.getOperands().get(1);
+        // Emit the getfield instruction
+        code.append("putfield ")
+                .append("intField")
+                .append(" ")
+                .append("\n");
+
+        // Store the value in the appropriate local variable
+        // code.append(getStoreInstruction(getFieldInst.getDestination()));
+        return code.toString();
+    }
+
+    private String generateGetFieldInstruction(GetFieldInstruction getFieldInst) {
+
+        StringBuilder code = new StringBuilder();
+
+        // Emit the getfield instruction
+        code.append("getfield ")
+                .append("intField")
+                .append(" ")
+                .append("\n");
+
+        // Store the value in the appropriate local variable
+        // code.append(getStoreInstruction(getFieldInst.getDestination()));
+        return code.toString();
+    }
 
     private String generateMethod(Method method) {
 
@@ -143,9 +176,16 @@ public class JasminGenerator {
 
         var methodName = method.getMethodName();
 
-        // nome do método, este comentário de merda não foi pelo chatgpt
-        code.append("\n.method ").append(modifier).append(methodName)
-                .append("(");
+        //ver se precisa de static
+        if (method.isStaticMethod()){
+            code.append("\n.method ").append(modifier).append("static ").append(methodName)
+                    .append("(["); //temos de ver se isto do [ só acontece para os main static ou para todos os tatic
+        }
+        else{
+            // nome do método, este comentário de merda não foi pelo chatgpt
+            code.append("\n.method ").append(modifier).append(methodName)
+                    .append("(");
+        }
 
         // tipos dos parametros, este comentário de merda não foi pelo chatgpt
         var parameterTypes = method.getParams();
@@ -164,7 +204,7 @@ public class JasminGenerator {
         int maxStackSize = calculateMaxStackSize(method);//não sei se devemos chamar
         int maxLocals = calculateMaxLocals(method);//não sei se devemos chamar
         code.append(TAB).append(".limit stack ").append("99").append(NL);
-        code.append(TAB).append(".limit locals ").append("99").append(NL).append(NL);
+        code.append(TAB).append(".limit locals ").append("99").append(NL);
 
 
         for (var inst : method.getInstructions()) {
@@ -258,6 +298,8 @@ public class JasminGenerator {
             case BOOLEAN:
                 code.append("istore_").append(reg).append(NL).append(NL);
                 break;
+            case CLASS:
+                code.append("astore").append(reg).append(NL).append(NL);
             default:
                 throw new NotImplementedException("Type not supported: " + type.name());
         }
@@ -265,12 +307,44 @@ public class JasminGenerator {
         return code.toString();
     }
 
+    private String generateCallInstruction(CallInstruction callInstruction) {
+        var code = new StringBuilder();
+
+        switch (callInstruction.getInvocationType()) {
+            case invokestatic:
+                code.append("invokestatic ");
+                break;
+            case invokespecial, NEW:
+                code.append("invokespecial ");
+                break;
+            case invokevirtual:
+                code.append("invokevirtual ");
+                break;
+            default:
+                throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
+        }
+
+        var x = callInstruction.getCaller().toString();
+
+        var y = callInstruction.getMethodName().toString();
+
+        code.append(callInstruction.getCaller().toString())
+                .append("/")
+                .append(callInstruction.getMethodName().toString())
+                .append("(");
+
+
+
+        return code.toString();
+    }
+
+
     private String generateSingleOp(SingleOpInstruction singleOp) {
         return generators.apply(singleOp.getSingleOperand());
     }
 
     private String generateLiteral(LiteralElement literal) {
-        return "iconst_" + literal.getLiteral() + NL;
+        return NL + "iconst_" + literal.getLiteral() + NL;
     }
 
     private String generateOperand(Operand operand) {
