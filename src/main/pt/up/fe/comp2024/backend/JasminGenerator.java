@@ -42,8 +42,8 @@ public class JasminGenerator {
 
         this.generators = new FunctionClassMap<>();
         generators.put(ClassUnit.class, this::generateClassUnit);
-        generators.put(PutFieldInstruction.class, this::generatePutFieldInstruction);
-        generators.put(GetFieldInstruction.class, this::generateGetFieldInstruction);
+        /*generators.put(PutFieldInstruction.class, this::generatePutFieldInstruction);
+        generators.put(GetFieldInstruction.class, this::generateGetFieldInstruction);*/
         generators.put(Method.class, this::generateMethod);
         generators.put(AssignInstruction.class, this::generateAssign);
         generators.put(CallInstruction.class, this::generateCallInstruction);
@@ -299,7 +299,11 @@ public class JasminGenerator {
                 code.append("istore_").append(reg).append(NL).append(NL);
                 break;
             case CLASS:
-                code.append("astore").append(reg).append(NL).append(NL);
+                code.append("astore ").append(reg).append(NL).append(NL);
+                break;
+            case OBJECTREF:
+                code.append("astore ").append(reg).append(NL).append(NL);
+                break;
             default:
                 throw new NotImplementedException("Type not supported: " + type.name());
         }
@@ -312,26 +316,30 @@ public class JasminGenerator {
 
         switch (callInstruction.getInvocationType()) {
             case invokestatic:
-                code.append("invokestatic ");
+                code.append("invokestatic ").append(NL);
                 break;
-            case invokespecial, NEW:
-                code.append("invokespecial ");
+            case invokespecial:
+                code.append("invokespecial ").append(ollirResult.getOllirClass().getClassName()).append("/<init>()V").append(NL);
+                break;
+            case NEW:
+                code.append(NL).append("new ").append(ollirResult.getOllirClass().getClassName()).append(NL);
+                code.append("dup").append(NL);
                 break;
             case invokevirtual:
-                code.append("invokevirtual ");
+                code.append("invokevirtual ").append(NL);
                 break;
             default:
                 throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
         }
 
-        var x = callInstruction.getCaller().toString();
+        /*var x = callInstruction.getCaller().toString();
 
         var y = callInstruction.getMethodName().toString();
 
         code.append(callInstruction.getCaller().toString())
                 .append("/")
                 .append(callInstruction.getMethodName().toString())
-                .append("(");
+                .append("(");*/
 
 
 
@@ -349,6 +357,7 @@ public class JasminGenerator {
 
     private String generateOperand(Operand operand) {
         // get register
+        var x = operand.getName();
         var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
         return "iload_" + reg + NL;
     }
