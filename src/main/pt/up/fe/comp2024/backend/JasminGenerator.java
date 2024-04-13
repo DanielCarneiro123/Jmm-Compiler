@@ -8,7 +8,6 @@ import pt.up.fe.specs.util.classmap.FunctionClassMap;
 import pt.up.fe.specs.util.exceptions.NotImplementedException;
 import pt.up.fe.specs.util.utilities.StringLines;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -97,15 +96,21 @@ public class JasminGenerator {
         // temos de fazer um if para este init mas ainda não percebi qual, supostamente vai ter de ser invokespecial Quicksort/<init>()V
 
         // generate a single constructor method
-        var defaultConstructor = """
-                ;default constructor
-                .method public <init>()V
-                    aload_0
-                    invokespecial java/lang/Object/ <init>()V
-                    return
-                .end method
-                """;
-        code.append(defaultConstructor);
+        boolean hasConstructor = false;
+        if (ollirResult.getOllirClass().getSuperClass() != "") {
+            hasConstructor = true;
+        }
+
+        code.append(".method public <init>()V").append(NL);
+        code.append(TAB).append("aload_0").append(NL);
+        code.append(TAB).append("invokespecial ");
+        if (hasConstructor) {
+            code.append(ollirResult.getOllirClass().getSuperClass()).append("/<init>()V").append(NL);
+        } else {
+            code.append("java/lang/Object/<init>()V").append(NL);
+        }
+        code.append(TAB).append("return").append(NL);
+        code.append(".end method").append(NL);
 
         // generate code for all other methods
         for (var method : ollirResult.getOllirClass().getMethods()) {
