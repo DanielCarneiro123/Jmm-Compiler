@@ -1,10 +1,14 @@
 package pt.up.fe.comp2024.optimization;
 
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
 import pt.up.fe.comp2024.ast.TypeUtils;
+
+import java.util.List;
+import java.util.Optional;
 
 import static pt.up.fe.comp2024.ast.Kind.*;
 
@@ -28,6 +32,8 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         addVisit(IDENTIFIER, this::visitVarRef);
         addVisit(BINARY_OP, this::visitBinExpr);
         addVisit(INTEGER, this::visitInteger);
+        addVisit(FUNCTION_CALL, this::visitFunctionCall);
+
 
         setDefaultVisit(this::defaultVisit);
     }
@@ -52,8 +58,11 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         computation.append(lhs.getComputation());
         computation.append(rhs.getComputation());
 
+        Type resType = TypeUtils.getExprType(node.getJmmChild(0), table);
+
+
         // code to compute self
-        Type resType = TypeUtils.getExprType(node, table);
+
         String resOllirType = OptUtils.toOllirType(resType);
         String code = OptUtils.getTemp() + resOllirType;
 
@@ -61,13 +70,74 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                 .append(ASSIGN).append(resOllirType).append(SPACE)
                 .append(lhs.getCode()).append(SPACE);
 
-        Type type = TypeUtils.getExprType(node, table);
-        computation.append(node.get("op")).append(OptUtils.toOllirType(type)).append(SPACE)
+
+        computation.append(node.get("op")).append(OptUtils.toOllirType(resType)).append(SPACE)
                 .append(rhs.getCode()).append(END_STMT);
 
         return new OllirExprResult(code, computation);
     }
 
+    private OllirExprResult visitFunctionCall(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+
+        var child = node;
+        code.append("invokestatic");
+        code.append("(");
+        code.append(child.getChildren().get(0).get("value"));
+        code.append(",");
+        code.append("\"");
+        code.append(child.get("value"));
+        code.append("\"");
+        code.append(",");
+
+        List<Symbol> localVariables = table.getLocalVariables(node.getParent().getParent().get("name"));
+
+// Get the local variables for the current method
+        List<JmmNode> arguments = child.getChildren().subList(1, child.getNumChildren());
+        for (int i = 0; i < arguments.size(); i++) {
+            JmmNode argument = arguments.get(i);
+            String argumentName = argument.get("value");
+            // Search for the matching local variable by name
+            Optional<Symbol> matchingVariable = localVariables.stream()
+                    .filter(variable -> variable.getName().equals(argumentName))
+                    .findFirst();
+            if (matchingVariable.isPresent()) {
+                code.append(argumentName);
+                Type argType = matchingVariable.get().getType();
+                code.append(OptUtils.toOllirType(argType)); // Append the type
+            }
+            if (i < arguments.size() - 1) {
+                code.append(", ");
+            }
+        }
+
+
+
+        code.append(")");
+
+        if (child.getParent().getKind().equals("Assignment")) {
+            // Find the type here
+
+
+
+            String variableName = child.getParent().get("var");
+
+
+            Optional<Symbol> matchingVariable = localVariables.stream()
+                    .filter(variable -> variable.getName().equals(variableName))
+                    .findFirst();
+
+            if (matchingVariable.isPresent()) {
+                Type parentType = matchingVariable.get().getType();
+                code.append(OptUtils.toOllirType(parentType));
+
+        } }else {
+            code.append(".V");
+        }
+
+
+        return new OllirExprResult(code.toString());
+    }
 
     private OllirExprResult visitVarRef(JmmNode node, Void unused) {
 

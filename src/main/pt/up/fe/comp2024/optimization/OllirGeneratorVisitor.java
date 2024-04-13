@@ -1,6 +1,8 @@
 package pt.up.fe.comp2024.optimization;
 
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
+
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
@@ -47,7 +49,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(PARAM, this::visitParam);
         addVisit(RETURN_STMT, this::visitReturn);
         addVisit(VAR_DECL, this::visitVarDecl);
-        addVisit(BINARY_OP, this::visitBinaryOp);
+        addVisit(EXPR_STMT, this::visitExpressionStmt);
 
 
 
@@ -57,43 +59,73 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         setDefaultVisit(this::defaultVisit);
     }
 
+
+    private String visitExpressionStmt(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+
+        var child = node.getChild(0);
+
+        code.append(exprVisitor.visit(child).getCode());
+        code.append(END_STMT);
+
+        return code.toString();
+    }
+
+
+
     private String visitBinaryOp(JmmNode node, Void unused) {
-        OllirExprGeneratorVisitor exprVisitor = new OllirExprGeneratorVisitor(table);
-        OllirExprResult result = exprVisitor.visit(node, unused);
-        return result.getCode();
+        StringBuilder code = new StringBuilder();
+        code.append("bananaOp");
+        return code.toString();
     }
 
 
     private String visitAssignStmt(JmmNode node, Void unused) {
-
         var lhs = node.get("var");
-        var rhs = exprVisitor.visit(node.getJmmChild(0));
+        var rhsNode = node.getJmmChild(0);
+
 
         StringBuilder code = new StringBuilder();
 
-        // code to compute the children
+        List<Symbol> localVariables = table.getLocalVariables(node.getParent().get("name"));
+
+        Type thisType = null;
+
+        for (int i = 0; i < localVariables.size(); i++) {
+            Symbol localVariable = localVariables.get(i);
+            if (localVariable.getName().equals(lhs)) {
+                thisType = localVariable.getType();
+                break;
+            }
+        }
+
+        // Compute the OLLIR code for the right-hand side (rhs)
+        String rhsCode;
+
+        rhsCode = exprVisitor.visit(rhsNode).getCode();
 
 
-        // code to compute self
-        // statement has type of lhs
-        Type thisType = TypeUtils.getExprType(node.getJmmChild(0), table);
+
+
         String typeString = OptUtils.toOllirType(thisType);
+
+
 
 
         code.append(lhs);
         code.append(typeString);
         code.append(SPACE);
-
         code.append(ASSIGN);
         code.append(typeString);
         code.append(SPACE);
-
-        code.append(rhs.getCode());
-
+        code.append(rhsCode);
         code.append(END_STMT);
 
         return code.toString();
     }
+
+
+
 
     private String visitVarDecl(JmmNode node, Void unused) {
         String typeCode = OptUtils.toOllirType(node.getJmmChild(0)); // Get the type code (e.g., i32, bool)
@@ -120,7 +152,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
 
 
-        code.append(firstChild.get("value"));
+        code.append(exprVisitor.visit(firstChild).getCode());
         code.append(OptUtils.toOllirType(retType));
 
         code.append(END_STMT);
