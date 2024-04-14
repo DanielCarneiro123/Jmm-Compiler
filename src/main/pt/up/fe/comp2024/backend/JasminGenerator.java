@@ -8,6 +8,7 @@ import pt.up.fe.specs.util.classmap.FunctionClassMap;
 import pt.up.fe.specs.util.exceptions.NotImplementedException;
 import pt.up.fe.specs.util.utilities.StringLines;
 
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,8 +42,11 @@ public class JasminGenerator {
 
         this.generators = new FunctionClassMap<>();
         generators.put(ClassUnit.class, this::generateClassUnit);
+        generators.put(PutFieldInstruction.class, this::generatePutFieldInstruction);
+        generators.put(GetFieldInstruction.class, this::generateGetFieldInstruction);
         generators.put(Method.class, this::generateMethod);
         generators.put(AssignInstruction.class, this::generateAssign);
+        generators.put(CallInstruction.class, this::generateCallInstruction);
         generators.put(SingleOpInstruction.class, this::generateSingleOp);
         generators.put(LiteralElement.class, this::generateLiteral);
         generators.put(Operand.class, this::generateOperand);
@@ -64,7 +68,6 @@ public class JasminGenerator {
         return code;
     }
 
-
     private String generateClassUnit(ClassUnit classUnit) {
 
         var code = new StringBuilder();
@@ -73,19 +76,45 @@ public class JasminGenerator {
         var className = ollirResult.getOllirClass().getClassName();
         code.append(".class ").append(className).append(NL).append(NL);
 
-        // TODO: Hardcoded to Object, needs to be expanded
-        code.append(".super java/lang/Object").append(NL);
+        if (ollirResult.getOllirClass().getSuperClass() != null) { //ter de ver se na class ha algum construtor, se nao hovuer vai se ao extend
+            var classExtended = ollirResult.getOllirClass().getSuperClass(); // se calhar vamos ter de ter um if par se não for extended
+            code.append(".super ").append(classExtended).append(NL);
+        }
+        else {
+            ollirResult.getOllirClass().setSuperClass("java/lang/Object");
+            code.append(".super ").append(ollirResult.getOllirClass().getSuperClass()).append(NL);
+            code.append(";default constructor").append(NL);
+        }
+
+        var classFields = ollirResult.getOllirClass().getFields();
+        for (var field : classFields) {
+            var fieldAcessModifier = field.getFieldAccessModifier().name();
+            switch (field.getFieldAccessModifier().name()) {
+                case "PUBLIC":
+                    fieldAcessModifier = "public ";
+                    break;
+                case "PRIVATE":
+                    fieldAcessModifier = "private ";
+                    break;
+                case "DEFAULT":
+                    fieldAcessModifier = "";
+                    break;
+            }
+            var fieldName = field.getFieldName();
+            var fieldType = getJasminType(field.getFieldType().getTypeOfElement());
+            code.append(".field ").append(fieldAcessModifier).append(fieldName).append(" ").append(fieldType).append(NL);
+        }
 
         // generate a single constructor method
-        var defaultConstructor = """
-                ;default constructor
-                .method public <init>()V
-                    aload_0
-                    invokespecial java/lang/Object/<init>()V
-                    return
-                .end method
-                """;
-        code.append(defaultConstructor);
+
+        code.append(".method public <init>()V").append(NL);
+        code.append(TAB).append("aload_0").append(NL);
+        code.append(TAB).append("invokespecial ");
+
+        code.append(ollirResult.getOllirClass().getSuperClass()).append("/<init>()V").append(NL);
+
+        code.append(TAB).append("return").append(NL);
+        code.append(".end method").append(NL);
 
         // generate code for all other methods
         for (var method : ollirResult.getOllirClass().getMethods()) {
@@ -103,6 +132,55 @@ public class JasminGenerator {
         return code.toString();
     }
 
+    private String generatePutFieldInstruction(PutFieldInstruction putFieldInst) {
+        StringBuilder code = new StringBuilder();
+
+        // Load the object reference onto the stack
+        code.append(generators.apply(putFieldInst.getObject()));
+
+        // Load the value of the field onto the stack
+        code.append(generators.apply(putFieldInst.getValue()));
+
+        String callObjName = ((ClassType) putFieldInst.getObject().getType()).getName();
+        String fieldName = putFieldInst.getField().getName();
+        String fieldType = getJasminType(putFieldInst.getField().getType().getTypeOfElement());
+        // Emit the getfield instruction
+        code.append("putfield ")
+                .append(callObjName)
+                .append("/")
+                .append(fieldName)
+                .append(" ")
+                .append(fieldType)
+                .append("\n");
+
+        // Store the value in the appropriate local variable
+        // code.append(getStoreInstruction(getFieldInst.getDestination()));
+        return code.toString();
+    }
+
+
+    private String generateGetFieldInstruction(GetFieldInstruction getFieldInst) {
+        StringBuilder code = new StringBuilder();
+
+        // Load the object reference onto the stack
+        code.append(generators.apply(getFieldInst.getObject()));
+
+        String callObjName = ((ClassType) getFieldInst.getObject().getType()).getName();
+        String fieldName = getFieldInst.getField().getName();
+        String fieldType = getJasminType(getFieldInst.getFieldType().getTypeOfElement());
+        // Emit the getfield instruction
+        code.append("getfield ")
+                .append(callObjName)
+                .append("/")
+                .append(fieldName)
+                .append(" ")
+                .append(fieldType)
+                .append("\n");
+
+        // Store the value in the appropriate local variable
+        // code.append(getStoreInstruction(getFieldInst.getDestination()));
+        return code.toString();
+    }
 
     private String generateMethod(Method method) {
 
@@ -118,12 +196,36 @@ public class JasminGenerator {
 
         var methodName = method.getMethodName();
 
-        // TODO: Hardcoded param types and return type, needs to be expanded
-        code.append("\n.method ").append(modifier).append(methodName).append("(I)I").append(NL);
+        //ver se precisa de static
+        if (method.isStaticMethod()){
+            code.append("\n.method ").append(modifier).append("static ").append(methodName)
+                    .append("(["); //temos de ver se isto do [ só acontece para os main static ou para todos os tatic
+        }
+        else{
+            // nome do método, este comentário de merda não foi pelo chatgpt
+            code.append("\n.method ").append(modifier).append(methodName)
+                    .append("(");
+        }
 
-        // Add limits
-        code.append(TAB).append(".limit stack 99").append(NL);
-        code.append(TAB).append(".limit locals 99").append(NL);
+        // tipos dos parametros, este comentário de merda não foi pelo chatgpt
+        var parameterTypes = method.getParams();
+        for (int i = 0; i < parameterTypes.size(); i++) {
+            ElementType paramType = parameterTypes.get(i).getType().getTypeOfElement();
+            String paramJasminType = getJasminType(paramType);
+            code.append(paramJasminType);
+        }
+        // tipo do retorno, este comentário de merda não foi pelo chatgpt
+        ElementType methodReturnType = method.getReturnType().getTypeOfElement();
+        String methodReturnJasminType = getJasminType(methodReturnType);
+        code.append(")").append(methodReturnJasminType).append(NL);
+
+        // aqui criei duas funções para calcular os limites
+
+        int maxStackSize = calculateMaxStackSize(method);//não sei se devemos chamar
+        int maxLocals = calculateMaxLocals(method);//não sei se devemos chamar
+        code.append(TAB).append(".limit stack ").append("99").append(NL);
+        code.append(TAB).append(".limit locals ").append("99").append(NL);
+
 
         for (var inst : method.getInstructions()) {
             var instCode = StringLines.getLines(generators.apply(inst)).stream()
@@ -138,6 +240,56 @@ public class JasminGenerator {
         currentMethod = null;
 
         return code.toString();
+    }
+
+    private int calculateMaxStackSize(Method method) {
+        int maxStackSize = 0;
+        int currentStackSize = 0;
+
+        for (var inst : method.getInstructions()) {
+            switch (inst.getInstType().name()) { //este switch case ta mal
+                case "LOAD":
+                case "CONST":
+                    currentStackSize++;
+                    break;
+                case "ASSIGN":
+                case "RETURN":
+                    currentStackSize--;
+                    break;
+            }
+            if (currentStackSize > maxStackSize) {
+                maxStackSize = currentStackSize;
+            }
+        }
+
+        return maxStackSize;
+    }
+
+    private int calculateMaxLocals(Method method) {
+        int maxLocals = 0;
+
+        maxLocals += method.getParams().size();
+
+        for (var inst : method.getInstructions()) {
+            if (inst.getInstType().name().equals("ASSIGN") || inst.getInstType().name().equals("RETURN")) {
+                maxLocals++;
+            }
+        }
+
+        return maxLocals;
+    }
+
+    private String getJasminType(ElementType paramType) {
+        switch (paramType) {
+            case INT32:
+                return "I";
+            case BOOLEAN:
+                return "Z";
+            case VOID:
+                return "V";
+            default:
+                return "L" + "java/lang/String" + ";";
+        }
     }
 
     private String generateAssign(AssignInstruction assign) {
@@ -158,24 +310,82 @@ public class JasminGenerator {
         // get register
         var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
 
-        // TODO: Hardcoded for int type, needs to be expanded
-        code.append("istore ").append(reg).append(NL);
+        ElementType type = operand.getType().getTypeOfElement();
+        switch (type) {
+            case INT32:
+                code.append("istore_").append(reg).append(NL).append(NL);
+                break;
+            case BOOLEAN:
+                code.append("istore_").append(reg).append(NL).append(NL);
+                break;
+            case CLASS:
+                code.append("astore ").append(reg).append(NL).append(NL);
+                break;
+            case OBJECTREF:
+                code.append("astore ").append(reg).append(NL).append(NL);
+                break;
+            default:
+                throw new NotImplementedException("Type not supported: " + type.name());
+        }
 
         return code.toString();
     }
+
+    private String generateCallInstruction(CallInstruction callInstruction) {
+        var code = new StringBuilder();
+
+        switch (callInstruction.getInvocationType()) {
+            case invokestatic:
+                code.append("invokestatic ").append(NL);
+                break;
+            case invokespecial:
+                code.append("invokespecial ").append(ollirResult.getOllirClass().getClassName()).append("/<init>()V").append(NL);
+                break;
+            case NEW:
+                code.append(NL).append("new ").append(ollirResult.getOllirClass().getClassName()).append(NL);
+                code.append("dup").append(NL);
+                break;
+            case invokevirtual:
+                code.append("invokevirtual ").append(NL);
+                break;
+            default:
+                throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
+        }
+
+        return code.toString();
+    }
+
 
     private String generateSingleOp(SingleOpInstruction singleOp) {
         return generators.apply(singleOp.getSingleOperand());
     }
 
     private String generateLiteral(LiteralElement literal) {
-        return "ldc " + literal.getLiteral() + NL;
+        String literalStr = literal.getLiteral();
+        int value = Integer.parseInt(literalStr);
+        if (value >= -1 && value <= 5) {
+            return "iconst_" + value + NL;
+        } else if (value >= -128 && value <= 127) {
+            return "bipush " + value + NL;
+        } else if (value >= -32768 && value <= 32767) {
+            return "sipush " + value + NL;
+        } else {
+            return "ldc " + value + NL;
+        }
     }
 
     private String generateOperand(Operand operand) {
         // get register
+        var x = operand.getName();
         var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
-        return "iload " + reg + NL;
+        var y = operand.getType().getTypeOfElement().name();
+        if (operand.getType().getTypeOfElement().name().equals("INT32") || operand.getType().getTypeOfElement().name().equals("BOOLEAN") ){
+            return "iload_" + reg + NL;
+        }
+        else{
+            return "aload_" + reg + NL;
+        }
+
     }
 
     private String generateBinaryOp(BinaryOpInstruction binaryOp) {
@@ -200,12 +410,29 @@ public class JasminGenerator {
     private String generateReturn(ReturnInstruction returnInst) {
         var code = new StringBuilder();
 
-        // TODO: Hardcoded to int return type, needs to be expanded
+        // generate code for the return value
+        if (returnInst.getOperand() != null) {
+            code.append(generators.apply(returnInst.getOperand()));
+        }
 
-        code.append(generators.apply(returnInst.getOperand()));
-        code.append("ireturn").append(NL);
+
+        ElementType returnType = returnInst.getReturnType().getTypeOfElement();
+        switch (returnType) {
+            case INT32:
+                code.append(NL).append("ireturn").append(NL);
+                break;
+            case BOOLEAN:
+                code.append(NL).append("ireturn").append(NL);
+                break;
+            case VOID:
+                code.append(NL).append("return").append(NL);
+                break;
+            default:
+                throw new NotImplementedException("Return type not supported: " + returnType.name());
+        }
 
         return code.toString();
     }
+
 
 }
