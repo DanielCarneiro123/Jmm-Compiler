@@ -82,48 +82,90 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
     private String visitAssignStmt(JmmNode node, Void unused) {
         var lhs = node.get("var");
-        var rhsNode = exprVisitor.visit(node.getJmmChild(0));
 
+        boolean isField = false;
+        var rhsNode = exprVisitor.visit(node.getJmmChild(0));
 
         StringBuilder code = new StringBuilder();
         code.append(rhsNode.getComputation());
 
         List<Symbol> localVariables = table.getLocalVariables(node.getParent().get("name"));
-
+        List<Symbol> paramVariables = table.getParameters(node.getParent().get("name"));
         Type thisType = null;
 
-        for (int i = 0; i < localVariables.size(); i++) {
-            Symbol localVariable = localVariables.get(i);
+        // Search for the variable in local variables
+        for (Symbol localVariable : localVariables) {
             if (localVariable.getName().equals(lhs)) {
                 thisType = localVariable.getType();
                 break;
             }
         }
 
-        // Compute the OLLIR code for the right-hand side (rhs)
+        for (Symbol paramVariable : paramVariables) {
+            if (paramVariable.getName().equals(lhs)) {
+                thisType = paramVariable.getType();
+                break;
+            }
+        }
+
+        List<Symbol> fields = table.getFields();
+        String rhs ="";
+        if(node.getChildren().get(0).getKind().equals("Identifier")) {
+            rhs = node.getChildren().get(0).get("value");
+            for (Symbol field : fields) {
+                if (field.getName().equals(rhs)){
+                    isField = true;
+                }}
+        }
 
 
+        // If variable not found in locals, search in fields
+        if (thisType == null) {
 
+            for (Symbol field : fields) {
 
+                if (field.getName().equals(lhs)) {
+                    thisType = field.getType();
+                    // Generate OLLIR instructions for accessing/modifying field
+                    String typeString = OptUtils.toOllirType(thisType);
+                    code.append("putfield(this, ").append(lhs).append(typeString).append(", ").append(rhsNode.getCode()).append(").V;\n");
 
+                    return code.toString();
+                }
+            }
+            // If variable is neither local variable nor field, throw an exception or handle it accordingly
+            throw new RuntimeException("Variable not found: " + lhs);
+        }
 
-
+        // If the variable is a local variable
         String typeString = OptUtils.toOllirType(thisType);
+        if (isField){
+            var aux = OptUtils.getTemp();
+            code.append(aux).append(typeString).append(" :=").append(typeString).append(" getfield(this, ").append(rhs).append(typeString).append(")").append(typeString).append(END_STMT);
+            code.append(lhs);
+            code.append(typeString);
+            code.append(SPACE);
+            code.append(ASSIGN);
+            code.append(typeString);
+            code.append(SPACE);
+            code.append(aux).append(typeString);
+        }
+        else {
 
 
-
-
-        code.append(lhs);
-        code.append(typeString);
-        code.append(SPACE);
-        code.append(ASSIGN);
-        code.append(typeString);
-        code.append(SPACE);
-        code.append(rhsNode.getCode());
+            code.append(lhs);
+            code.append(typeString);
+            code.append(SPACE);
+            code.append(ASSIGN);
+            code.append(typeString);
+            code.append(SPACE);
+            code.append(rhsNode.getCode());
+        }
         code.append(END_STMT);
 
         return code.toString();
     }
+
 
 
 
@@ -152,7 +194,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
 
         code.append(lhs.getComputation());
-        code.append(NL);
+
 
 
         code.append("ret");
