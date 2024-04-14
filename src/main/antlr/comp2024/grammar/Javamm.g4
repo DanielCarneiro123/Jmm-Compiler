@@ -79,10 +79,12 @@ returnStmt
     : RETURN expr SEMI
     ;
 
-methodDecl
-    : (PUBLIC)? type name=ID LPAREN (argument (COMMA argument)*)? RPAREN LCURLY (varDecl)* (stmt)* returnStmt RCURLY
-    | (PUBLIC)? STATIC type name=ID LPAREN type LSTRAIGHT RSTRAIGHT argName=ID RPAREN LCURLY (varDecl)* (stmt)* RCURLY
+methodDecl locals[boolean isPublic=false, boolean isStatic=false]
+    : (PUBLIC {$isPublic=true;})? type name=ID LPAREN (argument (COMMA argument)*)? RPAREN LCURLY (varDecl)* (stmt)* returnStmt RCURLY
+    | (PUBLIC {$isPublic=true;})? STATIC {$isStatic=true;} type name=ID LPAREN type LSTRAIGHT RSTRAIGHT argName=ID RPAREN LCURLY (varDecl)* (stmt)* RCURLY
     ;
+
+
 
 stmt
     : expr SEMI #ExprStmt
@@ -124,4 +126,3 @@ expr
     | value=FALSE #False
     | value=ID #Identifier
     ;
-
