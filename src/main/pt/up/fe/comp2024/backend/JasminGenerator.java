@@ -285,7 +285,7 @@ public class JasminGenerator {
                 return "I";
             case BOOLEAN:
                 return "Z";
-            case VOID:
+            case VOID, STRING:
                 return "V";
             default:
                 return "L" + "java/lang/String" + ";";
@@ -336,7 +336,8 @@ public class JasminGenerator {
 
         switch (callInstruction.getInvocationType()) {
             case invokestatic:
-                code.append("invokestatic ").append(NL);
+                ollirResult.getOllirClass().getImport(0);
+                code.append("invokestatic ").append(generators.apply(callInstruction.getCaller())).append("/").append(generators.apply(callInstruction.getMethodName())).append(NL);
                 break;
             case invokespecial:
                 code.append("invokespecial ").append(ollirResult.getOllirClass().getClassName()).append("/<init>()V").append(NL);
@@ -346,7 +347,7 @@ public class JasminGenerator {
                 code.append("dup").append(NL);
                 break;
             case invokevirtual:
-                code.append("invokevirtual ").append(NL);
+                code.append("invokevirtual ").append(ollirResult.getOllirClass().getClassName()).append("/").append(generators.apply(callInstruction.getMethodName())).append(NL);
                 break;
             default:
                 throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
@@ -361,7 +362,20 @@ public class JasminGenerator {
     }
 
     private String generateLiteral(LiteralElement literal) {
+        StringBuilder code = new StringBuilder();;
         String literalStr = literal.getLiteral();
+        if (literal.getType().getTypeOfElement().name().equals("STRING")){
+            code.append(literalStr.replaceAll("\"", "")).append("(");
+            for (var method: ollirResult.getOllirClass().getMethods()){
+                if (method.getMethodName().equals(literalStr.replaceAll("\"", ""))){
+                    for (var param: method.getParams()){
+                        code.append(getJasminType(param.getType().getTypeOfElement()));
+                    }
+                }
+            }
+            code.append(")").append(getJasminType(literal.getType().getTypeOfElement()));
+            return code.toString();
+        }
         int value = Integer.parseInt(literalStr);
         if (value >= -1 && value <= 5) {
             return "iconst_" + value + NL;
@@ -375,18 +389,28 @@ public class JasminGenerator {
     }
 
     private String generateOperand(Operand operand) {
-        // get register
-        var x = operand.getName();
-        var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
-        var y = operand.getType().getTypeOfElement().name();
-        if (operand.getType().getTypeOfElement().name().equals("INT32") || operand.getType().getTypeOfElement().name().equals("BOOLEAN") ){
-            return "iload_" + reg + NL;
-        }
-        else{
-            return "aload_" + reg + NL;
+        String name = operand.getName();
+
+        // Verificar se o nome está na varTable
+        if (currentMethod.getVarTable().containsKey(name)) {
+            int reg = currentMethod.getVarTable().get(name).getVirtualReg();
+            String type = operand.getType().getTypeOfElement().name();
+            if (type.equals("INT32") || type.equals("BOOLEAN")) {
+                return "iload_" + reg + NL;
+            } else {
+                return "aload_" + reg + NL;
+            }
         }
 
+
+        if (currentMethod.getOllirClass().getImports().contains(name)) {
+            return name;
+        }
+
+        return null;
+
     }
+
 
     private String generateBinaryOp(BinaryOpInstruction binaryOp) {
         var code = new StringBuilder();
