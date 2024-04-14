@@ -29,6 +29,7 @@ public class TypeUtils {
             case BINARY_EXPR -> getBinExprType(expr);
             case IDENTIFIER -> getVarExprType(expr, table);
             case INTEGER -> new Type(INT_TYPE_NAME, false);
+            case BOOLEAN -> new Type ("boolean", false);
             default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
         };
 
