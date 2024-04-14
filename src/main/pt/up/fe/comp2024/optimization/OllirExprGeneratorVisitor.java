@@ -34,11 +34,19 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         addVisit(INTEGER, this::visitInteger);
         addVisit(FUNCTION_CALL, this::visitFunctionCall);
         addVisit(NEW_CLASS, this::visitNewClass);
+        addVisit(PARENTESIS, this::visitParentesis);
 
 
         setDefaultVisit(this::defaultVisit);
     }
 
+    private OllirExprResult visitParentesis(JmmNode node, Void unused) {
+        // Visit the expression inside the parentheses
+        var innerExpr = visit(node.getJmmChild(0));
+
+        // Return the computation and code of the inner expression
+        return innerExpr;
+    }
     private OllirExprResult visitNewClass(JmmNode node, Void unused) {
         StringBuilder code = new StringBuilder();
 
@@ -77,12 +85,22 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         computation.append(lhs.getComputation());
         computation.append(rhs.getComputation());
 
-        Type resType = TypeUtils.getExprType(node.getJmmChild(1), table);
 
 
+        String resOllirType = "";
         // code to compute self
+        if (node.getChildren().get(0).getKind().equals("Integer") || node.getChildren().get(0).getKind().equals("Boolean")){
 
-        String resOllirType = OptUtils.toOllirType(resType);
+            Type type = TypeUtils.getExprType(node.getChildren().get(0), table);
+            resOllirType = OptUtils.toOllirType(type);
+
+        }
+        else {
+            Type type = TypeUtils.getExprType(node.getChildren().get(1), table);
+            resOllirType = OptUtils.toOllirType(type);
+
+        }
+
         String code = OptUtils.getTemp() + resOllirType;
 
         computation.append(code).append(SPACE)
@@ -90,7 +108,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                 .append(lhs.getCode()).append(SPACE);
 
 
-        computation.append(node.get("op")).append(OptUtils.toOllirType(resType)).append(SPACE)
+        computation.append(node.get("op")).append(resOllirType).append(SPACE)
                 .append(rhs.getCode()).append(END_STMT);
 
         return new OllirExprResult(code, computation);
