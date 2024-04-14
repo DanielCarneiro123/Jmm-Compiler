@@ -42,8 +42,8 @@ public class JasminGenerator {
 
         this.generators = new FunctionClassMap<>();
         generators.put(ClassUnit.class, this::generateClassUnit);
-        /*generators.put(PutFieldInstruction.class, this::generatePutFieldInstruction);
-        generators.put(GetFieldInstruction.class, this::generateGetFieldInstruction);*/
+        generators.put(PutFieldInstruction.class, this::generatePutFieldInstruction);
+        generators.put(GetFieldInstruction.class, this::generateGetFieldInstruction);
         generators.put(Method.class, this::generateMethod);
         generators.put(AssignInstruction.class, this::generateAssign);
         generators.put(CallInstruction.class, this::generateCallInstruction);
@@ -135,11 +135,22 @@ public class JasminGenerator {
     private String generatePutFieldInstruction(PutFieldInstruction putFieldInst) {
         StringBuilder code = new StringBuilder();
 
-        var teste = putFieldInst.getOperands().get(1);
+        // Load the object reference onto the stack
+        code.append(generators.apply(putFieldInst.getObject()));
+
+        // Load the value of the field onto the stack
+        code.append(generators.apply(putFieldInst.getValue()));
+
+        String callObjName = ((ClassType) putFieldInst.getObject().getType()).getName();
+        String fieldName = putFieldInst.getField().getName();
+        String fieldType = getJasminType(putFieldInst.getField().getType().getTypeOfElement());
         // Emit the getfield instruction
         code.append("putfield ")
-                .append("intField")
+                .append(callObjName)
+                .append("/")
+                .append(fieldName)
                 .append(" ")
+                .append(fieldType)
                 .append("\n");
 
         // Store the value in the appropriate local variable
@@ -147,14 +158,23 @@ public class JasminGenerator {
         return code.toString();
     }
 
-    private String generateGetFieldInstruction(GetFieldInstruction getFieldInst) {
 
+    private String generateGetFieldInstruction(GetFieldInstruction getFieldInst) {
         StringBuilder code = new StringBuilder();
 
+        // Load the object reference onto the stack
+        code.append(generators.apply(getFieldInst.getObject()));
+
+        String callObjName = ((ClassType) getFieldInst.getObject().getType()).getName();
+        String fieldName = getFieldInst.getField().getName();
+        String fieldType = getJasminType(getFieldInst.getFieldType().getTypeOfElement());
         // Emit the getfield instruction
         code.append("getfield ")
-                .append("intField")
+                .append(callObjName)
+                .append("/")
+                .append(fieldName)
                 .append(" ")
+                .append(fieldType)
                 .append("\n");
 
         // Store the value in the appropriate local variable
@@ -332,17 +352,6 @@ public class JasminGenerator {
                 throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
         }
 
-        /*var x = callInstruction.getCaller().toString();
-
-        var y = callInstruction.getMethodName().toString();
-
-        code.append(callInstruction.getCaller().toString())
-                .append("/")
-                .append(callInstruction.getMethodName().toString())
-                .append("(");*/
-
-
-
         return code.toString();
     }
 
@@ -352,14 +361,31 @@ public class JasminGenerator {
     }
 
     private String generateLiteral(LiteralElement literal) {
-        return NL + "iconst_" + literal.getLiteral() + NL;
+        String literalStr = literal.getLiteral();
+        int value = Integer.parseInt(literalStr);
+        if (value >= -1 && value <= 5) {
+            return "iconst_" + value + NL;
+        } else if (value >= -128 && value <= 127) {
+            return "bipush " + value + NL;
+        } else if (value >= -32768 && value <= 32767) {
+            return "sipush " + value + NL;
+        } else {
+            return "ldc " + value + NL;
+        }
     }
 
     private String generateOperand(Operand operand) {
         // get register
         var x = operand.getName();
         var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
-        return "iload_" + reg + NL;
+        var y = operand.getType().getTypeOfElement().name();
+        if (operand.getType().getTypeOfElement().name().equals("INT32") || operand.getType().getTypeOfElement().name().equals("BOOLEAN") ){
+            return "iload_" + reg + NL;
+        }
+        else{
+            return "aload_" + reg + NL;
+        }
+
     }
 
     private String generateBinaryOp(BinaryOpInstruction binaryOp) {
