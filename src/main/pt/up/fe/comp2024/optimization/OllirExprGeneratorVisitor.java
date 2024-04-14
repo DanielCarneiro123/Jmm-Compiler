@@ -35,9 +35,35 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         addVisit(FUNCTION_CALL, this::visitFunctionCall);
         addVisit(NEW_CLASS, this::visitNewClass);
         addVisit(PARENTESIS, this::visitParentesis);
+        addVisit(TRUE, this::visitBoolLiteral);
+        addVisit(FALSE, this::visitBoolLiteral);
+        addVisit(NEGATION, this::visitNegationExpr);
 
 
         setDefaultVisit(this::defaultVisit);
+    }
+
+    private OllirExprResult visitNegationExpr(JmmNode node, Void unused) {
+        // Visit the child expression of the negation
+        var b = node.getJmmChild(0);
+        var exprNode = visit(node.getJmmChild(0));
+
+        // Generate the OLLIR code for the negation operation
+        StringBuilder code = new StringBuilder();
+        code.append(exprNode.getComputation());
+
+        // Append the OLLIR code for the negation operation
+        String negatedVar = OptUtils.getTemp() + ".bool";
+        code.append(negatedVar).append(" :=.bool !.bool ").append(exprNode.getCode()).append(END_STMT);
+
+        return new OllirExprResult(negatedVar, code);
+    }
+
+
+    private OllirExprResult visitBoolLiteral(JmmNode node, Void unused) {
+        String value = node.get("value");
+        String code = value.equals("true") ? "1.bool" : "0.bool";
+        return new OllirExprResult(code);
     }
 
     private OllirExprResult visitParentesis(JmmNode node, Void unused) {
@@ -88,6 +114,10 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
 
 
         String resOllirType = "";
+
+
+
+
         // code to compute self
         if (node.getChildren().get(0).getKind().equals("Integer") || node.getChildren().get(0).getKind().equals("Boolean")){
 
@@ -95,8 +125,14 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
             resOllirType = OptUtils.toOllirType(type);
 
         }
-        else {
+        else if (node.getChildren().get(1).getKind().equals("Integer") || node.getChildren().get(1).getKind().equals("Boolean")) {
             Type type = TypeUtils.getExprType(node.getChildren().get(1), table);
+            resOllirType = OptUtils.toOllirType(type);
+
+        }
+
+        else {
+            Type type = TypeUtils.getExprType(node.getJmmChild(0),table);
             resOllirType = OptUtils.toOllirType(type);
 
         }
