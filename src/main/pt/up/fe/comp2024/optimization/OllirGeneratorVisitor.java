@@ -72,20 +72,21 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
     }
 
 
-
+/*
     private String visitBinaryOp(JmmNode node, Void unused) {
         StringBuilder code = new StringBuilder();
-        code.append("bananaOp");
+
         return code.toString();
     }
-
+*/
 
     private String visitAssignStmt(JmmNode node, Void unused) {
         var lhs = node.get("var");
-        var rhsNode = node.getJmmChild(0);
+        var rhsNode = exprVisitor.visit(node.getJmmChild(0));
 
 
         StringBuilder code = new StringBuilder();
+        code.append(rhsNode.getComputation());
 
         List<Symbol> localVariables = table.getLocalVariables(node.getParent().get("name"));
 
@@ -102,7 +103,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         // Compute the OLLIR code for the right-hand side (rhs)
 
 
-        var rhsCode = exprVisitor.visit(rhsNode);
+
 
 
 
@@ -118,7 +119,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         code.append(ASSIGN);
         code.append(typeString);
         code.append(SPACE);
-        code.append(rhsCode.getCode());
+        code.append(rhsNode.getCode());
         code.append(END_STMT);
 
         return code.toString();
@@ -157,6 +158,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         code.append("ret");
         code.append(OptUtils.toOllirType(retType));
         code.append(SPACE);
+        code.append(lhs.getCode());
 
         code.append(END_STMT);
 

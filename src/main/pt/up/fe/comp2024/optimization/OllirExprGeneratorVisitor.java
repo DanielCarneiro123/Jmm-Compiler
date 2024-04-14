@@ -116,9 +116,6 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         code.append(")");
 
         if (child.getParent().getKind().equals("Assignment")) {
-            // Find the type here
-
-
 
             String variableName = child.getParent().get("var");
 
