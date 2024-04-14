@@ -100,9 +100,9 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         }
 
         // Compute the OLLIR code for the right-hand side (rhs)
-        String rhsCode;
 
-        rhsCode = exprVisitor.visit(rhsNode).getCode();
+
+        var rhsCode = exprVisitor.visit(rhsNode);
 
 
 
@@ -118,7 +118,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         code.append(ASSIGN);
         code.append(typeString);
         code.append(SPACE);
-        code.append(rhsCode);
+        code.append(rhsCode.getCode());
         code.append(END_STMT);
 
         return code.toString();
@@ -144,16 +144,19 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         StringBuilder code = new StringBuilder();
 
+        //code.append(exprVisitor.visit(firstChild).getCode());
+
+        var lhs = exprVisitor.visit(node.getJmmChild(0));
+
+
+
+        code.append(lhs.getComputation());
+        code.append(NL);
+
 
         code.append("ret");
         code.append(OptUtils.toOllirType(retType));
         code.append(SPACE);
-        JmmNode firstChild = node.getChildren().get(0);
-
-
-
-        code.append(exprVisitor.visit(firstChild).getCode());
-        code.append(OptUtils.toOllirType(retType));
 
         code.append(END_STMT);
 
