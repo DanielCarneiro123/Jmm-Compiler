@@ -22,6 +22,8 @@ public enum Kind {
     BOOLEAN,
     INT,
     ID,
+    TRUE,
+    FALSE,
     ARGUMENT,
     STRING,
     STMT,
