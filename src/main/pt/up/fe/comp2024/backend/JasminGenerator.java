@@ -312,23 +312,17 @@ public class JasminGenerator {
 
         ElementType type = operand.getType().getTypeOfElement();
         switch (type) {
-            case INT32, BOOLEAN:
-                if (reg > 3) {
-                    code.append("istore ").append(reg).append(NL);
-                    break;
-                }
-                else {
-                    code.append("istore_").append(reg).append(NL);
-                }
+            case INT32:
+                code.append("istore_").append(reg).append(NL).append(NL);
                 break;
-            case CLASS, OBJECTREF:
-                if (reg > 3) {
-                    code.append("astore ").append(reg).append(NL);
-                    break;
-                }
-                else {
-                    code.append("astore_").append(reg).append(NL);
-                }
+            case BOOLEAN:
+                code.append("istore_").append(reg).append(NL).append(NL);
+                break;
+            case CLASS:
+                code.append("astore ").append(reg).append(NL).append(NL);
+                break;
+            case OBJECTREF:
+                code.append("astore ").append(reg).append(NL).append(NL);
                 break;
             default:
                 throw new NotImplementedException("Type not supported: " + type.name());
@@ -342,40 +336,18 @@ public class JasminGenerator {
 
         switch (callInstruction.getInvocationType()) {
             case invokestatic:
-                //code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
-                for (var op: callInstruction.getArguments()){
-                    code.append(generators.apply(op));
-                }
                 ollirResult.getOllirClass().getImport(0);
-                code.append("invokestatic ").append(generators.apply(callInstruction.getCaller())).append("/").append(generators.apply(callInstruction.getMethodName()));
-                for (var arg: callInstruction.getArguments()){
-                    code.append(getJasminType(arg.getType().getTypeOfElement()));
-                }
-                code.append(")");
-                code.append(getJasminType(callInstruction.getReturnType().getTypeOfElement())).append(NL);
+                code.append("invokestatic ").append(generators.apply(callInstruction.getCaller())).append("/").append(generators.apply(callInstruction.getMethodName())).append(NL);
                 break;
             case invokespecial:
-                code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
                 code.append("invokespecial ").append(ollirResult.getOllirClass().getClassName()).append("/<init>()V").append(NL);
-                if (!ollirResult.getOllirClass().getClassName().equals(ollirResult.getOllirClass().getSuperClass())){
-                    code.append("pop");
-                }
                 break;
             case NEW:
                 code.append(NL).append("new ").append(ollirResult.getOllirClass().getClassName()).append(NL);
                 code.append("dup").append(NL);
                 break;
             case invokevirtual:
-                code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
-                for (var op: callInstruction.getArguments()){
-                    code.append(generators.apply(op));
-                }
-                code.append("invokevirtual ").append(ollirResult.getOllirClass().getClassName()).append("/").append(generators.apply(callInstruction.getMethodName()));
-                for (var arg: callInstruction.getArguments()){
-                    code.append(getJasminType(arg.getType().getTypeOfElement()));
-                }
-                code.append(")");
-                code.append(getJasminType(callInstruction.getReturnType().getTypeOfElement())).append(NL);
+                code.append("invokevirtual ").append(ollirResult.getOllirClass().getClassName()).append("/").append(generators.apply(callInstruction.getMethodName())).append(NL);
                 break;
             default:
                 throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
@@ -394,6 +366,14 @@ public class JasminGenerator {
         String literalStr = literal.getLiteral();
         if (literal.getType().getTypeOfElement().name().equals("STRING")){
             code.append(literalStr.replaceAll("\"", "")).append("(");
+            for (var method: ollirResult.getOllirClass().getMethods()){
+                if (method.getMethodName().equals(literalStr.replaceAll("\"", ""))){
+                    for (var param: method.getParams()){
+                        code.append(getJasminType(param.getType().getTypeOfElement()));
+                    }
+                }
+            }
+            code.append(")").append(getJasminType(literal.getType().getTypeOfElement()));
             return code.toString();
         }
         int value = Integer.parseInt(literalStr);
@@ -416,14 +396,8 @@ public class JasminGenerator {
             int reg = currentMethod.getVarTable().get(name).getVirtualReg();
             String type = operand.getType().getTypeOfElement().name();
             if (type.equals("INT32") || type.equals("BOOLEAN")) {
-                if (reg > 3) {
-                    return "iload " + reg + NL;
-                }
                 return "iload_" + reg + NL;
             } else {
-                if (reg > 3) {
-                    return "aload " + reg + NL;
-                }
                 return "aload_" + reg + NL;
             }
         }
