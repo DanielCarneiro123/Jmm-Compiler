@@ -57,7 +57,21 @@ public class ObjectAssign extends AnalysisVisitor {
                 if (local.getName().equals(assigmentName)) {
                     Type assigmentType = local.getType();
                     String assigmentTypeName = assigmentType.getName();
-                    if (!table.getImports().stream().anyMatch(param -> param.equals(assigmentTypeName)) && !assigmentTypeName.equals("int") && !assigmentTypeName.equals("boolean")) {
+
+                    var teste0 = table.getImports().stream().anyMatch(param1 -> param1.equals(assigmentTypeName));
+                    var teste1 = extendedName.equals(assigmentTypeName);
+                    var teste2 = assigmentChildName.equals(classParentName);
+
+                    var teste3 = table.getImports().stream().anyMatch(param1 -> param1.equals(assigmentChildName)) ;
+                    var teste4 = extendedName.equals(assigmentChildName);
+                    var teste5 = assigmentTypeName.equals(classParentName);
+
+
+                    if ((!assigmentChildName.equals(assigmentTypeName)) &&
+                            ((!table.getImports().stream().anyMatch(param1 -> param1.equals(assigmentTypeName)) || !table.getImports().stream().anyMatch(param1 -> param1.equals(assigmentChildName))) ||
+                                (assigmentTypeName.equals("int") && assigmentTypeName.equals("boolean")) ||
+                                (teste0 && teste1 && teste2) &&
+                                (teste3 && teste4 && teste5)))  {
                         String message = "Object is not imported";
                         addReport(Report.newError(
                                 Stage.SEMANTIC,

@@ -67,9 +67,12 @@ public class TypeUtils {
 
     private static Type getFunctionType(JmmNode expr, SymbolTable table) {
         String methodName = expr.get("value");
-        Type type = table.getReturnType(methodName);
-
-        return type; //aqui devia dar erro porque é um tipo que não existe (?)
+        for (var method: table.getMethods()){
+            if (method.equals(methodName)){
+                return table.getReturnType(methodName);
+            }
+        }
+        return new Type(null, false); //aqui devia dar erro porque é um tipo que não existe (?)
     }
 
     private static Type getBinExprType(JmmNode binaryExpr) {
@@ -97,6 +100,10 @@ public class TypeUtils {
         if (varName.equals("true") || varName.equals("false")) {
             return new Type("boolean", false);
         }
+        if (table.getImports().contains(varName)){
+            return new Type(varName, false);
+        }
+
         return new Type(INT_TYPE_NAME, false);
     }
 
