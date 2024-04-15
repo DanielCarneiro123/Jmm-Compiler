@@ -101,54 +101,37 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
 
 
     private OllirExprResult visitBinExpr(JmmNode node, Void unused) {
-
         var lhs = visit(node.getJmmChild(0));
         var rhs = visit(node.getJmmChild(1));
 
         StringBuilder computation = new StringBuilder();
+        String resOllirType = node.get("op").equals("+") || node.get("op").equals("-") || node.get("op").equals("*") || node.get("op").equals("/") ? ".i32" : ".bool";
 
-        // code to compute the children
-        computation.append(lhs.getComputation());
-        computation.append(rhs.getComputation());
-
-
-
-        String resOllirType = "";
-
-
-
-
-        // code to compute self
-        if (node.getChildren().get(0).getKind().equals("Integer") || node.getChildren().get(0).getKind().equals("Boolean")){
-
-            Type type = TypeUtils.getExprType(node.getChildren().get(0), table);
-            resOllirType = OptUtils.toOllirType(type);
-
-        }
-        else if (node.getChildren().get(1).getKind().equals("Integer") || node.getChildren().get(1).getKind().equals("Boolean")) {
-            Type type = TypeUtils.getExprType(node.getChildren().get(1), table);
-            resOllirType = OptUtils.toOllirType(type);
-
+        // Check if either lhs or rhs is a function call, and if so, store their result in temporary variables
+        if (lhs.getCode().contains("invoke") || rhs.getCode().contains("invoke")) {
+            // Compute the value of lhs if it's a function call
+            if (lhs.getCode().contains("invoke")) {
+                String tempLhs = OptUtils.getTemp();
+                computation.append(lhs.getComputation());
+                computation.append(tempLhs).append(resOllirType).append(" := ").append(resOllirType).append(" ").append(lhs.getCode()).append(END_STMT);
+                lhs = new OllirExprResult(tempLhs + resOllirType); // Include the type here
+            }
+            // Compute the value of rhs if it's a function call
+            if (rhs.getCode().contains("invoke")) {
+                String tempRhs = OptUtils.getTemp();
+                computation.append(rhs.getComputation());
+                computation.append(tempRhs).append(resOllirType).append(" := ").append(resOllirType).append(" ").append(rhs.getCode()).append(END_STMT);
+                rhs = new OllirExprResult(tempRhs + resOllirType); // Include the type here
+            }
         }
 
-        else {
-            Type type = TypeUtils.getExprType(node.getJmmChild(0),table);
-            resOllirType = OptUtils.toOllirType(type);
-
-        }
-
+        // Generate code for the result
         String code = OptUtils.getTemp() + resOllirType;
-
-        computation.append(code).append(SPACE)
-                .append(ASSIGN).append(resOllirType).append(SPACE)
-                .append(lhs.getCode()).append(SPACE);
-
-
-        computation.append(node.get("op")).append(resOllirType).append(SPACE)
-                .append(rhs.getCode()).append(END_STMT);
+        computation.append(code).append(" := ").append(resOllirType).append(" ").append(lhs.getCode()).append(" ").append(node.get("op")).append(resOllirType).append(" ").append(rhs.getCode()).append(END_STMT);
 
         return new OllirExprResult(code, computation);
     }
+
 
     private OllirExprResult visitFunctionCall(JmmNode node, Void unused) {
         StringBuilder code = new StringBuilder();
