@@ -75,15 +75,17 @@ public class JasminGenerator {
         // generate class name
         var className = ollirResult.getOllirClass().getClassName();
         code.append(".class ").append(className).append(NL).append(NL);
+        var superClass = ollirResult.getOllirClass().getSuperClass();
 
-        if (ollirResult.getOllirClass().getSuperClass() != null) { //ter de ver se na class ha algum construtor, se nao hovuer vai se ao extend
-            var classExtended = ollirResult.getOllirClass().getSuperClass(); // se calhar vamos ter de ter um if par se não for extended
-            code.append(".super ").append(classExtended).append(NL);
-        }
-        else {
+        if (superClass == null || superClass.equals("Object")) {
             ollirResult.getOllirClass().setSuperClass("java/lang/Object");
             code.append(".super ").append(ollirResult.getOllirClass().getSuperClass()).append(NL);
-            code.append(";default constructor").append(NL);
+            code.append(";default constructor").append(NL);//ter de ver se na class ha algum construtor, se nao hovuer vai se ao extend
+
+        }
+        else {
+            String classExtended = ollirResult.getOllirClass().getSuperClass(); // se calhar vamos ter de ter um if par se não for extended
+            code.append(".super ").append(classExtended).append(NL);
         }
 
         var classFields = ollirResult.getOllirClass().getFields();
