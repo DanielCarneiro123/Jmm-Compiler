@@ -343,7 +343,7 @@ public class JasminGenerator {
                 for (var op : callInstruction.getArguments()) {
                     code.append(generators.apply(op));
                 }
-                ollirResult.getOllirClass().getImport(0);
+                //ollirResult.getOllirClass().getImport(0);
                 code.append("invokestatic ").append(generators.apply(callInstruction.getCaller())).append("/").append(generators.apply(callInstruction.getMethodName()));
                 for (var arg : callInstruction.getArguments()) {
                     code.append(getJasminType(arg.getType().getTypeOfElement()));
@@ -354,13 +354,13 @@ public class JasminGenerator {
             case invokespecial:
                 code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
                 code.append("invokespecial ").append(ollirResult.getOllirClass().getClassName()).append("/<init>()V").append(NL);
-                if (!ollirResult.getOllirClass().getClassName().equals(ollirResult.getOllirClass().getSuperClass())) {
+                /*if (!ollirResult.getOllirClass().getClassName().equals(ollirResult.getOllirClass().getSuperClass())) {
                     code.append("pop");
-                }
+                }*/
                 break;
             case NEW:
                 code.append(NL).append("new ").append(((ClassType) callInstruction.getCaller().getType()).getName()).append(NL);
-                code.append("dup").append(NL);
+                //code.append("dup").append(NL);
                 break;
             case invokevirtual:
                 code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
