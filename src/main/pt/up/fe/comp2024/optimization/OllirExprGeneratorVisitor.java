@@ -125,8 +125,10 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
             }
         }
 
-        // Generate code for the result
+        // Generate code for the computation of the result
         String code = OptUtils.getTemp() + resOllirType;
+        computation.append(lhs.getComputation());
+        computation.append(rhs.getComputation());
         computation.append(code).append(" := ").append(resOllirType).append(" ").append(lhs.getCode()).append(" ").append(node.get("op")).append(resOllirType).append(" ").append(rhs.getCode()).append(END_STMT);
 
         return new OllirExprResult(code, computation);
