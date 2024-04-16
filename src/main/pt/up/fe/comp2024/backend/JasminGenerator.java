@@ -101,7 +101,7 @@ public class JasminGenerator {
                     break;
             }
             var fieldName = field.getFieldName();
-            var fieldType = getJasminType(field.getFieldType().getTypeOfElement());
+            var fieldType = getFieldType(field.getFieldType());
             code.append(".field ").append(fieldAcessModifier).append(fieldName).append(" ").append(fieldType).append(NL);
         }
 
@@ -372,6 +372,7 @@ public class JasminGenerator {
 
     private String generateCallInstruction(CallInstruction callInstruction) {
         var code = new StringBuilder();
+        var v = callInstruction.getOperands();
 
         switch (callInstruction.getInvocationType()) {
             case invokestatic:
@@ -409,7 +410,7 @@ public class JasminGenerator {
                 }
                 code.append("invokevirtual ").append(ollirResult.getOllirClass().getClassName()).append("/").append(generators.apply(callInstruction.getMethodName()));
                 for (var arg : callInstruction.getArguments()) {
-                    code.append(getJasminType(arg.getType().getTypeOfElement()));
+                    code.append(getFieldType(arg.getType()));
                 }
                 code.append(")");
                 code.append(getJasminType(callInstruction.getReturnType().getTypeOfElement())).append(NL);
@@ -423,6 +424,7 @@ public class JasminGenerator {
 
 
     private String generateSingleOp(SingleOpInstruction singleOp) {
+
         return generators.apply(singleOp.getSingleOperand());
     }
 
