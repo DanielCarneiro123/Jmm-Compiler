@@ -22,6 +22,7 @@ public class UndeclaredVariable extends AnalysisVisitor {
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.IDENTIFIER, this::visitVarRefExpr);
+        addVisit(Kind.VAR_DECL, this::visitVarDecls);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
@@ -72,5 +73,65 @@ public class UndeclaredVariable extends AnalysisVisitor {
         return null;
     }
 
+    private Void visitVarDecls(JmmNode varDecl, SymbolTable table) {
 
+        // Check if exists a parameter or variable declaration with the same name as the variable reference
+        var varDeclName = varDecl.getOptional("name").orElse("");
+
+        boolean doubleField = false;
+        for (var field : table.getFields()) {
+            if (field.getName().equals(varDeclName)) {
+                if (doubleField) {
+                    var message = String.format("Variable '%s' is already defined in the scope.", varDeclName);
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(varDecl),
+                            NodeUtils.getColumn(varDecl),
+                            message,
+                            null)
+                    );
+                    return null;
+                }
+                doubleField = true;
+            }
+        }
+
+        boolean doubleParameter = false;
+        for (var param : table.getParameters(currentMethod)) {
+            if (param.getName().equals(varDeclName)) {
+                if (doubleParameter) {
+                    var message = String.format("Variable '%s' is already defined in the scope.", varDeclName);
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(varDecl),
+                            NodeUtils.getColumn(varDecl),
+                            message,
+                            null)
+                    );
+                    return null;
+                }
+                doubleParameter = true;
+            }
+        }
+
+        boolean doubleLocal = false;
+        for (var local : table.getLocalVariables(currentMethod)) {
+            if (local.getName().equals(varDeclName)) {
+                if (doubleLocal) {
+                    var message = String.format("Variable '%s' is already defined in the scope.", varDeclName);
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(varDecl),
+                            NodeUtils.getColumn(varDecl),
+                            message,
+                            null)
+                    );
+                    return null;
+                }
+                doubleLocal = true;
+            }
+        }
+
+        return null;
+    }
 }

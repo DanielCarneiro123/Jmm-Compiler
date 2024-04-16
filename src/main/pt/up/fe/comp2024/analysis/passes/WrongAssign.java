@@ -41,14 +41,13 @@ public class WrongAssign extends AnalysisVisitor {
     }
 
     private Void visitWrongAssign(JmmNode stmtDecl, SymbolTable table) {
-
         for (JmmNode operand : stmtDecl.getChildren()) {
             JmmNode parentOperand = operand.getJmmParent();
-            Type typeOperand = getExprType(operand, table, method);
+            Type rightOperandType = getExprType(operand, table, method);
 
 
             for (var parameter : table.getLocalVariables(method)) {
-                if (parentOperand.getOptional("var").orElse("").equals(parameter.getName()) && !typeOperand.getName().equals(parameter.getType().getName()) && !typeOperand.getName().equals("object") && !table.getImports().stream().anyMatch(param -> param.equals(parentOperand.getOptional("var").orElse(""))) && !table.getImports().stream().anyMatch(param -> param.equals(parameter.getType().getName()))) {
+                if (parentOperand.getOptional("var").orElse("").equals(parameter.getName()) && !rightOperandType.getName().equals(parameter.getType().getName()) && !rightOperandType.getName().equals("object") && !table.getImports().stream().anyMatch(param -> param.equals(parentOperand.getOptional("var").orElse(""))) && !table.getImports().stream().anyMatch(param -> param.equals(parameter.getType().getName()))) {
                     String message = "Wrong Assign Types";
                     addReport(Report.newError(
                             Stage.SEMANTIC,
@@ -61,7 +60,7 @@ public class WrongAssign extends AnalysisVisitor {
                 }
             }
             for (var parameter : table.getParameters(method)) {
-                if (parentOperand.get("var").equals(parameter.getName()) && !typeOperand.getName().equals(parameter.getType().getName()) && !typeOperand.getName().equals("object") && tem_imports) {
+                if (parentOperand.get("var").equals(parameter.getName()) && !rightOperandType.getName().equals(parameter.getType().getName()) && !rightOperandType.getName().equals("object") && tem_imports) {
                     String message = "Wrong Assign Types";
                     addReport(Report.newError(
                             Stage.SEMANTIC,
@@ -74,7 +73,8 @@ public class WrongAssign extends AnalysisVisitor {
                 }
             }
             for (var parameter : table.getFields()) {
-                if (parentOperand.get("var").equals(parameter.getName()) && !typeOperand.getName().equals(parameter.getType().getName()) && !typeOperand.getName().equals("object") && tem_imports) {
+                String parameterName = parameter.getName();
+                if (parameterName.equals(parameter.getName()) && !rightOperandType.getName().equals(rightOperandType) && !rightOperandType.getName().equals("object") && tem_imports) {
                     String message = "Wrong Assing Types";
                     addReport(Report.newError(
                             Stage.SEMANTIC,
@@ -84,6 +84,26 @@ public class WrongAssign extends AnalysisVisitor {
                             null)
                     );
                     return null;
+                }
+                String stmtDeclName = stmtDecl.getOptional("name").orElse("");
+                if (stmtDeclName.equals("")) {
+                    stmtDeclName = stmtDecl.getOptional("var").orElse("");
+                }
+                Type stmtDeclType = getExprType(stmtDecl, table, method);
+                if (parameterName.equals(stmtDeclName)) {
+                    //então o tipo do parameter é igual ao tipo do stmtdecl
+                    //e vamos ver o tipo da direita:
+                    if (!stmtDeclType.equals(rightOperandType)) {
+                        String message = "Wrong Assing Types";
+                        addReport(Report.newError(
+                                Stage.SEMANTIC,
+                                NodeUtils.getLine(stmtDecl),
+                                NodeUtils.getColumn(stmtDecl),
+                                message,
+                                null)
+                        );
+                        return null;
+                    }
                 }
             }
 

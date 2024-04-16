@@ -60,6 +60,7 @@ public class TypeUtils {
             case TRUE, FALSE -> new Type(BOOLEAN_TYPE_NAME, false);
             case BRACKETS -> new Type("brackets", false);
             case LENGTH -> new Type(INT_TYPE_NAME, false);
+            case ASSIGNMENT -> getVarExprTypeForAssigment(expr, table, currMethod);
             default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
         };
 
@@ -99,6 +100,36 @@ public class TypeUtils {
         for (var local : locals) {
             if (local.getName().equals(varName)) {
                 return local.getType();
+            }
+        }
+        var fields = table.getFields();
+        for (var field : fields) {
+            if (field.getName().equals(varName)) {
+                return field.getType();
+            }
+        }
+        if (varName.equals("true") || varName.equals("false")) {
+            return new Type("boolean", false);
+        }
+        if (table.getImports().contains(varName)) {
+            return new Type(varName, false);
+        }
+
+        return new Type(INT_TYPE_NAME, false);
+    }
+
+    private static Type getVarExprTypeForAssigment(JmmNode varRefExpr, SymbolTable table, String currMethod) {
+        String varName = varRefExpr.get("var");
+        var locals = table.getLocalVariables(currMethod);
+        for (var local : locals) {
+            if (local.getName().equals(varName)) {
+                return local.getType();
+            }
+        }
+        var fields = table.getFields();
+        for (var field : fields) {
+            if (field.getName().equals(varName)) {
+                return field.getType();
             }
         }
         if (varName.equals("true") || varName.equals("false")) {
