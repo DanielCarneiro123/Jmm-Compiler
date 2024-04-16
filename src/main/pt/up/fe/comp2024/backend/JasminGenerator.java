@@ -379,10 +379,13 @@ public class JasminGenerator {
 
         switch (callInstruction.getInvocationType()) {
             case invokestatic:
+                Operand first = (Operand) callInstruction.getOperands().get(0);
+                LiteralElement second = (LiteralElement) callInstruction.getOperands().get(1);
                 for (var op : callInstruction.getArguments()) {
                     code.append(generators.apply(op));
                 }
-                code.append("invokestatic ").append(generators.apply(callInstruction.getCaller())).append("/").append(generators.apply(callInstruction.getMethodName()));
+                code.append("invokestatic ").append(getImportedClassName(first.getName())).append("/").append(second.getLiteral().replace("\"", ""));
+                code.append("(");
                 for (var arg : callInstruction.getArguments()) {
                     code.append(getFieldType(arg.getType()));
                 }
@@ -391,17 +394,25 @@ public class JasminGenerator {
                 break;
             case invokespecial:
                 code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
-                code.append("invokespecial ").append(ollirResult.getOllirClass().getClassName()).append("/<init>(");
+                var elemType = callInstruction.getOperands().get(0).getType();
+                code.append("invokespecial ");
+                if (elemType.getTypeOfElement() == ElementType.THIS){
+                    code.append(ollirResult.getOllirClass().getSuperClass());
+                }
+                else {
+                    code.append(getImportedClassName(((ClassType) elemType).getName()));
+                }
+                code.append("/<init>(");
 
-                var lll = callInstruction.getOperands();
+
                 for (var elem: callInstruction.getArguments()){
                     code.append(getFieldType(elem.getType()));
                 }
                 code.append(")");
                 code.append(getJasminType(callInstruction.getReturnType().getTypeOfElement())).append(NL);
-                if (!ollirResult.getOllirClass().getClassName().equals(ollirResult.getOllirClass().getSuperClass())) {
+                /*if (!ollirResult.getOllirClass().getClassName().equals(ollirResult.getOllirClass().getSuperClass())) {
                     code.append("pop");
-                }
+                }*/
                 break;
             case NEW:
                 code.append(NL).append("new ").append(((ClassType) callInstruction.getCaller().getType()).getName()).append(NL);
@@ -409,10 +420,13 @@ public class JasminGenerator {
                 break;
             case invokevirtual:
                 code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
+                Operand firstVirtual = (Operand) callInstruction.getOperands().get(0);
+                LiteralElement secondVirtual = (LiteralElement) callInstruction.getOperands().get(1);
                 for (var op : callInstruction.getArguments()) {
                     code.append(generators.apply(op));
                 }
-                code.append("invokevirtual ").append(ollirResult.getOllirClass().getClassName()).append("/").append(generators.apply(callInstruction.getMethodName()));
+                code.append("invokevirtual ").append(getImportedClassName(((ClassType) firstVirtual.getType()).getName())).append("/").append(secondVirtual.getLiteral().replace("\"", ""));
+                code.append("(");
                 for (var arg : callInstruction.getArguments()) {
                     code.append(getFieldType(arg.getType()));
                 }
