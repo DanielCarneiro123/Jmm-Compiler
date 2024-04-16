@@ -359,7 +359,7 @@ public class JasminGenerator {
                 }
                 break;
             case NEW:
-                code.append(NL).append("new ").append(ollirResult.getOllirClass().getClassName()).append(NL);
+                code.append(NL).append("new ").append(((ClassType) callInstruction.getCaller().getType()).getName()).append(NL);
                 code.append("dup").append(NL);
                 break;
             case invokevirtual:
@@ -447,7 +447,7 @@ public class JasminGenerator {
         var op = switch (binaryOp.getOperation().getOpType()) {
             case ADD -> "iadd";
             case MUL -> "imul";
-            case SUB -> "isbu";
+            case SUB -> "isub";
             case DIV -> "idiv";
             default -> throw new NotImplementedException(binaryOp.getOperation().getOpType());
         };
@@ -464,7 +464,6 @@ public class JasminGenerator {
         if (returnInst.getOperand() != null) {
             code.append(generators.apply(returnInst.getOperand()));
         }
-
 
         ElementType returnType = returnInst.getReturnType().getTypeOfElement();
         switch (returnType) {
