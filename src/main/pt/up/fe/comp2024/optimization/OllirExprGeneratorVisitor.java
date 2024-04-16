@@ -136,8 +136,10 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
 
 
     private OllirExprResult visitFunctionCall(JmmNode node, Void unused) {
+        StringBuilder computation = new StringBuilder();
         StringBuilder code = new StringBuilder();
-
+        String code1 = "";
+        var funcLhs =  visit(node.getJmmChild(0));
         Type argTypeImport = new Type("aux",false);
         boolean foundMatchImports = false;
 
@@ -169,6 +171,8 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                 foundMatchImports = imports.contains(argTypeStr);
             }
 
+            code1 = OptUtils.getTemp() + OptUtils.toOllirType(argTypeImport);
+
 // Check if the type of the first child's name is in the list of imports
 
 
@@ -179,10 +183,15 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                     .anyMatch(name -> name.equals(firstChildName));
 
             if (foundMatchImports) {
-                code.append("invokevirtual");
-                code.append("(");
-                code.append(child.getChildren().get(0).get("value"));
-                code.append(OptUtils.toOllirType(argTypeImport));
+
+                computation.append(funcLhs.getComputation());
+                computation.append(code1).append(" :=").append(OptUtils.toOllirType(argTypeImport)).append(" ");
+                funcLhs = new OllirExprResult(code1); // Include the type here
+
+                /*
+
+                 */
+
             } else if (foundMatch1) {
                 code.append("invokevirtual");
                 code.append("(");
@@ -249,7 +258,11 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
             parent = parent.getParent();
         }
         if(foundMatchImports) {
-            code.append(OptUtils.toOllirType(argTypeImport));
+
+            computation.append(funcLhs.getComputation());
+
+            computation.append("invokevirtual(").append(node.getChild(0).get("value")).append(OptUtils.toOllirType(argTypeImport)).append(code).append(OptUtils.toOllirType(argTypeImport)).append(END_STMT);
+            return new OllirExprResult(code1,computation);
         }
         else
 // If an "Assignment" node is found, append the type
@@ -270,6 +283,8 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
 
         return new OllirExprResult(code.toString());
     }
+
+
 
     private OllirExprResult visitVarRef(JmmNode node, Void unused) {
         var methodName = "";
