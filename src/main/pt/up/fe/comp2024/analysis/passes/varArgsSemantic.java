@@ -61,18 +61,20 @@ public class varArgsSemantic extends AnalysisVisitor {
                     return null;
                 }
             }
-            for (var local : table.getLocalVariables(method)) {
-                String localName = local.getName();
-                if (localName.equals(varDeclName)) {
-                    String message = "VarArguments cannot be defined in locals";
-                    addReport(Report.newError(
-                            Stage.SEMANTIC,
-                            NodeUtils.getLine(varDecl),
-                            NodeUtils.getColumn(varDecl),
-                            message,
-                            null)
-                    );
-                    return null;
+            for (var method : table.getMethods()) {
+                for (var local : table.getLocalVariables(method)) {
+                    String localName = local.getName();
+                    if (localName.equals(varDeclName)) {
+                        String message = "VarArguments cannot be defined in locals";
+                        addReport(Report.newError(
+                                Stage.SEMANTIC,
+                                NodeUtils.getLine(varDecl),
+                                NodeUtils.getColumn(varDecl),
+                                message,
+                                null)
+                        );
+                        return null;
+                    }
                 }
             }
         }
