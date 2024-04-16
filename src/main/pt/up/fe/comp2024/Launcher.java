@@ -15,7 +15,6 @@ import pt.up.fe.specs.util.SpecsSystem;
 import java.util.Map;
 
 public class Launcher {
-
     public static void main(String[] args) {
         SpecsSystem.programStandardInit();
 
@@ -54,7 +53,7 @@ public class Launcher {
         TestUtils.noErrors(jasminResult.getReports());
 
         // Print Jasmin code
-        System.out.println(jasminResult.getJasminCode());
+        //System.out.println(jasminResult.getJasminCode());
     }
 
 }

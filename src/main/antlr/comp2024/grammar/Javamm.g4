@@ -26,7 +26,6 @@ BOOLEAN : 'boolean' ;
 PUBLIC : 'public' ;
 RETURN : 'return' ;
 EXTENDS : 'extends' ;
-LENGTH : 'length' ;
 THIS : 'this' ;
 VOID : 'void';
 
@@ -112,7 +111,7 @@ expr
     | LSTRAIGHT (expr (COMMA expr) *)? RSTRAIGHT #Arraydefinition //perguntar ao luis onde tem
     | className=ID expr   #ClassInstantiation
     | expr '.' value=ID LPAREN (expr (COMMA expr) *)? RPAREN #FunctionCall
-    | expr '.' LENGTH #Length
+    | expr '.' len=ID #Length
     | value=THIS #Object
     | value='!' expr #Negation
     | expr op=('*' | '/') expr #BinaryOp

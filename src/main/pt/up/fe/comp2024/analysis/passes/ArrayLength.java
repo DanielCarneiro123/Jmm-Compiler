@@ -8,6 +8,8 @@ import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
+import static pt.up.fe.comp2024.ast.TypeUtils.getExprType;
+
 public class ArrayLength extends AnalysisVisitor {
     private String method;
 
@@ -24,6 +26,7 @@ public class ArrayLength extends AnalysisVisitor {
 
     private Void visitLength(JmmNode currLenght, SymbolTable table) {
         var currLenghtTeste = currLenght.get("len");
+        var currLenghtIsArray = getExprType(currLenght.getChildren().get(0), table, method).isArray();
         if (!currLenghtTeste.equals("length")) {
             String message = "Must be .length";
             addReport(Report.newError(
@@ -35,6 +38,18 @@ public class ArrayLength extends AnalysisVisitor {
             );
             return null;
         }
+        if(currLenghtTeste.equals("length") && !currLenghtIsArray){
+            String message = "its not an Array to see length";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(currLenght),
+                    NodeUtils.getColumn(currLenght),
+                    message,
+                    null)
+            );
+            return null;
+        }
+
         return null;
     }
 }

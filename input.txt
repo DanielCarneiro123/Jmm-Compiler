@@ -1,11 +1,12 @@
-import b.asmth;
-import a.smth;
+class ArrayInit {
 
-class Main {
-
-    public static void main(String[] args) {
-    smth a;
-    a = new smth();
-
+    public int[] foo() {
+        int[] a;
+        int length;
+        int b;
+        a = [10, 20, 30];
+        b = a.length;
+        return a;
     }
+
 }

@@ -35,7 +35,7 @@ public class TypeUtils {
             case BINARY_EXPR -> getBinExprType(expr);
             case IDENTIFIER -> getVarExprType(expr, table);
             case INTEGER -> new Type(INT_TYPE_NAME, false);
-            case BOOLEAN -> new Type ("boolean", false);
+            case BOOLEAN -> new Type("boolean", false);
             default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
         };
 
@@ -59,6 +59,7 @@ public class TypeUtils {
             case OBJECT -> new Type("object", false);
             case TRUE, FALSE -> new Type(BOOLEAN_TYPE_NAME, false);
             case BRACKETS -> new Type("brackets", false);
+            case LENGTH -> new Type(INT_TYPE_NAME, false);
             default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
         };
 
@@ -67,15 +68,15 @@ public class TypeUtils {
 
     private static Type getFunctionType(JmmNode expr, SymbolTable table) {
         String methodName = expr.get("value");
-        for (var method: table.getMethods()){
-            if (method.equals(methodName)){
+        for (var method : table.getMethods()) {
+            if (method.equals(methodName)) {
                 return table.getReturnType(methodName);
             }
         }
         JmmNode exprChild = expr.getChild(0);
-        return getExprType(exprChild,table,methodName);
+        return getExprType(exprChild, table, methodName);
 
-       // return new Type("", false); //aqui devia dar erro porque é um tipo que não existe (?)
+        // return new Type("", false); //aqui devia dar erro porque é um tipo que não existe (?)
     }
 
     private static Type getBinExprType(JmmNode binaryExpr) {
@@ -84,7 +85,7 @@ public class TypeUtils {
         String operator = binaryExpr.get("op");
 
         return switch (operator) {
-            case "+", "*","-","/" -> new Type(INT_TYPE_NAME, false);
+            case "+", "*", "-", "/" -> new Type(INT_TYPE_NAME, false);
             case "==" -> new Type("boolean", false);
             default ->
                     throw new RuntimeException("Unknown operator '" + operator + "' of expression '" + binaryExpr + "'");
@@ -103,7 +104,7 @@ public class TypeUtils {
         if (varName.equals("true") || varName.equals("false")) {
             return new Type("boolean", false);
         }
-        if (table.getImports().contains(varName)){
+        if (table.getImports().contains(varName)) {
             return new Type(varName, false);
         }
 
@@ -114,7 +115,6 @@ public class TypeUtils {
         // TODO: Simple implementation that needs to be expanded
         return new Type(INT_TYPE_NAME, false);
     }
-
 
 
     /**
