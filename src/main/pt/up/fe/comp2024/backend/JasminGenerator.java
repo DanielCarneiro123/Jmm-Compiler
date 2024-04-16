@@ -8,7 +8,6 @@ import pt.up.fe.specs.util.classmap.FunctionClassMap;
 import pt.up.fe.specs.util.exceptions.NotImplementedException;
 import pt.up.fe.specs.util.utilities.StringLines;
 
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -82,8 +81,7 @@ public class JasminGenerator {
             code.append(".super ").append(ollirResult.getOllirClass().getSuperClass()).append(NL);
             code.append(";default constructor").append(NL);//ter de ver se na class ha algum construtor, se nao hovuer vai se ao extend
 
-        }
-        else {
+        } else {
             String classExtended = ollirResult.getOllirClass().getSuperClass(); // se calhar vamos ter de ter um if par se não for extended
             code.append(".super ").append(classExtended).append(NL);
         }
@@ -199,11 +197,10 @@ public class JasminGenerator {
         var methodName = method.getMethodName();
 
         //ver se precisa de static
-        if (method.isStaticMethod()){
+        if (method.isStaticMethod()) {
             code.append("\n.method ").append(modifier).append("static ").append(methodName)
                     .append("(["); //temos de ver se isto do [ só acontece para os main static ou para todos os tatic
-        }
-        else{
+        } else {
             // nome do método, este comentário de merda não foi pelo chatgpt
             code.append("\n.method ").append(modifier).append(methodName)
                     .append("(");
@@ -318,8 +315,7 @@ public class JasminGenerator {
                 if (reg > 3) {
                     code.append("istore ").append(reg).append(NL);
                     break;
-                }
-                else {
+                } else {
                     code.append("istore_").append(reg).append(NL);
                 }
                 break;
@@ -327,8 +323,7 @@ public class JasminGenerator {
                 if (reg > 3) {
                     code.append("astore ").append(reg).append(NL);
                     break;
-                }
-                else {
+                } else {
                     code.append("astore_").append(reg).append(NL);
                 }
                 break;
@@ -345,12 +340,12 @@ public class JasminGenerator {
         switch (callInstruction.getInvocationType()) {
             case invokestatic:
                 //code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
-                for (var op: callInstruction.getArguments()){
+                for (var op : callInstruction.getArguments()) {
                     code.append(generators.apply(op));
                 }
                 ollirResult.getOllirClass().getImport(0);
                 code.append("invokestatic ").append(generators.apply(callInstruction.getCaller())).append("/").append(generators.apply(callInstruction.getMethodName()));
-                for (var arg: callInstruction.getArguments()){
+                for (var arg : callInstruction.getArguments()) {
                     code.append(getJasminType(arg.getType().getTypeOfElement()));
                 }
                 code.append(")");
@@ -359,7 +354,7 @@ public class JasminGenerator {
             case invokespecial:
                 code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
                 code.append("invokespecial ").append(ollirResult.getOllirClass().getClassName()).append("/<init>()V").append(NL);
-                if (!ollirResult.getOllirClass().getClassName().equals(ollirResult.getOllirClass().getSuperClass())){
+                if (!ollirResult.getOllirClass().getClassName().equals(ollirResult.getOllirClass().getSuperClass())) {
                     code.append("pop");
                 }
                 break;
@@ -369,11 +364,11 @@ public class JasminGenerator {
                 break;
             case invokevirtual:
                 code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
-                for (var op: callInstruction.getArguments()){
+                for (var op : callInstruction.getArguments()) {
                     code.append(generators.apply(op));
                 }
                 code.append("invokevirtual ").append(ollirResult.getOllirClass().getClassName()).append("/").append(generators.apply(callInstruction.getMethodName()));
-                for (var arg: callInstruction.getArguments()){
+                for (var arg : callInstruction.getArguments()) {
                     code.append(getJasminType(arg.getType().getTypeOfElement()));
                 }
                 code.append(")");
@@ -392,9 +387,10 @@ public class JasminGenerator {
     }
 
     private String generateLiteral(LiteralElement literal) {
-        StringBuilder code = new StringBuilder();;
+        StringBuilder code = new StringBuilder();
+        ;
         String literalStr = literal.getLiteral();
-        if (literal.getType().getTypeOfElement().name().equals("STRING")){
+        if (literal.getType().getTypeOfElement().name().equals("STRING")) {
             code.append(literalStr.replaceAll("\"", "")).append("(");
             return code.toString();
         }
@@ -451,6 +447,8 @@ public class JasminGenerator {
         var op = switch (binaryOp.getOperation().getOpType()) {
             case ADD -> "iadd";
             case MUL -> "imul";
+            case SUB -> "isbu";
+            case DIV -> "idiv";
             default -> throw new NotImplementedException(binaryOp.getOperation().getOpType());
         };
 
@@ -485,7 +483,6 @@ public class JasminGenerator {
 
         return code.toString();
     }
-
 
 
 }
