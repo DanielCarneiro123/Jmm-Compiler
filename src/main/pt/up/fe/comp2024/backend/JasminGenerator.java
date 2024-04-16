@@ -102,7 +102,10 @@ public class JasminGenerator {
             }
             var fieldName = field.getFieldName();
             var fieldType = getFieldType(field.getFieldType());
-            code.append(".field ").append(fieldAcessModifier).append(fieldName).append(" ").append(fieldType).append(NL);
+            code.append(".field ").append(fieldAcessModifier);
+            if (field.isFinalField()) code.append("final ");
+            if (field.isStaticField()) code.append("static ");
+            code.append(fieldName).append(" ").append(fieldType).append(NL);
         }
 
         // generate a single constructor method
