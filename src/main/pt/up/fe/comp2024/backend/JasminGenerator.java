@@ -209,8 +209,8 @@ public class JasminGenerator {
         // tipos dos parametros, este comentário de merda não foi pelo chatgpt
         var parameterTypes = method.getParams();
         for (int i = 0; i < parameterTypes.size(); i++) {
-            ElementType paramType = parameterTypes.get(i).getType().getTypeOfElement();
-            String paramJasminType = getJasminType(paramType);
+            Type paramType = parameterTypes.get(i).getType();
+            String paramJasminType = getFieldType(paramType);
             code.append(paramJasminType);
         }
         // tipo do retorno, este comentário de merda não foi pelo chatgpt
@@ -286,9 +286,45 @@ public class JasminGenerator {
                 return "Z";
             case VOID:
                 return "V";
-            default:
+            case STRING, ARRAYREF:
                 return "L" + "java/lang/String" + ";";
+            default:
+                return null;
         }
+    }
+
+    private String getFieldType(Type type) {
+        return switch (type.getTypeOfElement()) {
+            case ARRAYREF -> this.getArrayType(type);
+            case OBJECTREF -> this.getObjectType(type);
+            default -> this.getJasminType(type.getTypeOfElement());
+        };
+    }
+
+    private String getArrayType(Type type) {
+        return this.getJasminType(type.getTypeOfElement());
+    }
+
+    private String getObjectType(Type type) {
+        return "L" + this.getImportedClassName(type.toString()) + "String" + ";";
+    }
+
+    private String getImportedClassName(String basicClassName) {
+
+        if (basicClassName.equals("this"))
+            return this.ollirResult.getOllirClass().getClassName();
+
+        for (String importedClass : this.ollirResult.getOllirClass().getImports()) {
+            if (importedClass.endsWith(basicClassName)) {
+                return this.normalizeClassName(importedClass);
+            }
+        }
+
+        return basicClassName;
+    }
+
+    private String normalizeClassName(String className) {
+        return className.replaceAll("\\.", "/");
     }
 
     private String generateAssign(AssignInstruction assign) {
@@ -353,10 +389,16 @@ public class JasminGenerator {
                 break;
             case invokespecial:
                 code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
-                code.append("invokespecial ").append(ollirResult.getOllirClass().getClassName()).append("/<init>()V").append(NL);
+                code.append("invokespecial ").append(ollirResult.getOllirClass().getClassName()).append("/<init>(");
                 /*if (!ollirResult.getOllirClass().getClassName().equals(ollirResult.getOllirClass().getSuperClass())) {
                     code.append("pop");
                 }*/
+                var lll = callInstruction.getOperands();
+                for (var elem: callInstruction.getArguments()){
+                    code.append(getFieldType(elem.getType()));
+                }
+                code.append(")");
+                code.append(getJasminType(callInstruction.getReturnType().getTypeOfElement())).append(NL);
                 break;
             case NEW:
                 code.append(NL).append("new ").append(((ClassType) callInstruction.getCaller().getType()).getName()).append(NL);
@@ -482,6 +524,4 @@ public class JasminGenerator {
 
         return code.toString();
     }
-
-
 }
