@@ -42,8 +42,12 @@ public class ArrayInitWrong1 extends AnalysisVisitor {
 
         SpecsCheck.checkNotNull(currentMethod, () -> "Expected current method to be set");
 
+
         for (JmmNode child : varDecl.getChildren()) {
             var x = getExprType(child, table, currentMethod).getName();
+            if (varRefChildType == null) {
+                return null;
+            }
             if (!getExprType(child, table, currentMethod).getName().equals(varRefChildType.getName())) {
                 String message = "Incorrect Array Type";
                 addReport(Report.newError(

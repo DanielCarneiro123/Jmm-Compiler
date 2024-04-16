@@ -15,6 +15,7 @@ public class varArgsSemantic extends AnalysisVisitor {
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.METHOD_DECL, this::visitVarArguments);
+        addVisit(Kind.VAR_DECL, this::visitVarFields);
     }
 
     private Void visitMethodDecl(JmmNode currMethod, SymbolTable table) {
@@ -40,5 +41,45 @@ public class varArgsSemantic extends AnalysisVisitor {
         }
         return null;
     }
+
+    private Void visitVarFields(JmmNode varDecl, SymbolTable table) {
+        String varDeclName = varDecl.get("name");
+        JmmNode varDeclChild = varDecl.getChild(0);
+
+        if (varDeclChild.getKind().equals("VarArg")) {
+            for (var field : table.getFields()) {
+                String fieldName = field.getName();
+                if (fieldName.equals(varDeclName)) {
+                    String message = "VarArguments cannot be defined in fields";
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(varDecl),
+                            NodeUtils.getColumn(varDecl),
+                            message,
+                            null)
+                    );
+                    return null;
+                }
+            }
+            for (var local : table.getLocalVariables(method)) {
+                String localName = local.getName();
+                if (localName.equals(varDeclName)) {
+                    String message = "VarArguments cannot be defined in locals";
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(varDecl),
+                            NodeUtils.getColumn(varDecl),
+                            message,
+                            null)
+                    );
+                    return null;
+                }
+            }
+        }
+
+
+        return null;
+    }
+
 
 }

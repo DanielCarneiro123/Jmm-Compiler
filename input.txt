@@ -1,13 +1,11 @@
- class VarNotDeclared {
-
-    int x;
-    boolean x;
-    VarNotDeclared z;
-
-    public static void main(String[] args) {
-    }
+class Varargs {
 
     public int foo() {
+        int... b;
         return 0;
+    }
+
+    public int varargs(int... a) {
+        return a[0];
     }
 }
