@@ -138,6 +138,9 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
     private OllirExprResult visitFunctionCall(JmmNode node, Void unused) {
         StringBuilder code = new StringBuilder();
 
+        Type argTypeImport = new Type("aux",false);
+        boolean foundMatchImports = false;
+
         var child = node;
 
         JmmNode methodDeclNode = node;
@@ -151,23 +154,42 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
             // Get the local variables for the method
             List<Symbol> localVariables = table.getLocalVariables(methodName);
 
+            List<String> imports = table.getImports();
+
 // Get the name of the first child
             String firstChildName = node.getChildren().get(0).get("value");
 
+            Optional<Symbol> matchingVariable1 = localVariables.stream()
+                    .filter(variable -> variable.getName().equals(firstChildName))
+                    .findFirst();
+
+            if (matchingVariable1.isPresent()) {
+                argTypeImport = matchingVariable1.get().getType();
+                String argTypeStr = OptUtils.toOllirType(argTypeImport).substring(1); // Remove the first character (the dot)
+                foundMatchImports = imports.contains(argTypeStr);
+            }
+
+// Check if the type of the first child's name is in the list of imports
+
+
+
 // Check if any local variable's name matches the first child's name
-            boolean foundMatch = localVariables.stream()
+            boolean foundMatch1 = localVariables.stream()
                     .map(Symbol::getName)
                     .anyMatch(name -> name.equals(firstChildName));
 
-            if (foundMatch) {
+            if (foundMatchImports) {
                 code.append("invokevirtual");
                 code.append("(");
                 code.append(child.getChildren().get(0).get("value"));
-
+                code.append(OptUtils.toOllirType(argTypeImport));
+            } else if (foundMatch1) {
+                code.append("invokevirtual");
+                code.append("(");
+                code.append(child.getChildren().get(0).get("value"));
                 code.append(".").append(table.getClassName());
-
-
-            } else {
+            }
+            else {
                 // If no match is found, continue with the regular logic for generating the function call code
                 code.append(child.getChildren().get(0).get("value").equals("this") ? "invokevirtual" : "invokestatic");
                 code.append("(");
@@ -226,21 +248,24 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         while (parent != null && !parent.getKind().equals("Assignment")) {
             parent = parent.getParent();
         }
-
-// If an "Assignment" node is found, append the type
-        if (parent != null && parent.getKind().equals("Assignment")) {
-            String variableName = parent.get("var");
-            Optional<Symbol> matchingVariable = localVariables.stream()
-                    .filter(variable -> variable.getName().equals(variableName))
-                    .findFirst();
-            if (matchingVariable.isPresent()) {
-                Type parentType = matchingVariable.get().getType();
-                code.append(OptUtils.toOllirType(parentType));
-            }
-        } else {
-            // If no "Assignment" node is found, append ".V"
-            code.append(".V");
+        if(foundMatchImports) {
+            code.append(OptUtils.toOllirType(argTypeImport));
         }
+        else
+// If an "Assignment" node is found, append the type
+            if (parent != null && parent.getKind().equals("Assignment")) {
+                String variableName = parent.get("var");
+                Optional<Symbol> matchingVariable = localVariables.stream()
+                        .filter(variable -> variable.getName().equals(variableName))
+                        .findFirst();
+                if (matchingVariable.isPresent()) {
+                    Type parentType = matchingVariable.get().getType();
+                    code.append(OptUtils.toOllirType(parentType));
+                }
+            } else {
+                // If no "Assignment" node is found, append ".V"
+                code.append(".V");
+            }
 
 
         return new OllirExprResult(code.toString());
