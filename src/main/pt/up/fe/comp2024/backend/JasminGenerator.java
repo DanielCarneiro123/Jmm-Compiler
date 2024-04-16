@@ -375,17 +375,15 @@ public class JasminGenerator {
 
         switch (callInstruction.getInvocationType()) {
             case invokestatic:
-                //code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
                 for (var op : callInstruction.getArguments()) {
                     code.append(generators.apply(op));
                 }
-                //ollirResult.getOllirClass().getImport(0);
                 code.append("invokestatic ").append(generators.apply(callInstruction.getCaller())).append("/").append(generators.apply(callInstruction.getMethodName()));
                 for (var arg : callInstruction.getArguments()) {
-                    code.append(getJasminType(arg.getType().getTypeOfElement()));
+                    code.append(getFieldType(arg.getType()));
                 }
                 code.append(")");
-                code.append(getJasminType(callInstruction.getReturnType().getTypeOfElement())).append(NL);
+                code.append(getFieldType(callInstruction.getReturnType())).append(NL);
                 break;
             case invokespecial:
                 code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
