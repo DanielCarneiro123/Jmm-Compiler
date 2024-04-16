@@ -51,8 +51,26 @@ public class ObjectAssign extends AnalysisVisitor {
         var assigmentChildName = assigmentChildType.getName();
         String kindName = assigmentChild.getKind();
 
+        String assigmentName = assigment.get("var");
+        for (Symbol field : table.getFields()) {
+            Boolean isStatic = Boolean.parseBoolean(assigment.getParent().get("isStatic"));
+            if (field.getName().equals(assigmentName)) {
+                if (isStatic) {
+                    String message = "Non-static field cannot be referenced from a static context";
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(assigment),
+                            NodeUtils.getColumn(assigment),
+                            message,
+                            null)
+                    );
+                    return null;
+                } else {
+                    return null;
+                }
+            }
+        }
         if (extendedName.equals("")) {
-            String assigmentName = assigment.get("var");
             for (Symbol local : table.getLocalVariables(method)) {
                 if (local.getName().equals(assigmentName)) {
                     Type assigmentType = local.getType();
@@ -62,7 +80,7 @@ public class ObjectAssign extends AnalysisVisitor {
                     var teste1 = extendedName.equals(assigmentTypeName);
                     var teste2 = assigmentChildName.equals(classParentName);
 
-                    var teste3 = table.getImports().stream().anyMatch(param1 -> param1.equals(assigmentChildName)) ;
+                    var teste3 = table.getImports().stream().anyMatch(param1 -> param1.equals(assigmentChildName));
                     var teste4 = extendedName.equals(assigmentChildName);
                     var teste5 = assigmentTypeName.equals(classParentName);
 
@@ -70,7 +88,7 @@ public class ObjectAssign extends AnalysisVisitor {
                     if ((!assigmentChildName.equals(assigmentTypeName) && !(table.getImports().stream().anyMatch(param1 -> param1.equals(assigmentChildName) && table.getImports().stream().anyMatch(param2 -> param2.equals(assigmentTypeName))))) &&
                             (!((table.getImports().stream().anyMatch(param3 -> param3.equals(assigmentChildName) && (assigmentTypeName.equals("int") || assigmentTypeName.equals("boolean")))) || ((table.getImports().stream().anyMatch(param4 -> param4.equals(assigmentTypeName)) && (assigmentChildName.equals("int") || assigmentChildName.equals("boolean"))))) ||
                                     ((teste0 && teste1 && teste2) &&
-                                (teste3 && teste4 && teste5))))  {
+                                            (teste3 && teste4 && teste5)))) {
                         String message = "Object is not imported";
                         addReport(Report.newError(
                                 Stage.SEMANTIC,
@@ -83,21 +101,20 @@ public class ObjectAssign extends AnalysisVisitor {
                     }
                 }
             }
+
             for (Symbol field : table.getFields()) {
-                if (field.getName().equals(assigmentName)) {
-                    Type assigmentType = field.getType();
-                    String assigmentTypeName = assigmentType.getName();
-                    if (!table.getImports().stream().anyMatch(param -> param.equals(assigmentTypeName))) {
-                        String message = "Object is not imported";
-                        addReport(Report.newError(
-                                Stage.SEMANTIC,
-                                NodeUtils.getLine(assigment),
-                                NodeUtils.getColumn(assigment),
-                                message,
-                                null)
-                        );
-                        return null;
-                    }
+                Type assigmentType = field.getType();
+                String assigmentTypeName = assigmentType.getName();
+                if (!table.getImports().stream().anyMatch(param -> param.equals(assigmentTypeName))) {
+                    String message = "Object is not imported";
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(assigment),
+                            NodeUtils.getColumn(assigment),
+                            message,
+                            null)
+                    );
+                    return null;
                 }
             }
             for (Symbol param : table.getParameters(method)) {
