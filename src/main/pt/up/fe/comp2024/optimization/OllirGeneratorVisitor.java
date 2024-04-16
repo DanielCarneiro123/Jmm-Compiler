@@ -212,22 +212,23 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         String importNames = node.get("value");
 
-        // Remove the brackets '[' and ']' from the import names
-        importNames = importNames.substring(1, importNames.length() - 1);
+        // Remove leading and trailing brackets '[' and ']' if present
+        importNames = importNames.replaceAll("^\\[|\\]$", "");
 
-
+        // Split import names by comma and trim each name
         String[] importNameArray = importNames.split(",");
+        for (int i = 0; i < importNameArray.length; i++) {
+            importNameArray[i] = importNameArray[i].trim();
+        }
 
-
-        String joinedImportNames = Arrays.stream(importNameArray)
-                .map(String::trim)
-                .collect(Collectors.joining("."));
-
+        // Join import names with periods
+        String joinedImportNames = String.join(".", importNameArray);
 
         code.append("import ").append(joinedImportNames).append(";").append(NL);
 
         return code.toString();
     }
+
 
 
 
