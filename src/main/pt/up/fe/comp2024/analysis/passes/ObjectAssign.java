@@ -48,7 +48,7 @@ public class ObjectAssign extends AnalysisVisitor {
     private Void visitObjectAssign(JmmNode assigment, SymbolTable table) {
         JmmNode assigmentChild = assigment.getChild(0);
         Type assigmentChildType = getExprType(assigmentChild, table, method);
-        String assigmentChildName = assigmentChildType.getName();
+        var assigmentChildName = assigmentChildType.getName();
         String kindName = assigmentChild.getKind();
 
         if (extendedName.equals("")) {
@@ -67,11 +67,10 @@ public class ObjectAssign extends AnalysisVisitor {
                     var teste5 = assigmentTypeName.equals(classParentName);
 
 
-                    if ((!assigmentChildName.equals(assigmentTypeName)) &&
-                            ((!table.getImports().stream().anyMatch(param1 -> param1.equals(assigmentTypeName)) || !table.getImports().stream().anyMatch(param1 -> param1.equals(assigmentChildName))) ||
-                                (assigmentTypeName.equals("int") && assigmentTypeName.equals("boolean")) ||
-                                (teste0 && teste1 && teste2) &&
-                                (teste3 && teste4 && teste5)))  {
+                    if ((!assigmentChildName.equals(assigmentTypeName) && !(table.getImports().stream().anyMatch(param1 -> param1.equals(assigmentChildName) && table.getImports().stream().anyMatch(param2 -> param2.equals(assigmentTypeName))))) &&
+                            (!((table.getImports().stream().anyMatch(param3 -> param3.equals(assigmentChildName) && (assigmentTypeName.equals("int") || assigmentTypeName.equals("boolean")))) || ((table.getImports().stream().anyMatch(param4 -> param4.equals(assigmentTypeName)) && (assigmentChildName.equals("int") || assigmentChildName.equals("boolean"))))) ||
+                                    ((teste0 && teste1 && teste2) &&
+                                (teste3 && teste4 && teste5))))  {
                         String message = "Object is not imported";
                         addReport(Report.newError(
                                 Stage.SEMANTIC,

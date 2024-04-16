@@ -72,7 +72,10 @@ public class TypeUtils {
                 return table.getReturnType(methodName);
             }
         }
-        return new Type(null, false); //aqui devia dar erro porque é um tipo que não existe (?)
+        JmmNode exprChild = expr.getChild(0);
+        return getExprType(exprChild,table,methodName);
+
+       // return new Type("", false); //aqui devia dar erro porque é um tipo que não existe (?)
     }
 
     private static Type getBinExprType(JmmNode binaryExpr) {
