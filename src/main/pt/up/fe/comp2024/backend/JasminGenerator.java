@@ -317,8 +317,9 @@ public class JasminGenerator {
         if (basicClassName.equals("this"))
             return this.ollirResult.getOllirClass().getClassName();
 
+        String realClass = "." + basicClassName;
         for (String importedClass : this.ollirResult.getOllirClass().getImports()) {
-            if (importedClass.endsWith(basicClassName)) {
+            if (importedClass.endsWith(realClass)) {
                 return this.normalizeClassName(importedClass);
             }
         }
@@ -415,8 +416,8 @@ public class JasminGenerator {
                 }*/
                 break;
             case NEW:
-                code.append(NL).append("new ").append(((ClassType) callInstruction.getCaller().getType()).getName()).append(NL);
-                code.append("dup").append(NL);
+                code.append(NL).append("new ").append(getImportedClassName(((Operand) callInstruction.getOperands().get(0)).getName())).append(NL);
+                //code.append("dup").append(NL);
                 break;
             case invokevirtual:
                 code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
@@ -432,6 +433,8 @@ public class JasminGenerator {
                 }
                 code.append(")");
                 code.append(getJasminType(callInstruction.getReturnType().getTypeOfElement())).append(NL);
+                break;
+            case arraylength:
                 break;
             default:
                 throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());

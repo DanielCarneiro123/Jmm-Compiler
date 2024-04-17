@@ -1,11 +1,11 @@
-class Varargs {
+import b.asmth;
+import a.smth;
 
-    public int foo() {
-        int... b;
-        return 0;
-    }
+class Main {
 
-    public int varargs(int... a) {
-        return a[0];
+    public static void main(String[] args) {
+    smth a;
+    a = new smth();
+
     }
 }
