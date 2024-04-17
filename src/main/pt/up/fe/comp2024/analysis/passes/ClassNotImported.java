@@ -31,18 +31,21 @@ public class ClassNotImported extends AnalysisVisitor {
 
     private Void visitImport_Extend(JmmNode classDecl, SymbolTable table) {
         String extendedName = classDecl.getOptional("extendedClass").orElse("");
-        for (var imp : table.getImports()) {
-            if (imp.equals(extendedName))
-                return null;
+        if (!extendedName.equals("")) {
+            for (var imp : table.getImports()) {
+                if (imp.equals(extendedName))
+                    return null;
+            }
+            var message = String.format("Class not imported", extendedName);
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(classDecl),
+                    NodeUtils.getColumn(classDecl),
+                    message,
+                    null)
+            );
+            return null;
         }
-        var message = String.format("Class not imported", extendedName);
-        addReport(Report.newError(
-                Stage.SEMANTIC,
-                NodeUtils.getLine(classDecl),
-                NodeUtils.getColumn(classDecl),
-                message,
-                null)
-        );
         return null;
     }
 
