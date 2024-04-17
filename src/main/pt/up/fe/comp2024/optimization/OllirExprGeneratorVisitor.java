@@ -245,6 +245,12 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                 Type argType = matchingVariable.get().getType();
                 code.append(OptUtils.toOllirType(argType)); // Append the type
             }
+            else{
+                code.append(argumentName);
+                var argType = TypeUtils.getExprType(argument, table, methodName);
+
+                code.append(OptUtils.toOllirType(argType));
+            }
 
         }
 
