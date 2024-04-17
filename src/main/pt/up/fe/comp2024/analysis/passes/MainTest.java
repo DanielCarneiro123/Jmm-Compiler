@@ -18,6 +18,20 @@ public class MainTest extends AnalysisVisitor {
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
         currentMethod = method.get("name");
+
+        var isStatic = method.get("isStatic").equals("true");
+        if (!isStatic) {
+            String message = "Method main must be static";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(method),
+                    NodeUtils.getColumn(method),
+                    message,
+                    null)
+            );
+            return null;
+        }
+
         if (currentMethod.equals("main")) {
             var mainChild = method.getChild(1);
             if (mainChild.getKind().equals("ReturnStmt")) {
