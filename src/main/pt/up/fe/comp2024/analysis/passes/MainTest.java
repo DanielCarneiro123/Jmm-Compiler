@@ -62,8 +62,8 @@ public class MainTest extends AnalysisVisitor {
             return null;
 
         } else {
-            var isStatic = method.get("isStatic").equals("true");
-            if (isStatic) {
+            var isStatic2 = method.get("isStatic").equals("true");
+            if (isStatic2) {
                 String message = "Method cannot be static";
                 addReport(Report.newError(
                         Stage.SEMANTIC,
