@@ -316,11 +316,12 @@ public class JasminGenerator {
         if (basicClassName.equals("this"))
             return this.ollirResult.getOllirClass().getClassName();
 
-        String realClass = "." + basicClassName;
+        String realClass = "." + normalizeClassName2(basicClassName);
 
         if (ollirResult.getOllirClass().getImportedClasseNames().contains(basicClassName)){
             for (var imp: ollirResult.getOllirClass().getImports()) {
-                if (imp.endsWith(realClass)) {
+                var aux = normalizeClassName2(imp);
+                if (aux.endsWith(realClass)) {
                     return normalizeClassName(imp);
                 }
             }
@@ -328,6 +329,12 @@ public class JasminGenerator {
 
         return basicClassName;
     }
+
+    private String normalizeClassName2(String className) {
+        // Converte para minúsculas e remove espaços em branco extras
+        return className.toLowerCase().trim();
+    }
+
 
     private String normalizeClassName(String className) {
         return className.replaceAll("\\.", "/");
