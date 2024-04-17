@@ -20,6 +20,7 @@ public class IncompatibleArguments extends AnalysisVisitor {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.FUNCTION_CALL, this::visitIncompatibleArguments);
         addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
+        addVisit(Kind.CLASS_INSTANTIATION, this::visitIncompatibleArguments2);
     }
 
     private Void visitMethodDecl(JmmNode currMethod, SymbolTable table) {
@@ -33,8 +34,8 @@ public class IncompatibleArguments extends AnalysisVisitor {
             JmmNode child = classDecl.getParent().getChildren().get(i);
             String childName = child.get("ID");
             //if (childName.equals(extendedName)) {
-                tem_imports = true;
-                return null;
+            tem_imports = true;
+            return null;
             //}
         }
         tem_imports = false;
@@ -79,6 +80,33 @@ public class IncompatibleArguments extends AnalysisVisitor {
                 }
             }
         }
+
+        return null;
+    }
+
+    private Void visitIncompatibleArguments2(JmmNode classInst, SymbolTable table) {
+        var classInstKind = classInst.getKind();
+        if (classInstKind.equals("ClassInstantiation")) {
+            var classInstChild = classInst.getChild(0);
+            var classInstChildName = classInstChild.getKind();
+            if (classInstChildName.equals("Parentesis")) {
+                var classInstChildChild = classInstChild.getChild(0);
+                var classInstChildChildKind = classInstChildChild.getKind();
+                if (classInstKind.equals(classInstChildChildKind)) {
+                    String message = "Incompatible Argument";
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(classInst),
+                            NodeUtils.getColumn(classInst),
+                            message,
+                            null)
+                    );
+                    return null;
+                }
+                return null;
+            }
+        }
+
         return null;
     }
 

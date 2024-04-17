@@ -103,18 +103,20 @@ public class ObjectAssign extends AnalysisVisitor {
             }
 
             for (Symbol field : table.getFields()) {
-                Type assigmentType = field.getType();
-                String assigmentTypeName = assigmentType.getName();
-                if (!table.getImports().stream().anyMatch(param -> param.equals(assigmentTypeName))) {
-                    String message = "Object is not imported";
-                    addReport(Report.newError(
-                            Stage.SEMANTIC,
-                            NodeUtils.getLine(assigment),
-                            NodeUtils.getColumn(assigment),
-                            message,
-                            null)
-                    );
-                    return null;
+                if (field.getName().equals(assigmentName)) {
+                    Type assigmentType = field.getType();
+                    String assigmentTypeName = assigmentType.getName();
+                    if (!table.getImports().stream().anyMatch(param -> param.equals(assigmentTypeName))) {
+                        String message = "Object is not imported";
+                        addReport(Report.newError(
+                                Stage.SEMANTIC,
+                                NodeUtils.getLine(assigment),
+                                NodeUtils.getColumn(assigment),
+                                message,
+                                null)
+                        );
+                        return null;
+                    }
                 }
             }
             for (Symbol param : table.getParameters(method)) {
