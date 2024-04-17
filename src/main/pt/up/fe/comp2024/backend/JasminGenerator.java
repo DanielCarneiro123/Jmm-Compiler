@@ -442,7 +442,20 @@ public class JasminGenerator {
                 code.append(" arraylength").append(NL);
                 break;
             case invokeinterface:
-
+                code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
+                Operand firstInterface = (Operand) callInstruction.getOperands().get(0);
+                LiteralElement secondInterface = (LiteralElement) callInstruction.getOperands().get(1);
+                for (var op : callInstruction.getArguments()) {
+                    code.append(generators.apply(op));
+                }
+                code.append("invokeinterface ").append(getImportedClassName(((ClassType) firstInterface.getType()).getName())).append("/").append(secondInterface.getLiteral().replace("\"", ""));
+                code.append("(");
+                for (var arg : callInstruction.getArguments()) {
+                    code.append(getFieldType(arg.getType()));
+                }
+                code.append(")");
+                code.append(getFieldType(callInstruction.getReturnType())).append(NL);
+                break;
             default:
                 throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
         }
