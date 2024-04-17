@@ -337,7 +337,7 @@ public class JasminGenerator {
 
 
     private String normalizeClassName(String className) {
-        return className.replaceAll("\\.", "/");
+        return className.replaceAll(".", "/");
     }
 
     private String generateAssign(AssignInstruction assign) {
