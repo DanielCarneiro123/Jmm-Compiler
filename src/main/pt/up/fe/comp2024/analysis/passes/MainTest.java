@@ -47,6 +47,19 @@ public class MainTest extends AnalysisVisitor {
             }
             return null;
 
+        } else {
+            var isStatic = method.get("isStatic").equals("true");
+            if (isStatic) {
+                String message = "Method cannot be static";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(method),
+                        NodeUtils.getColumn(method),
+                        message,
+                        null)
+                );
+                return null;
+            }
         }
         return null;
     }
