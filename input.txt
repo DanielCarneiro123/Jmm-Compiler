@@ -1,9 +1,12 @@
- class teste{
+import io;
+class teste{
+
+    io a;
 
     public static void main(String[] args) {
     }
 
-    public int foo(io a){
+    public int foo(){
         return 0;
     }
 }
