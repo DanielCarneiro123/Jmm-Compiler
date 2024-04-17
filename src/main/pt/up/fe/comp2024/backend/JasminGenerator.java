@@ -167,7 +167,7 @@ public class JasminGenerator {
         // Load the object reference onto the stack
         code.append(generators.apply(getFieldInst.getObject()));
 
-        String callObjName = ((ClassType) getFieldInst.getObject().getType()).getName();
+        String callObjName = getImportedClassName(getFieldInst.getObject().getName());
         String fieldName = getFieldInst.getField().getName();
         String fieldType = getFieldType(getFieldInst.getFieldType());
         // Emit the getfield instruction
@@ -201,7 +201,7 @@ public class JasminGenerator {
         //ver se precisa de static
         if (method.isStaticMethod()) {
             code.append("\n.method ").append(modifier).append("static ").append(methodName)
-                    .append("(["); //temos de ver se isto do [ só acontece para os main static ou para todos os tatic
+                    .append("("); //temos de ver se isto do [ só acontece para os main static ou para todos os tatic
         } else {
             // nome do método, este comentário de merda não foi pelo chatgpt
             code.append("\n.method ").append(modifier).append(methodName)
@@ -304,11 +304,11 @@ public class JasminGenerator {
     }
 
     private String getArrayType(Type type) {
-        return this.getJasminType(type.getTypeOfElement());
+        return "[" + this.getJasminType(type.getTypeOfElement());
     }
 
     private String getObjectType(Type type) {
-        return "L" + this.getImportedClassName(type.toString()) + "String" + ";";
+        return this.getImportedClassName(((ClassType) type).getName()) + ";";
     }
 
     private String getImportedClassName(String basicClassName) {
@@ -354,6 +354,7 @@ public class JasminGenerator {
                 if (reg > 3) {
                     code.append("istore ").append(reg).append(NL);
                     break;
+
                 } else {
                     code.append("istore_").append(reg).append(NL);
                 }
@@ -409,7 +410,7 @@ public class JasminGenerator {
                     code.append(getFieldType(elem.getType()));
                 }
                 code.append(")");
-                code.append(getJasminType(callInstruction.getReturnType().getTypeOfElement())).append(NL);
+                code.append(getFieldType(callInstruction.getReturnType())).append(NL);
                 /*if (!ollirResult.getOllirClass().getClassName().equals(ollirResult.getOllirClass().getSuperClass())) {
                     code.append("pop");
                 }*/
@@ -431,7 +432,7 @@ public class JasminGenerator {
                     code.append(getFieldType(arg.getType()));
                 }
                 code.append(")");
-                code.append(getJasminType(callInstruction.getReturnType().getTypeOfElement())).append(NL);
+                code.append(getFieldType(callInstruction.getReturnType())).append(NL);
                 break;
             case arraylength:
                 code.append(generators.apply(callInstruction.getOperands().get(0)));
@@ -489,7 +490,6 @@ public class JasminGenerator {
                 return "aload_" + reg + NL;
             }
         }
-
 
         if (currentMethod.getOllirClass().getImports().contains(name)) {
             return name;
