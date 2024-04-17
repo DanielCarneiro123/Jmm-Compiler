@@ -22,7 +22,7 @@ public class ClassNotImported extends AnalysisVisitor {
         addVisit(Kind.FUNCTION_CALL, this::visitClassImport);
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
-        addVisit(Kind.VAR_DECL, this::visitVarDeclTYPES);
+        addVisit(Kind.ARGUMENT, this::visitVarArguments);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
@@ -99,6 +99,38 @@ public class ClassNotImported extends AnalysisVisitor {
             return null;
         }
         return null;
+    }
+
+    private Void visitVarArguments(JmmNode argDecl, SymbolTable table) {
+        var argDeclName = argDecl.get("name");
+        String argDeclTypeName = "";
+        for (var param : table.getParameters(currentMethod)) {
+            var pramTypeName = param.getName();
+            if (pramTypeName.equals(argDeclName)) {
+                argDeclTypeName = param.getType().getName();
+            }
+            //talvez tenha de meter algo se o argDeclName não tiver nos param
+        }
+
+        if (!argDeclTypeName.equals("int") && !argDeclTypeName.equals("boolean") && !argDeclTypeName.equals(table.getClassName())) {
+            for (var imp : table.getImports()) {
+                if (imp.equals(argDeclTypeName)) {
+                    return null;
+                }
+            }
+            var message = String.format("Class not imported in Arguments", argDeclTypeName);
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(argDecl),
+                    NodeUtils.getColumn(argDecl),
+                    message,
+                    null)
+            );
+            return null;
+        }
+
+        return null;
+
     }
 
 

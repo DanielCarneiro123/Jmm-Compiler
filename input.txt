@@ -4,6 +4,6 @@
     }
 
     public int foo(io a){
-    return 0;
+        return 0;
     }
 }
