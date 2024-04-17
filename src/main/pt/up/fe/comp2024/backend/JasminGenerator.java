@@ -317,9 +317,12 @@ public class JasminGenerator {
             return this.ollirResult.getOllirClass().getClassName();
 
         String realClass = "." + basicClassName;
-        for (String importedClass : this.ollirResult.getOllirClass().getImports()) {
-            if (importedClass.endsWith(realClass)) {
-                return this.normalizeClassName(importedClass);
+
+        if (ollirResult.getOllirClass().getImportedClasseNames().contains(basicClassName)){
+            for (var imp: ollirResult.getOllirClass().getImports()) {
+                if (imp.endsWith(realClass)) {
+                    return normalizeClassName(imp);
+                }
             }
         }
 
@@ -438,6 +441,8 @@ public class JasminGenerator {
                 code.append(generators.apply(callInstruction.getOperands().get(0)));
                 code.append(" arraylength").append(NL);
                 break;
+            case invokeinterface:
+
             default:
                 throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
         }
