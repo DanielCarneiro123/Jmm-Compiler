@@ -235,21 +235,29 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         for (int i = 0; i < arguments.size(); i++) {
             code.append(",");
             JmmNode argument = arguments.get(i);
-            String argumentName = argument.get("value");
+
+            // Visit the argument to get its value
+            OllirExprResult argumentResult = visit(argument);
+
+            // Extract the code representing the argument value
+            String argumentCode = argumentResult.getComputation();
+            computation.append(argumentCode);// Extract the code representing the argument value
+
             // Search for the matching local variable by name
             Optional<Symbol> matchingVariable = localVariables.stream()
-                    .filter(variable -> variable.getName().equals(argumentName))
+                    .filter(variable -> variable.getName().equals(argumentCode))
                     .findFirst();
+
+            // Use the value of the argument in the generated code
             if (matchingVariable.isPresent()) {
-                code.append(argumentName);
                 Type argType = matchingVariable.get().getType();
-                code.append(OptUtils.toOllirType(argType)); // Append the type
+                computation.append(argumentResult.getCode()); // Append the type
             }
             else{
-                code.append(argumentName);
+                code.append(argumentResult.getCode());
                 var argType = TypeUtils.getExprType(argument, table, methodName);
 
-                code.append(OptUtils.toOllirType(argType));
+
             }
 
         }
@@ -288,7 +296,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
             }
 
 
-        return new OllirExprResult(code.toString());
+        return new OllirExprResult(code.toString(),computation);
     }
 
 
