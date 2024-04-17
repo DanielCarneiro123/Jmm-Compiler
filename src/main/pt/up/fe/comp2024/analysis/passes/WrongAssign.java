@@ -60,7 +60,7 @@ public class WrongAssign extends AnalysisVisitor {
                 }
             }
             for (var parameter : table.getParameters(method)) {
-                if (parentOperand.get("var").equals(parameter.getName()) && !rightOperandType.getName().equals(parameter.getType().getName()) && !rightOperandType.getName().equals("object") && tem_imports) {
+                if (parentOperand.getOptional("var").orElse("").equals(parameter.getName()) && !rightOperandType.getName().equals(parameter.getType().getName()) && !rightOperandType.getName().equals("object") && tem_imports) {
                     String message = "Wrong Assign Types";
                     addReport(Report.newError(
                             Stage.SEMANTIC,

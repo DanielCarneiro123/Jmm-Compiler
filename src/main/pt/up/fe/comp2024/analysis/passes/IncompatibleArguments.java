@@ -50,6 +50,19 @@ public class IncompatibleArguments extends AnalysisVisitor {
             JmmNode functionCallChild = functionCall.getChildren().get(i);
             var functionCallChildType = getExprType(functionCallChild, table, method);
             var functionCallChildTypeName = getExprType(functionCallChild, table, method).getName();
+
+            if (functionCallChild.getKind().equals("BinaryOp")) {
+                String message = "Incompatible Argument";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(functionCall),
+                        NodeUtils.getColumn(functionCall),
+                        message,
+                        null)
+                );
+                return null;
+            }
+
             for (var imp : table.getImports()) {
                 if (imp.equals(functionCallChildTypeName)) {
                     return null;

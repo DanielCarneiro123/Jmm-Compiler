@@ -1,22 +1,9 @@
-<<<<<<< Updated upstream
-import com.example.MyClass;
-=======
-import io;
-class teste extends io{
-
-    teste a;
->>>>>>> Stashed changes
-
-class Main {
+class Test {
     public static void main(String[] args) {
-        MyClass a;
-        a = new MyClass();
-        MyClass.myMethod();
+    }
 
-<<<<<<< Updated upstream
-=======
-    public int foo(int i, boolean b){
-        return a.foo(1);
->>>>>>> Stashed changes
+    public int foo(int a) {
+        this.foo(1+1);
+        return 0;
     }
 }
