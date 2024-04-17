@@ -1,23 +1,6 @@
-<<<<<<< Updated upstream
-import b.asmth;
-import a.smth;
-
-class Main {
+ class ArrayInWhileCondition extends KLLK{
 
     public static void main(String[] args) {
-    smth a;
-    a = new smth();
 
     }
 }
-=======
-class ArrayInWhileCondition {
-
-    public static void main(String[] args) {
-        boolean a;
-        a = true;
-        b = false;
-        a = a && b;
-    }
-}
->>>>>>> Stashed changes

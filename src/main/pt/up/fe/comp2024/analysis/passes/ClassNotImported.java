@@ -21,6 +21,7 @@ public class ClassNotImported extends AnalysisVisitor {
     public void buildVisitor() {
         addVisit(Kind.FUNCTION_CALL, this::visitClassImport);
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
+        addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
@@ -30,15 +31,18 @@ public class ClassNotImported extends AnalysisVisitor {
 
     private Void visitImport_Extend(JmmNode classDecl, SymbolTable table) {
         String extendedName = classDecl.getOptional("extendedClass").orElse("");
-        for (int i = 0; i < classDecl.getParent().getChildren().size() - 1; i++) {
-            JmmNode child = classDecl.getParent().getChildren().get(i);
-            String childName = child.get("ID");
-            //if (childName.equals(extendedName)) {
-            tem_imports = true;
-            return null;
-            //}
+        for (var imp : table.getImports()) {
+            if (imp.equals(extendedName))
+                return null;
         }
-        tem_imports = false;
+        var message = String.format("Class not imported", extendedName);
+        addReport(Report.newError(
+                Stage.SEMANTIC,
+                NodeUtils.getLine(classDecl),
+                NodeUtils.getColumn(classDecl),
+                message,
+                null)
+        );
         return null;
     }
 
