@@ -159,6 +159,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
             List<String> imports = table.getImports();
 
 // Get the name of the first child
+
             String firstChildName = node.getChildren().get(0).get("value");
 
             Optional<Symbol> matchingVariable1 = localVariables.stream()
