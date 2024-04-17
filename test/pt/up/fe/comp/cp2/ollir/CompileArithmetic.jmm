@@ -1,16 +1,19 @@
-class CompileArithmetic {
+import b.asmth;
+import a.smth;
 
-    public static void main(String[] args) {
+class Test {
 
-    }
+	smth intField;
 
-    public int foo() {
-        int a;
-        int b;
+	public static void main(String[] args) {
+	}
 
-        a = 1;
-        b = 2;
+	
+	public smth foo() {
+        smth a;
 
-        return a + b;
-    }
+		a = intField;
+
+		return intField;
+	}
 }

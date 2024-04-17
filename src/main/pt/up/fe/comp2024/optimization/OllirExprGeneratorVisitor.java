@@ -305,6 +305,12 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         var methodName = "";
         var id = node.get("value");
         var parentNode = node.getAncestor("MethodDecl");
+        boolean isField = false;
+        List<Symbol> fields = table.getFields();
+        String rhs ="";
+        StringBuilder code = new StringBuilder();
+        StringBuilder computation = new StringBuilder();
+
 
         if (parentNode.isPresent()){
              methodName = parentNode.get().get("name");
@@ -312,9 +318,26 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         Type type = TypeUtils.getExprType(node, table,methodName);
         String ollirType = OptUtils.toOllirType(type);
 
-        String code = id + ollirType;
+        rhs = node.get("value");
+        for (Symbol field : fields) {
+            if (field.getName().equals(rhs)){
+                isField = true;
+            }
+        }
 
-        return new OllirExprResult(code);
+        if (isField){
+            var aux = OptUtils.getTemp();
+            computation.append(aux).append(ollirType).append(" :=").append(ollirType).append(" getfield(this, ").append(rhs).append(ollirType).append(")").append(ollirType).append(END_STMT);
+            code.append(aux).append(ollirType);
+
+            return new OllirExprResult(code.toString(),computation);
+        }
+
+        code.append(id).append(ollirType);
+
+
+
+        return new OllirExprResult(code.toString());
     }
 
     /**
