@@ -1,8 +1,12 @@
  class ArrayInWhileCondition{
 
     public static void main(String[] args) {
-    io.println(2);
+        int a;
+        foo(io a);
     }
 
+    public int foo(io a){
+        return 0;
+    }
 
 }

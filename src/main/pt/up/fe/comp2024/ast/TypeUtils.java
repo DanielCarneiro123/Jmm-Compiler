@@ -48,7 +48,7 @@ public class TypeUtils {
         var kind = Kind.fromString(expr.getKind());
 
         Type type = switch (kind) {
-            case IDENTIFIER -> getVarExprType(expr, table, currMethod);
+            case IDENTIFIER, VAR_DECL -> getVarExprType(expr, table, currMethod);
             case ARRAYDEFINITION, ARRAY_DECLARATION -> new Type(INT_TYPE_NAME, true);
             case INTEGER, CLASS_INSTANTIATION -> new Type(INT_TYPE_NAME, false);
             case IFEXPR, ELSEEXPR -> new Type(BOOLEAN_TYPE_NAME, false);
@@ -95,7 +95,10 @@ public class TypeUtils {
 
 
     private static Type getVarExprType(JmmNode varRefExpr, SymbolTable table, String currMethod) {
-        String varName = varRefExpr.get("value");
+        String varName = varRefExpr.getOptional("value").orElse("");
+        if (varName.equals("")) {
+            varName = varRefExpr.getOptional("name").orElse("");
+        }
         var locals = table.getLocalVariables(currMethod);
         for (var local : locals) {
             if (local.getName().equals(varName)) {
@@ -106,6 +109,12 @@ public class TypeUtils {
         for (var field : fields) {
             if (field.getName().equals(varName)) {
                 return field.getType();
+            }
+        }
+        var imports = table.getImports();
+        for (var imp : imports) {
+            if (imp.equals(varName)) {
+                return new Type(imp, false);
             }
         }
         if (varName.equals("true") || varName.equals("false")) {

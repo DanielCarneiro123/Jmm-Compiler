@@ -22,6 +22,7 @@ public class ClassNotImported extends AnalysisVisitor {
         addVisit(Kind.FUNCTION_CALL, this::visitClassImport);
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
+        addVisit(Kind.VAR_DECL, this::visitVarDeclTYPES);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
@@ -76,4 +77,29 @@ public class ClassNotImported extends AnalysisVisitor {
 
         return null;
     }
+
+    private Void visitVarDeclTYPES(JmmNode varDecl, SymbolTable table) {
+        var varDeclType = getExprType(varDecl, table, currentMethod);
+        var varDeclTypeName = varDeclType.getName();
+        var className = table.getClassName();
+        if (!varDeclTypeName.equals("int") && !varDeclTypeName.equals("boolean") && !varDeclTypeName.equals(className)) {
+            for (var imp : table.getImports()) {
+                if (imp.equals(varDeclTypeName)) {
+                    return null;
+                }
+            }
+            var message = String.format("Class not imported", varDeclTypeName);
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(varDecl),
+                    NodeUtils.getColumn(varDecl),
+                    message,
+                    null)
+            );
+            return null;
+        }
+        return null;
+    }
+
+
 }
