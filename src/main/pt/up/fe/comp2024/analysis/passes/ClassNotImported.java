@@ -23,7 +23,7 @@ public class ClassNotImported extends AnalysisVisitor {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
         addVisit(Kind.ARGUMENT, this::visitVarArguments);
-        addVisit(Kind.VAR_DECL, this::visitVarDeclFields);
+        //addVisit(Kind.VAR_DECL, this::visitVarDeclFields);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
@@ -134,6 +134,7 @@ public class ClassNotImported extends AnalysisVisitor {
 
     }
 
+    /*
     private Void visitVarDeclFields(JmmNode varDecl, SymbolTable table) {
 
         var varDeclType = getExprType(varDecl, table, currentMethod);
@@ -141,6 +142,7 @@ public class ClassNotImported extends AnalysisVisitor {
 
         for (var field : table.getFields()) {
             if (!field.getName().equals("int") && !field.getName().equals("boolean") && !field.getName().equals(table.getClassName())) {
+                if (table.getImports().contains(varDeclTypeName)) {
                 var fieldType = field.getType();
                 var fieldTypeName = fieldType.getName();
                 if (fieldTypeName.equals(varDeclTypeName)) {
@@ -162,5 +164,5 @@ public class ClassNotImported extends AnalysisVisitor {
             }
         }
         return null;
-    }
+    }*/
 }
