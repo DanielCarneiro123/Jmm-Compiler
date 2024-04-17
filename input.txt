@@ -1,6 +1,8 @@
- class ArrayInWhileCondition extends KLLK{
+ class ArrayInWhileCondition{
 
     public static void main(String[] args) {
-
+    io.println(2);
     }
+
+
 }
