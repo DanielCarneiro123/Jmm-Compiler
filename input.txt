@@ -1,13 +1,6 @@
- import io;
- import io;
  class teste{
 
     public static void main(String[] args) {
-        int a;
-    }
 
-    public int foo(io a){
-        return 0;
     }
-
 }
