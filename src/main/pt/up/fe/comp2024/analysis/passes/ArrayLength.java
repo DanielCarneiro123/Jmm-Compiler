@@ -17,6 +17,7 @@ public class ArrayLength extends AnalysisVisitor {
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.LENGTH, this::visitLength);
+        //addVisit(Kind.EXPR, this::visitArrayAcess);
     }
 
     private Void visitMethodDecl(JmmNode currMethod, SymbolTable table) {
@@ -38,7 +39,7 @@ public class ArrayLength extends AnalysisVisitor {
             );
             return null;
         }
-        if(currLenghtTeste.equals("length") && !currLenghtIsArray){
+        if (currLenghtTeste.equals("length") && !currLenghtIsArray) {
             String message = "its not an Array to see length";
             addReport(Report.newError(
                     Stage.SEMANTIC,
@@ -52,4 +53,21 @@ public class ArrayLength extends AnalysisVisitor {
 
         return null;
     }
+
+    /*private Void visitArrayAcess(JmmNode expr, SymbolTable table) {
+        if (expr.getKind().equals("ClassInstantiation")) {
+            String exprName = expr.get("className");
+            JmmNode exprChild = expr.getChild(0);
+            JmmNode exprChildChild = exprChild.getChild(0);
+            String indexAcess = exprChildChild.getOptional("value").orElse("99999");
+            for (var local : table.getLocalVariables(method)) {
+                if (local.getName().equals(exprName)) {
+                    return null;
+                }
+            }
+
+            return null;
+        }
+        return null;
+    }*/
 }
