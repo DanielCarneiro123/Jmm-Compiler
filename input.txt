@@ -1,11 +1,10 @@
-class teste{
+import com.example.MyClass;
 
-    io a;
-
+class Main {
     public static void main(String[] args) {
-    }
+        MyClass a;
+        a = new MyClass();
+        MyClass.myMethod();
 
-    public int foo(){
-        return 0;
     }
 }

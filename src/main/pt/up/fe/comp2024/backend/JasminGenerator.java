@@ -426,6 +426,8 @@ public class JasminGenerator {
                 }*/
                 break;
             case NEW:
+                for (Element objetElement : callInstruction.getArguments())
+                    code.append(generators.apply(objetElement));
                 code.append(NL).append("new ").append(getImportedClassName(((Operand) callInstruction.getOperands().get(0)).getName())).append(NL);
                 //code.append("dup").append(NL);
                 break;
