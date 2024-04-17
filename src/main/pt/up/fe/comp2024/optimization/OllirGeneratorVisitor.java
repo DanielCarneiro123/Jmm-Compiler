@@ -139,28 +139,18 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         // If the variable is a local variable
         String typeString = OptUtils.toOllirType(thisType);
-        if (isField){
-            var aux = OptUtils.getTemp();
-            code.append(aux).append(typeString).append(" :=").append(typeString).append(" getfield(this, ").append(rhs).append(typeString).append(")").append(typeString).append(END_STMT);
-            code.append(lhs);
-            code.append(typeString);
-            code.append(SPACE);
-            code.append(ASSIGN);
-            code.append(typeString);
-            code.append(SPACE);
-            code.append(aux).append(typeString);
-        }
-        else {
 
 
-            code.append(lhs);
-            code.append(typeString);
-            code.append(SPACE);
-            code.append(ASSIGN);
-            code.append(typeString);
-            code.append(SPACE);
-            code.append(rhsNode.getCode());
-        }
+
+
+        code.append(lhs);
+        code.append(typeString);
+        code.append(SPACE);
+        code.append(ASSIGN);
+        code.append(typeString);
+        code.append(SPACE);
+        code.append(rhsNode.getCode());
+
         code.append(END_STMT);
 
         return code.toString();
@@ -193,16 +183,15 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
 
 
+
+
+
         code.append(lhs.getComputation());
-
-
-
         code.append("ret");
-        code.append(OptUtils.toOllirType(retType));
-        code.append(SPACE);
-        code.append(lhs.getCode());
 
-        code.append(END_STMT);
+        code.append(OptUtils.toOllirType(retType));
+        code.append(" ");
+        code.append(lhs.getCode()).append(END_STMT);
 
         return code.toString();
     }

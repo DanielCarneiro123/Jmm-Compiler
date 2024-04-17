@@ -108,27 +108,15 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         String resOllirType = node.get("op").equals("+") || node.get("op").equals("-") || node.get("op").equals("*") || node.get("op").equals("/") ? ".i32" : ".bool";
 
         // Check if either lhs or rhs is a function call, and if so, store their result in temporary variables
-        if (lhs.getCode().contains("invoke") || rhs.getCode().contains("invoke")) {
-            // Compute the value of lhs if it's a function call
-            if (lhs.getCode().contains("invoke")) {
-                String tempLhs = OptUtils.getTemp();
-                computation.append(lhs.getComputation());
-                computation.append(tempLhs).append(resOllirType).append(" := ").append(resOllirType).append(" ").append(lhs.getCode()).append(END_STMT);
-                lhs = new OllirExprResult(tempLhs + resOllirType); // Include the type here
-            }
-            // Compute the value of rhs if it's a function call
-            if (rhs.getCode().contains("invoke")) {
-                String tempRhs = OptUtils.getTemp();
-                computation.append(rhs.getComputation());
-                computation.append(tempRhs).append(resOllirType).append(" := ").append(resOllirType).append(" ").append(rhs.getCode()).append(END_STMT);
-                rhs = new OllirExprResult(tempRhs + resOllirType); // Include the type here
-            }
-        }
+
 
         // Generate code for the computation of the result
         String code = OptUtils.getTemp() + resOllirType;
         computation.append(lhs.getComputation());
+
+
         computation.append(rhs.getComputation());
+
         computation.append(code).append(" := ").append(resOllirType).append(" ").append(lhs.getCode()).append(" ").append(node.get("op")).append(resOllirType).append(" ").append(rhs.getCode()).append(END_STMT);
 
         return new OllirExprResult(code, computation);
@@ -172,7 +160,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                 foundMatchImports = imports.contains(argTypeStr);
             }
 
-            code1 = OptUtils.getTemp() + OptUtils.toOllirType(argTypeImport);
+
 
 // Check if the type of the first child's name is in the list of imports
 
@@ -184,7 +172,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                     .anyMatch(name -> name.equals(firstChildName));
 
             if (foundMatchImports) {
-
+                code1 = OptUtils.getTemp() + OptUtils.toOllirType(argTypeImport);
                 computation.append(funcLhs.getComputation());
                 computation.append(code1).append(" :=").append(OptUtils.toOllirType(argTypeImport)).append(" ");
                 funcLhs = new OllirExprResult(code1); // Include the type here
@@ -296,6 +284,17 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
             }
 
 
+            var isBinaryOpNode = node.getAncestor("BinaryOp");
+
+        if (isBinaryOpNode.isPresent()){
+            var aux = OptUtils.getTemp();
+            String resOllirType = isBinaryOpNode.get().get("op").equals("+") || isBinaryOpNode.get().get("op").equals("-") || isBinaryOpNode.get().get("op").equals("*") || isBinaryOpNode.get().get("op").equals("/") ? ".i32" : ".bool";
+            computation.append(aux).append(resOllirType).append(ASSIGN).append(" ").append(resOllirType).append(" ").append(code).append(END_STMT);
+            code = new StringBuilder(aux);
+            code.append(resOllirType);
+        }
+
+
         return new OllirExprResult(code.toString(),computation);
     }
 
@@ -305,6 +304,12 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         var methodName = "";
         var id = node.get("value");
         var parentNode = node.getAncestor("MethodDecl");
+        boolean isField = false;
+        List<Symbol> fields = table.getFields();
+        String rhs ="";
+        StringBuilder code = new StringBuilder();
+        StringBuilder computation = new StringBuilder();
+
 
         if (parentNode.isPresent()){
             methodName = parentNode.get().get("name");
@@ -312,9 +317,26 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         Type type = TypeUtils.getExprType(node, table,methodName);
         String ollirType = OptUtils.toOllirType(type);
 
-        String code = id + ollirType;
+        rhs = node.get("value");
+        for (Symbol field : fields) {
+            if (field.getName().equals(rhs)){
+                isField = true;
+            }
+        }
 
-        return new OllirExprResult(code);
+        if (isField){
+            var aux = OptUtils.getTemp();
+            computation.append(aux).append(ollirType).append(" :=").append(ollirType).append(" getfield(this, ").append(rhs).append(ollirType).append(")").append(ollirType).append(END_STMT);
+            code.append(aux).append(ollirType);
+
+            return new OllirExprResult(code.toString(),computation);
+        }
+
+        code.append(id).append(ollirType);
+
+
+
+        return new OllirExprResult(code.toString());
     }
 
     /**
