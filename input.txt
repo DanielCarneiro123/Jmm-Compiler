@@ -1,8 +1,9 @@
- class ArrayInWhileCondition{
+ import io;
+ import io;
+ class teste{
 
     public static void main(String[] args) {
         int a;
-        foo(io a);
     }
 
     public int foo(io a){

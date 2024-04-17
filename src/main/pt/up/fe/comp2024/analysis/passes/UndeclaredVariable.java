@@ -23,6 +23,8 @@ public class UndeclaredVariable extends AnalysisVisitor {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.IDENTIFIER, this::visitVarRefExpr);
         addVisit(Kind.VAR_DECL, this::visitVarDecls);
+        addVisit(Kind.IMPORT_DECLARATION, this::visitImpDecls);
+
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
@@ -134,4 +136,28 @@ public class UndeclaredVariable extends AnalysisVisitor {
 
         return null;
     }
+
+    private Void visitImpDecls(JmmNode impDecl, SymbolTable table) {
+        String impDeclName = impDecl.get("ID");
+        boolean doubleImp = false;
+        for (var imp : table.getImports()) {
+            if (imp.equals(impDeclName)) {
+                if (doubleImp) {
+                    var message = String.format("Variable '%s' is already defined in the scope.", impDeclName);
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(impDecl),
+                            NodeUtils.getColumn(impDecl),
+                            message,
+                            null)
+                    );
+                    return null;
+                }
+                doubleImp = true;
+            }
+        }
+        return null;
+    }
+
+
 }
