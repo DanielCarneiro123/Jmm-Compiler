@@ -137,16 +137,15 @@ public class JasminGenerator {
 
     private String generatePutFieldInstruction(PutFieldInstruction putFieldInst) {
         StringBuilder code = new StringBuilder();
-
         // Load the object reference onto the stack
         code.append(generators.apply(putFieldInst.getObject()));
 
         // Load the value of the field onto the stack
         code.append(generators.apply(putFieldInst.getValue()));
 
-        String callObjName = ((ClassType) putFieldInst.getObject().getType()).getName();
+        String callObjName = getImportedClassName(putFieldInst.getObject().getName());
         String fieldName = putFieldInst.getField().getName();
-        String fieldType = getJasminType(putFieldInst.getField().getType().getTypeOfElement());
+        String fieldType = getFieldType(putFieldInst.getField().getType());
         // Emit the getfield instruction
         code.append("putfield ")
                 .append(callObjName)
@@ -170,7 +169,7 @@ public class JasminGenerator {
 
         String callObjName = ((ClassType) getFieldInst.getObject().getType()).getName();
         String fieldName = getFieldInst.getField().getName();
-        String fieldType = getJasminType(getFieldInst.getFieldType().getTypeOfElement());
+        String fieldType = getFieldType(getFieldInst.getFieldType());
         // Emit the getfield instruction
         code.append("getfield ")
                 .append(callObjName)
@@ -217,8 +216,8 @@ public class JasminGenerator {
             code.append(paramJasminType);
         }
         // tipo do retorno, este comentário de merda não foi pelo chatgpt
-        ElementType methodReturnType = method.getReturnType().getTypeOfElement();
-        String methodReturnJasminType = getJasminType(methodReturnType);
+        Type methodReturnType = method.getReturnType();
+        String methodReturnJasminType = getFieldType(methodReturnType);
         code.append(")").append(methodReturnJasminType).append(NL);
 
         // aqui criei duas funções para calcular os limites
@@ -435,6 +434,8 @@ public class JasminGenerator {
                 code.append(getJasminType(callInstruction.getReturnType().getTypeOfElement())).append(NL);
                 break;
             case arraylength:
+                code.append(generators.apply(callInstruction.getOperands().get(0)));
+                code.append(" arraylength").append(NL);
                 break;
             default:
                 throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
@@ -538,6 +539,9 @@ public class JasminGenerator {
                 break;
             case VOID:
                 code.append(NL).append("return").append(NL);
+                break;
+            case OBJECTREF:
+                code.append(NL).append("areturn").append(NL);
                 break;
             default:
                 throw new NotImplementedException("Return type not supported: " + returnType.name());

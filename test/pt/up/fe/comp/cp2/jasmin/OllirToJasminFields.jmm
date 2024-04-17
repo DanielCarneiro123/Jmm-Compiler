@@ -1,15 +1,17 @@
+import b.asmth;
+import a.smth;
+
 class Test {
 
-	int intField;
+	smth intField;
 
 	public static void main(String[] args) {
 	}
 
 	
-	public int foo() {
-        int a;
+	public smth foo() {
+        smth a;
 
-		intField = 10;
 		a = intField;
 
 		return a;
