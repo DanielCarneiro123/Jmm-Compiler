@@ -242,6 +242,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                 computation.append(argumentResult.getCode()); // Append the type
             }
             else{
+
                 code.append(argumentResult.getCode());
                 var argType = TypeUtils.getExprType(argument, table, methodName);
 
@@ -263,32 +264,45 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         if(foundMatchImports) {
 
             computation.append(funcLhs.getComputation());
-            if (child.get("value").equals("size")){
-                computation.append("invokevirtual(").append(node.getChild(0).get("value")).append(OptUtils.toOllirType(argTypeImport)).append(code).append(".i32").append(END_STMT);
-            }
-            else {
+
                 computation.append("invokevirtual(").append(node.getChild(0).get("value")).append(OptUtils.toOllirType(argTypeImport)).append(code).append(OptUtils.toOllirType(argTypeImport)).append(END_STMT);
-            }
+
             return new OllirExprResult(code1,computation);
         }
-        else
-// If an "Assignment" node is found, append the type
-            if (parent != null && parent.getKind().equals("Assignment")) {
-                String variableName = parent.get("var");
-                Optional<Symbol> matchingVariable = localVariables.stream()
-                        .filter(variable -> variable.getName().equals(variableName))
-                        .findFirst();
-                if (matchingVariable.isPresent()) {
-                    Type parentType = matchingVariable.get().getType();
-                    code.append(OptUtils.toOllirType(parentType));
-                }
+        else {
+            Optional<Type> returnType = table.getReturnTypeTry(node.get("value"));
+            if (returnType.isPresent()) {
+                Type parentType = returnType.get();
+                code.append(OptUtils.toOllirType(parentType));
             } else {
-                // If no "Assignment" node is found, append ".V"
-                code.append(".V");
+                // If an "Assignment" node is found, append the type
+                if (parent != null && parent.getKind().equals("Assignment")) {
+                    String variableName = parent.get("var");
+                    Optional<Symbol> matchingVariable = localVariables.stream()
+                            .filter(variable -> variable.getName().equals(variableName))
+                            .findFirst();
+
+                    if (!matchingVariable.isPresent()) {
+                        List<Symbol> fields = table.getFields();
+                        matchingVariable = fields.stream()
+                                .filter(variable -> variable.getName().equals(variableName))
+                                .findFirst();
+                    }
+
+                    if (matchingVariable.isPresent()) {
+                        Type parentType = matchingVariable.get().getType();
+                        code.append(OptUtils.toOllirType(parentType));
+                    }
+                } else {
+                    // If no "Assignment" node is found, append ".V"
+                    code.append(".V");
+                }
             }
+        }
 
 
-            var isBinaryOpNode = node.getAncestor("BinaryOp");
+
+        var isBinaryOpNode = node.getAncestor("BinaryOp");
 
         if (isBinaryOpNode.isPresent()){
             var aux = OptUtils.getTemp();
