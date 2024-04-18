@@ -9,11 +9,10 @@ class teste extends io{
     boolean y;
     boolean z;
     y = true;
-    while(y){
+    while(true){
         if(y){
             x = [10,20,30];
-            while(y){
-                z = true;
+            if(x){
             }
         }
         else{}

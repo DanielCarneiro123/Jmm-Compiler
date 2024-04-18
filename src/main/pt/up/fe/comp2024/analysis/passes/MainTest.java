@@ -16,6 +16,7 @@ public class MainTest extends AnalysisVisitor {
     @Override
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
+        addVisit(Kind.PROGRAM, this::visitDuplicatedParam);
         addVisit(Kind.PROGRAM, this::visitDuplicatedMethods);
         addVisit(Kind.FUNCTION_CALL, this::visitFunctioCallinMain);
     }
@@ -100,6 +101,34 @@ public class MainTest extends AnalysisVisitor {
             }
         }
         return null;
+    }
+
+    private Void visitDuplicatedParam(JmmNode program, SymbolTable table) {
+        var methods = table.getMethods();
+        var uniqueMethods = new HashSet<>();
+        var duplicatedMethods = new HashSet<>();
+
+        for (var method : table.getMethods()) {
+            for (var param : table.getParameters(currentMethod)) {
+                if (!uniqueMethods.add(method)) {
+                    duplicatedMethods.add(method);
+                }
+            }
+        }
+
+        if (!duplicatedMethods.isEmpty()) {
+            String message = "Duplicated Methods ";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(program),
+                    NodeUtils.getColumn(program),
+                    message,
+                    null)
+            );
+            return null;
+        } else {
+            return null;
+        }
     }
 
     private Void visitDuplicatedMethods(JmmNode program, SymbolTable table) {
