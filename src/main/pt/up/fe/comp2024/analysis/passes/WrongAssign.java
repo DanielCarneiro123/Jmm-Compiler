@@ -17,8 +17,9 @@ public class WrongAssign extends AnalysisVisitor {
 
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
-        addVisit(Kind.STMT, this::visitWrongAssign);
+        //addVisit(Kind.STMT, this::visitWrongAssign);
         addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
+        addVisit(Kind.ASSIGNMENT, this::visitWrongAssign2);
     }
 
     private Void visitMethodDecl(JmmNode currMethod, SymbolTable table) {
@@ -39,6 +40,29 @@ public class WrongAssign extends AnalysisVisitor {
         tem_imports = false;
         return null;
     }
+
+    private Void visitWrongAssign2(JmmNode assigment, SymbolTable table) {
+        var assigmentChil = assigment.getChildren();
+        var assigmentType = getExprType(assigment, table, method);
+        var assigmentTypeName = assigmentType.getName();
+        var assigmentChilType = getExprType(assigmentChil.get(0), table, method);
+
+        if (assigmentChilType.equals(assigmentType)) {
+            return null;
+        } else {
+            String message = "Wrong Assign Types";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(assigment),
+                    NodeUtils.getColumn(assigment),
+                    message,
+                    null)
+            );
+            return null;
+        }
+        
+    }
+
 
     private Void visitWrongAssign(JmmNode stmtDecl, SymbolTable table) {
         for (JmmNode operand : stmtDecl.getChildren()) {
