@@ -50,6 +50,11 @@ public class WrongAssign extends AnalysisVisitor {
         if (assigmentChilType.equals(assigmentType)) {
             return null;
         } else {
+            for (var imp : table.getImports()) {
+                if (imp.equals(assigmentTypeName) || imp.equals(assigmentChilType.getName())) {
+                    return null;
+                }
+            }
             String message = "Wrong Assign Types";
             addReport(Report.newError(
                     Stage.SEMANTIC,
@@ -60,7 +65,7 @@ public class WrongAssign extends AnalysisVisitor {
             );
             return null;
         }
-        
+
     }
 
 
