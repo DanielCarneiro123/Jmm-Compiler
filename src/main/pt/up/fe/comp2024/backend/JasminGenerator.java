@@ -292,6 +292,7 @@ public class JasminGenerator {
                 return "[L" + "java/lang/String" + ";";
             case ARRAYREF:
                 return "L" + "java/lang/String" + ";";
+
             default:
                 return null;
         }
@@ -310,7 +311,7 @@ public class JasminGenerator {
     }
 
     private String getObjectType(Type type) {
-        return this.getImportedClassName(((ClassType) type).getName()) + ";";
+        return "L" + this.getImportedClassName(((ClassType) type).getName()) + ";";
     }
 
     private String getImportedClassName(String basicClassName) {
@@ -327,6 +328,7 @@ public class JasminGenerator {
                 }
             }
         }
+
 
         return basicClassName;
     }
@@ -379,6 +381,8 @@ public class JasminGenerator {
                     code.append("astore_").append(reg).append(NL);
                 }
                 break;
+            case VOID:
+                {}
             default:
                 throw new NotImplementedException("Type not supported: " + type.name());
         }
@@ -397,8 +401,8 @@ public class JasminGenerator {
                 for (var op : callInstruction.getArguments()) {
                     code.append(generators.apply(op));
                 }
-                code.append("invokestatic ").append(getImportedClassName(first.getName())).append("/").append(second.getLiteral().replace("\"", ""));
-                code.append("(");
+                code.append("invokestatic ").append(getImportedClassName(generators.apply(callInstruction.getCaller()))).append("/").append(generators.apply(callInstruction.getMethodName()));
+                //code.append("(");
                 for (var arg : callInstruction.getArguments()) {
                     code.append(getFieldType(arg.getType()));
                 }
@@ -438,8 +442,8 @@ public class JasminGenerator {
                 for (var op : callInstruction.getArguments()) {
                     code.append(generators.apply(op));
                 }
-                code.append("invokevirtual ").append(getImportedClassName(((ClassType) firstVirtual.getType()).getName())).append("/").append(secondVirtual.getLiteral().replace("\"", ""));
-                code.append("(");
+                code.append("invokevirtual ").append(getImportedClassName(((ClassType) firstVirtual.getType()).getName())).append("/").append(generators.apply(callInstruction.getMethodName()));
+                //code.append("(");
                 for (var arg : callInstruction.getArguments()) {
                     code.append(getFieldType(arg.getType()));
                 }
