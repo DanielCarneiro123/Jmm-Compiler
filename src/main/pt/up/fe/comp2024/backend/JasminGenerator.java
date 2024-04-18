@@ -435,7 +435,7 @@ public class JasminGenerator {
             case NEW:
                 for (Element objetElement : callInstruction.getArguments())
                     code.append(generators.apply(objetElement));
-                code.append(NL).append("new ").append(getImportedClassName(((Operand) callInstruction.getOperands().get(0)).getName())).append(NL).append("dup").append(NL);
+                code.append(NL).append("new ").append(getImportedClassName(((Operand) callInstruction.getCaller()).getName())).append(NL).append("dup").append(NL);
                 //code.append("dup").append(NL);
                 break;
             case invokevirtual:
