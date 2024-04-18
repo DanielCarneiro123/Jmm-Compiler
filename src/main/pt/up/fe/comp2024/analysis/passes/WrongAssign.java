@@ -20,6 +20,7 @@ public class WrongAssign extends AnalysisVisitor {
         //addVisit(Kind.STMT, this::visitWrongAssign);
         addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
         addVisit(Kind.ASSIGNMENT, this::visitWrongAssign2);
+
     }
 
     private Void visitMethodDecl(JmmNode currMethod, SymbolTable table) {

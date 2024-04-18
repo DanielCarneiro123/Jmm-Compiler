@@ -44,11 +44,14 @@ public class ArrayInitWrong1 extends AnalysisVisitor {
 
 
         for (JmmNode child : varDecl.getChildren()) {
-            var x = getExprType(child, table, currentMethod).getName();
             if (varRefChildType == null) {
                 return null;
             }
-            if (!getExprType(child, table, currentMethod).getName().equals(varRefChildType.getName())) {
+            var childType = getExprType(child, table, currentMethod);
+            var childTypeName = childType.getName();
+            var varRefChildTypeName = varRefChildType.getName();
+
+            if (!childTypeName.equals("int") || childType.isArray()) {
                 String message = "Incorrect Array Type";
                 addReport(Report.newError(
                         Stage.SEMANTIC,

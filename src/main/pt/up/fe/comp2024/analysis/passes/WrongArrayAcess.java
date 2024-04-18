@@ -14,6 +14,7 @@ import static pt.up.fe.comp2024.ast.TypeUtils.getExprType;
 
 public class WrongArrayAcess extends AnalysisVisitor {
     private String currentMethod;
+
     @Override
     public void buildVisitor() {
         addVisit(Kind.CLASS_INSTANTIATION, this::visitWrongArray);
@@ -57,10 +58,13 @@ public class WrongArrayAcess extends AnalysisVisitor {
                     return null;
                 }
             }
-            JmmNode childOperand = leftOperand.getChildren().get(0);
-            Type typeChildOperand = getExprType(childOperand, table, currentMethod);
-            String typeName = typeChildOperand.getName();
+            String typeName = "";
+            if (leftOperand.getChildren().size() > 0) {
+                JmmNode childOperand = leftOperand.getChildren().get(0);
+                Type typeChildOperand = getExprType(childOperand, table, currentMethod);
+                typeName = typeChildOperand.getName();
 
+            }
             if (!typeName.equals("int")) {
                 String message = "Array Index not int";
                 addReport(Report.newError(
