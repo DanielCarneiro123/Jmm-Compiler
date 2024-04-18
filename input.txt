@@ -4,6 +4,20 @@ class teste extends io{
     public static void main(String[] args) {
     }
 
-    public static void main(String[] args) {
+    public int foo(){
+    int[] x;
+    boolean y;
+    boolean z;
+    y = true;
+    while(y){
+        if(y){
+            x = [10,20,30];
+            while(y){
+                z = true;
+            }
+        }
+        else{}
+    }
+    return 0;
     }
 }

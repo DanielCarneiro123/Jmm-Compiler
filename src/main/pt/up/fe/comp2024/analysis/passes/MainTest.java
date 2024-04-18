@@ -17,7 +17,7 @@ public class MainTest extends AnalysisVisitor {
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.METHOD_DECL, this::visitDuplicatedMethods);
-        addVisit(Kind.FUNCTION_CALL, this::visitFunctioCallinMain);
+        //addVisit(Kind.FUNCTION_CALL, this::visitFunctioCallinMain);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
@@ -102,26 +102,29 @@ public class MainTest extends AnalysisVisitor {
         return null;
     }
 
-    public Void visitDuplicatedMethods(JmmNode functionCall, SymbolTable table) {
+    private Void visitDuplicatedMethods(JmmNode functionCall, SymbolTable table) {
         var methods = table.getMethods();
-        var seenMethods = new HashSet<>();
+        var uniqueMethods = new HashSet<>();
+        var duplicatedMethods = new HashSet<>();
 
         for (String method : methods) {
-            if (seenMethods.contains(method)) {
-                String message = "Duplicated Methods";
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        NodeUtils.getLine(functionCall),
-                        NodeUtils.getColumn(functionCall),
-                        message,
-                        null)
-                );
-                return null;
-            } else {
-                seenMethods.add(method);
+            if (!uniqueMethods.add(method)) {
+                duplicatedMethods.add(method);
             }
         }
 
-        return null;
+        if (!duplicatedMethods.isEmpty()) {
+            String message = "Duplicated Methods ";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(functionCall),
+                    NodeUtils.getColumn(functionCall),
+                    message,
+                    null)
+            );
+            return null;
+        } else {
+            return null;
+        }
     }
 }
