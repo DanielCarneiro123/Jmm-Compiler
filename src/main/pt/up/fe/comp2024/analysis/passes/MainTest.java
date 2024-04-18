@@ -16,8 +16,8 @@ public class MainTest extends AnalysisVisitor {
     @Override
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
-        addVisit(Kind.METHOD_DECL, this::visitDuplicatedMethods);
-        //addVisit(Kind.FUNCTION_CALL, this::visitFunctioCallinMain);
+        addVisit(Kind.PROGRAM, this::visitDuplicatedMethods);
+        addVisit(Kind.FUNCTION_CALL, this::visitFunctioCallinMain);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
@@ -102,7 +102,7 @@ public class MainTest extends AnalysisVisitor {
         return null;
     }
 
-    private Void visitDuplicatedMethods(JmmNode functionCall, SymbolTable table) {
+    private Void visitDuplicatedMethods(JmmNode program, SymbolTable table) {
         var methods = table.getMethods();
         var uniqueMethods = new HashSet<>();
         var duplicatedMethods = new HashSet<>();
@@ -117,8 +117,8 @@ public class MainTest extends AnalysisVisitor {
             String message = "Duplicated Methods ";
             addReport(Report.newError(
                     Stage.SEMANTIC,
-                    NodeUtils.getLine(functionCall),
-                    NodeUtils.getColumn(functionCall),
+                    NodeUtils.getLine(program),
+                    NodeUtils.getColumn(program),
                     message,
                     null)
             );
