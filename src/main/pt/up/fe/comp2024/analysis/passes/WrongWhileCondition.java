@@ -29,7 +29,9 @@ public class WrongWhileCondition extends AnalysisVisitor {
         for (JmmNode operand : stmtDecl.getChildren()) {
             Type typeOperand = getExprType(operand, table, method);
 
-            if (!typeOperand.getName().equals("boolean") || (!typeOperand.getName().equals("int")) || typeOperand.isArray()) {
+            if (typeOperand.getName().equals("boolean")) {
+                return null;
+            } else {
                 String message = "Not Bool in While Condition";
                 addReport(Report.newError(
                         Stage.SEMANTIC,

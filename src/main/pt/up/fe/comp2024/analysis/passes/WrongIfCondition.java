@@ -28,8 +28,9 @@ public class WrongIfCondition extends AnalysisVisitor {
 
         for (JmmNode operand : ifExpr.getChildren()) {
             Type typeOperand = getExprType(operand, table, method);
-
-            if (!typeOperand.getName().equals("boolean")) {
+            if (typeOperand.getName().equals("boolean")) {
+                return null;
+            } else {
                 String message = "Not Bool in If Condition";
                 addReport(Report.newError(
                         Stage.SEMANTIC,
