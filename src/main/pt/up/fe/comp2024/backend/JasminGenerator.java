@@ -371,7 +371,7 @@ public class JasminGenerator {
                     code.append("istore_").append(reg).append(NL);
                 }
                 break;
-            case CLASS, OBJECTREF:
+            case CLASS, OBJECTREF, STRING:
                 if (reg > 3) {
                     code.append("astore ").append(reg).append(NL);
                     break;
