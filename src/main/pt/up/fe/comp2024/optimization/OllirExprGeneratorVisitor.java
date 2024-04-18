@@ -172,10 +172,10 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                     .anyMatch(name -> name.equals(firstChildName));
 
             if (foundMatchImports) {
-                /*code1 = OptUtils.getTemp() + OptUtils.toOllirType(argTypeImport);
+                code1 = OptUtils.getTemp() + OptUtils.toOllirType(argTypeImport);
                 computation.append(funcLhs.getComputation());
                 computation.append(code1).append(" :=").append(OptUtils.toOllirType(argTypeImport)).append(" ");
-                funcLhs = new OllirExprResult(code1); // Include the type here*/
+                funcLhs = new OllirExprResult(code1); // Include the type here
 
                 /*
 
@@ -265,7 +265,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
 
             computation.append(funcLhs.getComputation());
 
-                computation.append("invokevirtual(").append(node.getChild(0).get("value")).append(OptUtils.toOllirType(argTypeImport)).append(code).append(OptUtils.toOllirType(argTypeImport)); //END_STMT
+            computation.append("invokevirtual(").append(node.getChild(0).get("value")).append(OptUtils.toOllirType(argTypeImport)).append(code).append(OptUtils.toOllirType(argTypeImport)).append(END_STMT);
 
             return new OllirExprResult(code1,computation);
         }
