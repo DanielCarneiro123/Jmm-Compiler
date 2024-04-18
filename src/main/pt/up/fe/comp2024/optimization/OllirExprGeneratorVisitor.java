@@ -172,14 +172,18 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                     .anyMatch(name -> name.equals(firstChildName));
 
             if (foundMatchImports) {
-                code1 = OptUtils.getTemp() + OptUtils.toOllirType(argTypeImport);
+                code.append("invokevirtual");
+                code.append("(");
+                code.append(child.getChildren().get(0).get("value"));
+                code.append(OptUtils.toOllirType(argTypeImport));
+                /*code1 = OptUtils.getTemp() + OptUtils.toOllirType(argTypeImport);
                 computation.append(funcLhs.getComputation());
                 computation.append(code1).append(" :=").append(OptUtils.toOllirType(argTypeImport)).append(" ");
                 funcLhs = new OllirExprResult(code1); // Include the type here
+                */
 
-                /*
 
-                 */
+
 
             } else if (foundMatch1) {
                 code.append("invokevirtual");
@@ -261,44 +265,44 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         while (parent != null && !parent.getKind().equals("Assignment")) {
             parent = parent.getParent();
         }
-        if(foundMatchImports) {
+        /*if(foundMatchImports) {
 
-            computation.append(funcLhs.getComputation());
+            //computation.append(funcLhs.getComputation());
 
-            computation.append("invokevirtual(").append(node.getChild(0).get("value")).append(OptUtils.toOllirType(argTypeImport)).append(code).append(OptUtils.toOllirType(argTypeImport)).append(END_STMT);
-
-            return new OllirExprResult(code1,computation);
+            //computation.append("invokevirtual(").append(node.getChild(0).get("value")).append(OptUtils.toOllirType(argTypeImport)).append(code).append(OptUtils.toOllirType(argTypeImport)).append(END_STMT);
+            code.append("tipo correto");
+           // return new OllirExprResult(code1,computation);
         }
-        else {
-            Optional<Type> returnType = table.getReturnTypeTry(node.get("value"));
-            if (returnType.isPresent()) {
-                Type parentType = returnType.get();
-                code.append(OptUtils.toOllirType(parentType));
-            } else {
-                // If an "Assignment" node is found, append the type
-                if (parent != null && parent.getKind().equals("Assignment")) {
-                    String variableName = parent.get("var");
-                    Optional<Symbol> matchingVariable = localVariables.stream()
+        else {*/
+        Optional<Type> returnType = table.getReturnTypeTry(node.get("value"));
+        if (returnType.isPresent()) {
+            Type parentType = returnType.get();
+            code.append(OptUtils.toOllirType(parentType));
+        } else {
+            // If an "Assignment" node is found, append the type
+            if (parent != null && parent.getKind().equals("Assignment")) {
+                String variableName = parent.get("var");
+                Optional<Symbol> matchingVariable = localVariables.stream()
+                        .filter(variable -> variable.getName().equals(variableName))
+                        .findFirst();
+
+                if (!matchingVariable.isPresent()) {
+                    List<Symbol> fields = table.getFields();
+                    matchingVariable = fields.stream()
                             .filter(variable -> variable.getName().equals(variableName))
                             .findFirst();
-
-                    if (!matchingVariable.isPresent()) {
-                        List<Symbol> fields = table.getFields();
-                        matchingVariable = fields.stream()
-                                .filter(variable -> variable.getName().equals(variableName))
-                                .findFirst();
-                    }
-
-                    if (matchingVariable.isPresent()) {
-                        Type parentType = matchingVariable.get().getType();
-                        code.append(OptUtils.toOllirType(parentType));
-                    }
-                } else {
-                    // If no "Assignment" node is found, append ".V"
-                    code.append(".V");
                 }
+
+                if (matchingVariable.isPresent()) {
+                    Type parentType = matchingVariable.get().getType();
+                    code.append(OptUtils.toOllirType(parentType));
+                }
+            } else {
+                // If no "Assignment" node is found, append ".V"
+                code.append(".V");
             }
         }
+        // }
 
 
 
@@ -316,7 +320,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
 
         if (isParamNode.isPresent()){
             var aux = OptUtils.getTemp();
-            Optional<Type> returnType = table.getReturnTypeTry(node.get("value"));
+            returnType = table.getReturnTypeTry(node.get("value"));
             Type parentType = returnType.get();
             computation.append(aux).append(OptUtils.toOllirType(parentType)).append(ASSIGN).append(" ").append(OptUtils.toOllirType(parentType)).append(" ").append(code).append(END_STMT);
             code = new StringBuilder(aux);
