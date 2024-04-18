@@ -32,9 +32,6 @@ public class WrongIfCondition extends AnalysisVisitor {
                 return null;
 
             }
-            /*else if (){
-
-            }*/
             else {
                 String message = "Not Bool in If Condition";
                 addReport(Report.newError(
