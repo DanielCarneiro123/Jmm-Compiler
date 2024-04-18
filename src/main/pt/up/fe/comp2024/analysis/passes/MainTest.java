@@ -108,16 +108,16 @@ public class MainTest extends AnalysisVisitor {
         var uniqueMethods = new HashSet<>();
         var duplicatedMethods = new HashSet<>();
 
-        for (var method : table.getMethods()) {
-            for (var param : table.getParameters(currentMethod)) {
-                if (!uniqueMethods.add(method)) {
-                    duplicatedMethods.add(method);
+        for (var method : methods) {
+            for (var param : table.getParameters(method)) {
+                if (!uniqueMethods.add(param)) {
+                    duplicatedMethods.add(param);
                 }
             }
         }
 
         if (!duplicatedMethods.isEmpty()) {
-            String message = "Duplicated Methods ";
+            String message = "Duplicated Param ";
             addReport(Report.newError(
                     Stage.SEMANTIC,
                     NodeUtils.getLine(program),
