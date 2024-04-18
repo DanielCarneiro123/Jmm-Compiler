@@ -1,15 +1,18 @@
- import B;
- class teste extends B{
+import foo.bar.A;
+class Simple {
 
-    public static void main(String[] args) {
-
+    public int test() {
+        int c;
+        String d;
+        d = A.foo();
+        c = 0;
+        return c;
     }
 
-    public boolean foo(){
-        boolean x;
-        boolean y;
-        this.bar();
-        return x;
-    }
-    }
 
+    public static void main(String[] args){
+       Simple s;
+       s = new Simple();
+       s.test();
+    }
+}
