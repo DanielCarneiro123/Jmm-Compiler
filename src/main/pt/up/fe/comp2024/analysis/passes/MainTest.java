@@ -8,12 +8,15 @@ import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
+import java.util.HashSet;
+
 public class MainTest extends AnalysisVisitor {
     private String currentMethod;
 
     @Override
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
+        addVisit(Kind.METHOD_DECL, this::visitDuplicatedMethods);
         addVisit(Kind.FUNCTION_CALL, this::visitFunctioCallinMain);
     }
 
@@ -99,5 +102,26 @@ public class MainTest extends AnalysisVisitor {
         return null;
     }
 
+    public Void visitDuplicatedMethods(JmmNode functionCall, SymbolTable table) {
+        var methods = table.getMethods();
+        var seenMethods = new HashSet<>();
 
+        for (String method : methods) {
+            if (seenMethods.contains(method)) {
+                String message = "Duplicated Methods";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(functionCall),
+                        NodeUtils.getColumn(functionCall),
+                        message,
+                        null)
+                );
+                return null;
+            } else {
+                seenMethods.add(method);
+            }
+        }
+
+        return null;
+    }
 }
