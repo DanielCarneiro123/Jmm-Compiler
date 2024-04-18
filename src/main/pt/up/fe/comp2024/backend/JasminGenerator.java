@@ -234,7 +234,7 @@ public class JasminGenerator {
 
             code.append(instCode);
             if (inst.getInstType() == InstructionType.CALL && ((CallInstruction) inst).getReturnType().getTypeOfElement() != ElementType.VOID) {
-                code.append("pop");
+                code.append("pop").append(NL);
             }
         }
 
@@ -436,7 +436,6 @@ public class JasminGenerator {
                 for (Element objetElement : callInstruction.getArguments())
                     code.append(generators.apply(objetElement));
                 code.append(NL).append("new ").append(getImportedClassName(((Operand) callInstruction.getCaller()).getName())).append(NL).append("dup").append(NL);
-                //code.append("dup").append(NL);
                 break;
             case invokevirtual:
                 code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
