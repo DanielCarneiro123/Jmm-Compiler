@@ -4,12 +4,12 @@ class BoolTimesInt {
 
     }
 
-    public int foo() {
+    public boolean foo() {
         int a;
         boolean b;
 
-        a = 10;
+        a = 3;
         b = true;
-        return b * a;
+        return b && a;
     }
 }

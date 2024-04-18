@@ -24,8 +24,12 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
     private Void visitBinaryExpr(JmmNode binaryExpr, SymbolTable table) {
         String operator = binaryExpr.get("op");
         String method = binaryExpr.getJmmParent().getJmmParent().getOptional("name").orElse("");
+
+        if (operator.equals("==") || operator.equals("/=")){
+            return null;
+        }
         // Check if the operator is an arithmetic operation
-        if (isArithmeticOperator(operator)) {
+        else if (isArithmeticOperator(operator)) {
             // Check if any operand is an array
             JmmNode leftOperand = binaryExpr.getChildren().get(0);
             JmmNode rightOperand = binaryExpr.getChildren().get(1);
@@ -73,12 +77,61 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
 
         }
 
+        else if (isBooleanOperator(operator)){
+            JmmNode leftOperand = binaryExpr.getChildren().get(0);
+            JmmNode rightOperand = binaryExpr.getChildren().get(1);
+            Type type1 = getExprType(leftOperand, table, method);
+            Type type2 = getExprType(rightOperand, table, method);
+            if (type1.isArray() || type2.isArray()) {
+                // Create error report
+                String message = "Arrays cannot be used in boolean operations.";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(binaryExpr),
+                        NodeUtils.getColumn(binaryExpr),
+                        message,
+                        null)
+                );
+                return null;
+            }
+            if (type1.getName().equals("int") || type2.getName().equals("int")) {
+                // Create error report
+                String message = "Int cannot be used in boolean operations.";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(binaryExpr),
+                        NodeUtils.getColumn(binaryExpr),
+                        message,
+                        null)
+                );
+                return null;
+            }
+            if (!type1.getName().equals("boolean") || !type2.getName().equals("boolean")) {
+                // Create error report
+                String message = "Objects cannot be used in boolean operations.";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(binaryExpr),
+                        NodeUtils.getColumn(binaryExpr),
+                        message,
+                        null)
+                );
+                return null;
+            }
+        }
+
         return null;
     }
 
     private boolean isArithmeticOperator(String operator) {
         return operator.equals("+") || operator.equals("-") ||
-                operator.equals("*") || operator.equals("/");
+                operator.equals("*") || operator.equals("/") ||
+                operator.equals("-=") || operator.equals("+=")
+                || operator.equals("*=") || operator.equals("<=") || operator.equals(">=")
+                || operator.equals("<") || operator.equals(">");
     }
 
+    private boolean isBooleanOperator(String operator) {
+        return operator.equals("&&") || operator.equals("||");
+    }
 }
