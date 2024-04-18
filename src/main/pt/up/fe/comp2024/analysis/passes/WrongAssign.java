@@ -56,7 +56,35 @@ public class WrongAssign extends AnalysisVisitor {
         } else {
             for (var imp : table.getImports()) {
                 if (imp.equals(assigmentTypeName) || imp.equals(assigmentChilType.getName())) {
-                    return null;
+                    if (imp.equals(assigmentTypeName)) {
+                        for (var imp2 : table.getImports()) {
+                            if (imp2.equals(assigmentChilType.getName())) {
+                                return null;
+                            }
+                        }
+                    }
+                    if (imp.equals(assigmentChilType.getName())) {
+                        for (var imp2 : table.getImports()) {
+                            if (imp2.equals(assigmentTypeName)) {
+                                return null;
+                            }
+                        }
+                    }
+                    if (assigmentChilType.getName().equals(table.getClassName()) && imp.equals(assigmentTypeName) && imp.equals(table.getSuper())) {
+                        return null;
+                    } else if (assigmentTypeName.equals(table.getClassName()) && imp.equals(assigmentChilType.getName()) && imp.equals(table.getSuper())) {
+                        return null;
+                    } else {
+                        String message = "Wrong Assign Types";
+                        addReport(Report.newError(
+                                Stage.SEMANTIC,
+                                NodeUtils.getLine(assigment),
+                                NodeUtils.getColumn(assigment),
+                                message,
+                                null)
+                        );
+                        return null;
+                    }
                 }
             }
             String message = "Wrong Assign Types";

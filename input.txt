@@ -1,10 +1,21 @@
-import io;
-class teste extends io{
+import B;
 
-    public static void main(String[] args) {
+class ObjectAssignmentFail{
+
+    public static void main(String[] args){
+
     }
-    public int foo0(int a){
-    a = this;
-    return 0;
-}
+
+    public ObjectAssignmentFail foo() {
+        ObjectAssignmentFail a;
+        B b;
+
+        a = new ObjectAssignmentFail();
+        b = new B();
+
+        // ObjectAssignmentFail does not extend B
+        b = a;
+
+        return a;
+    }
 }
