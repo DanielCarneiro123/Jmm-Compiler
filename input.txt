@@ -3,20 +3,7 @@ class teste extends io{
 
     public static void main(String[] args) {
     }
-
-    public int foo(){
-    int[] x;
-    boolean y;
-    boolean z;
-    y = true;
-    while(true){
-        if(y){
-            x = [10,20,30];
-            if(x){
-            }
-        }
-        else{}
-    }
+    public int foo0(int a, int a){
     return 0;
-    }
+}
 }
