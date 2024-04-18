@@ -288,7 +288,9 @@ public class JasminGenerator {
                 return "Z";
             case VOID:
                 return "V";
-            case STRING, ARRAYREF:
+            case STRING:
+                return "[L" + "java/lang/String" + ";";
+            case ARRAYREF:
                 return "L" + "java/lang/String" + ";";
             default:
                 return null;
@@ -316,12 +318,11 @@ public class JasminGenerator {
         if (basicClassName.equals("this"))
             return this.ollirResult.getOllirClass().getClassName();
 
-        String realClass = "." + normalizeClassName2(basicClassName);
+        String realClass = "." + basicClassName;
 
         if (ollirResult.getOllirClass().getImportedClasseNames().contains(basicClassName)){
             for (var imp: ollirResult.getOllirClass().getImports()) {
-                var aux = normalizeClassName2(imp);
-                if (aux.endsWith(realClass)) {
+                if (imp.endsWith(realClass)) {
                     return normalizeClassName(imp);
                 }
             }
@@ -337,8 +338,9 @@ public class JasminGenerator {
 
 
     private String normalizeClassName(String className) {
-        return className.replaceAll(".", "/");
+        return className.replace('.', '/');
     }
+
 
     private String generateAssign(AssignInstruction assign) {
         var code = new StringBuilder();
@@ -421,9 +423,7 @@ public class JasminGenerator {
                 }
                 code.append(")");
                 code.append(getFieldType(callInstruction.getReturnType())).append(NL);
-                /*if (!ollirResult.getOllirClass().getClassName().equals(ollirResult.getOllirClass().getSuperClass())) {
-                    code.append("pop");
-                }*/
+
                 break;
             case NEW:
                 for (Element objetElement : callInstruction.getArguments())
@@ -567,7 +567,7 @@ public class JasminGenerator {
             case VOID:
                 code.append(NL).append("return").append(NL);
                 break;
-            case OBJECTREF:
+            case OBJECTREF, STRING:
                 code.append(NL).append("areturn").append(NL);
                 break;
             default:

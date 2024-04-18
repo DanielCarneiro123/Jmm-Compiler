@@ -113,7 +113,7 @@ public class ClassNotImported extends AnalysisVisitor {
             //talvez tenha de meter algo se o argDeclName não tiver nos param
         }
 
-        if (!argDeclTypeName.equals("int") && !argDeclTypeName.equals("boolean") && !argDeclTypeName.equals(table.getClassName())) {
+        if (!argDeclTypeName.equals("String") && !argDeclTypeName.equals("int") && !argDeclTypeName.equals("boolean") && !argDeclTypeName.equals(table.getClassName())) {
             for (var imp : table.getImports()) {
                 if (imp.equals(argDeclTypeName)) {
                     return null;
