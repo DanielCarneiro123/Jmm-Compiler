@@ -414,7 +414,7 @@ public class JasminGenerator {
                 break;
             case invokespecial:
                 code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
-                var elemType = callInstruction.getOperands().get(0).getType();
+                var elemType = ((Operand) callInstruction.getCaller()).getType();
                 code.append("invokespecial ");
                 if (elemType.getTypeOfElement() == ElementType.THIS){
                     code.append(ollirResult.getOllirClass().getSuperClass());
@@ -430,7 +430,7 @@ public class JasminGenerator {
                 }
                 code.append(")");
                 code.append(getFieldType(callInstruction.getReturnType())).append(NL);
-                code.append("pop").append(NL);
+                code.append("pop");
                 break;
             case NEW:
                 for (Element objetElement : callInstruction.getArguments())
