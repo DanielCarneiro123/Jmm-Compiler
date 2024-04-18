@@ -521,6 +521,11 @@ public class JasminGenerator {
                 return "aload_" + reg + NL;
             }
         }
+
+        if (currentMethod.getOllirClass().getImports().contains(name)) {
+            return name;
+        }
+
         String realClass = "." + name;
 
         if (ollirResult.getOllirClass().getImportedClasseNames().contains(name)){

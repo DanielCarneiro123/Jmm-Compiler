@@ -1,23 +1,20 @@
-import inheritanceAB.A;
-Simple extends Object {
+Test {
 
-
-.method public test().i32 {
-tmp0.String :=.String invokestatic(A, "foo").String;
-d.String :=.String tmp0.String;
-c.i32 :=.i32 0.i32;
-ret.i32 c.i32;
-}
 
 .method public static main(args.array.String).V {
-tmp1.Simple :=.Simple new(Simple).Simple;
-invokespecial(tmp1.Simple, "").V;
-s.Simple :=.Simple tmp1.Simple;
-invokevirtual(s.Simple, "test").i32;
 ret.V ;
 }
 
-.construct Simple().V {
+.method public foo().i32 {
+a.i32 :=.i32 1.i32;
+b.i32 :=.i32 2.i32;
+tmp0.i32 :=.i32 a.i32 +.i32 b.i32;
+tmp1.i32 :=.i32 tmp0.i32 +.i32 b.i32;
+c.i32 :=.i32 tmp1.i32;
+ret.i32 c.i32;
+}
+
+.construct Test().V {
 invokespecial(this, "").V;
 }
 }
