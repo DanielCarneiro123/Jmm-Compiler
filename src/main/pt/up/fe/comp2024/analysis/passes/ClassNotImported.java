@@ -62,20 +62,28 @@ public class ClassNotImported extends AnalysisVisitor {
         Type childType = getExprType(varRefExprChild, table, currentMethod);
 
 
-        if (!table.getMethods().stream()
-                .anyMatch(param -> param.equals(varRefName)) && !table.getImports().stream().anyMatch(imp -> imp.equals(childType.getName())) && !(childType.getName().equals(table.getClassName()) && !table.getSuper().equals(""))) {
-            var message = String.format("Class not imported", varRefName);
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    NodeUtils.getLine(varRefExpr),
-                    NodeUtils.getColumn(varRefExpr),
-                    message,
-                    null)
-            );
+        if (!table.getMethods().stream().anyMatch(param -> param.equals(varRefName)) &&
+                !table.getImports().stream().anyMatch(imp -> imp.equals(childType.getName())) &&
+                !(childType.getName().equals(table.getClassName()) && !table.getSuper().equals(""))) {
 
-            return null;
+            for (var imp : table.getImports()) {
+                if (imp.equals(table.getSuper())) {
+                    return null;
+                } else {
+
+                    var message = String.format("Class not imported", varRefName);
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(varRefExpr),
+                            NodeUtils.getColumn(varRefExpr),
+                            message,
+                            null)
+                    );
+
+                    return null;
+                }
+            }
         }
-
         return null;
     }
 

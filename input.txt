@@ -1,13 +1,15 @@
-import io;
-class teste extends io{
+ import B;
+ class teste extends B{
 
     public static void main(String[] args) {
+
     }
 
-    public int foo(){
-
-    int[] x;
-    x = [x];
-     return 0;
+    public boolean foo(){
+        boolean x;
+        boolean y;
+        this.bar();
+        return x;
     }
-}
+    }
+
