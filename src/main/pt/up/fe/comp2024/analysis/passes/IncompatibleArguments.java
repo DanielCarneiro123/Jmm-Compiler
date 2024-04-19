@@ -172,10 +172,19 @@ public class IncompatibleArguments extends AnalysisVisitor {
         return null;
     }
     private Void visitIncompatibleArguments3(JmmNode functionCall, SymbolTable table){
-        if (tem_imports) {
+        /*if (tem_imports) {
             return null;
 
+        }*/
+        var caller = functionCall.getChildren().get(0);
+        var callerType = getExprType(caller, table, method);
+
+        for (var imp: table.getImports()) {
+            if (imp.equals(callerType.getName())){
+                return null;
+            }
         }
+
         var funcName = functionCall.get("value");
         List<Symbol> realParam = null;
         for (var args: table.getMethods()) {
