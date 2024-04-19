@@ -23,6 +23,7 @@ public class ObjectAssign extends AnalysisVisitor {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
         addVisit(Kind.ASSIGNMENT, this::visitObjectAssign);
+        addVisit(Kind.ARRAY_DECLARATION, this::visitArrayAssign);
     }
 
     private Void visitMethodDecl(JmmNode currMethod, SymbolTable table) {
@@ -150,6 +151,34 @@ public class ObjectAssign extends AnalysisVisitor {
                     return null;
                 }
             }
+        }
+        return null;
+    }
+
+    private Void visitArrayAssign(JmmNode arrayDecl, SymbolTable table){
+        var arrayType = arrayDecl.getChild(0).get("value");
+        if (!arrayType.equals("int")){
+            String message = "Array can only be an integer";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(arrayDecl),
+                    NodeUtils.getColumn(arrayDecl),
+                    message,
+                    null)
+            );
+            return null;
+        }
+        var arrayElemType = arrayDecl.getChild(1).getKind();
+        if (!arrayElemType.equals("Integer")){
+            String message = "Indexes must be Integers";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(arrayDecl),
+                    NodeUtils.getColumn(arrayDecl),
+                    message,
+                    null)
+            );
+            return null;
         }
         return null;
     }
