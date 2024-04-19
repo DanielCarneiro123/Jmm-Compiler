@@ -61,6 +61,7 @@ public class TypeUtils {
             case BRACKETS -> new Type("brackets", false);
             case LENGTH -> new Type(INT_TYPE_NAME, false);
             case ASSIGNMENT -> getVarExprTypeForAssigment(expr, table, currMethod);
+            case PARENTESIS -> new Type("parentesis", false);
             default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
         };
 

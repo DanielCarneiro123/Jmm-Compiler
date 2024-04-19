@@ -8,6 +8,7 @@ import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
+import pt.up.fe.comp2024.ast.TypeUtils;
 
 import static pt.up.fe.comp2024.ast.TypeUtils.getExprType;
 
@@ -68,15 +69,42 @@ public class UndeclaredMethod extends AnalysisVisitor {
 
     private Void visitFunctionCaller(JmmNode functionCall, SymbolTable table) {
         var functionCallChild = functionCall.getChild(0);
-        var functionCallChildName = functionCallChild.getOptional("name").orElse("");
-        var functionCallChildType = new Type("", false);
-        if (!functionCallChildName.equals("this")) {
-            functionCallChildType = getExprType(functionCallChild, table, method);
-        } else {
+
+        String methodSignature = functionCall.get("value");
+        JmmNode left = functionCall.getChild(0);
+
+        // THIS
+        if (left.getKind().equals("Object")) {
+            if (!table.getMethods().contains(methodSignature)) {
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(functionCall),
+                        NodeUtils.getColumn(functionCall),
+                        "Method not declared",
+                        null)
+                );
+            }
             return null;
         }
 
-        if (functionCallChildType.getName().equals("int") || functionCallChildType.getName().equals("boolean") || functionCallChildType.isArray()) {
+        Type leftType = TypeUtils.getExprType(left, table, method);
+
+        if (leftType.getName().equals(table.getClassName())) {
+            if (!table.getSuper().isEmpty()) {
+                return null;
+            }
+            if (!table.getMethods().contains(methodSignature)) {
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(functionCall),
+                        NodeUtils.getColumn(functionCall),
+                        "Method not declared",
+                        null)
+                );
+            }
+            return null;
+        }
+        else if (leftType.getName().equals("int") || leftType.getName().equals("boolean") || leftType.isArray()) {
             String message = "Wrong Type Caller";
             addReport(Report.newError(
                     Stage.SEMANTIC,
@@ -87,6 +115,7 @@ public class UndeclaredMethod extends AnalysisVisitor {
             );
             return null;
         }
+
 
         return null;
     }
