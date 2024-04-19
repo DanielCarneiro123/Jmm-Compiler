@@ -1,13 +1,13 @@
-import A;
-
 class teste {
-    io a;
+    int a;
     public static void main(String[] args){
-
         foo(a);
     }
 
-    public int foo(){
+    public int foo(int a){
+        int b;
+        a.foo(b);
         return 0;
     }
+
 }
