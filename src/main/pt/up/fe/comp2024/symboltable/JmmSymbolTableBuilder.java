@@ -115,7 +115,11 @@ public class JmmSymbolTableBuilder {
     private static List<Symbol> getLocalsList(JmmNode methodDecl) {
         List<Symbol> list = new ArrayList<>();
         for (JmmNode var: methodDecl.getChildren(ARGUMENT)){
-            list.add(new Symbol(new Type(var.getJmmChild(0).get("value"), Boolean.parseBoolean(var.getJmmChild(0).get("isArray"))), var.get("name")));
+            Type argType = new Type(var.getJmmChild(0).get("value"), Boolean.parseBoolean(var.getJmmChild(0).get("isArray")));
+            if (var.getJmmChild(0).getKind().equals("VarArg")){
+                argType.putObject("varArg", true);
+            }
+            list.add(new Symbol(argType, var.get("name")));
         }
         return list;
     }

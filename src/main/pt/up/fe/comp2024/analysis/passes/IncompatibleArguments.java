@@ -172,6 +172,10 @@ public class IncompatibleArguments extends AnalysisVisitor {
         return null;
     }
     private Void visitIncompatibleArguments3(JmmNode functionCall, SymbolTable table){
+        if (tem_imports) {
+            return null;
+
+        }
         var funcName = functionCall.get("value");
         List<Symbol> realParam = null;
         for (var args: table.getMethods()) {
@@ -195,7 +199,11 @@ public class IncompatibleArguments extends AnalysisVisitor {
 
 
         List<JmmNode> paramsPassed = functionCall.getChildren(Kind.EXPR).subList(1,functionCall.getChildren(Kind.EXPR).size());
-
+        for (int i = 0; i < realParam.size(); i++) {
+            if (realParam.get(i).getType().hasAttribute("varArg")){
+                return null;
+            }
+        }
         if (realParam.size() < paramsPassed.size()){
             String message = "Too Many Arguments Added";
             addReport(Report.newError(
@@ -233,6 +241,9 @@ public class IncompatibleArguments extends AnalysisVisitor {
                 return null;
             }
         }
+        var paramPassedTypeFinal = getExprType(paramsPassed.get(paramsPassed.size()-1), table, method);
+        var realParamTypeFinal = realParam.get(paramsPassed.size()-1).getType();
+        /*if ()*/
 
         return null;
 
