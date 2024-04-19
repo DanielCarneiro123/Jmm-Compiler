@@ -265,10 +265,10 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                             code.append(resOllirType);
 
                         }
-                        else if (firstChildName.equals(table.getClassName())) {
+                        else if (table.getMethods().contains(child.get("value"))) {
                             Type returnType = table.getReturnType(methodSignature);
                             String t = OptUtils.toOllirType(returnType);
-                            code.append(t);
+                            code.append(")").append(t);
                         }
 
                         else{
@@ -340,10 +340,10 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                             code.append(resOllirType);
 
                         }
-                        else if (firstChildName.equals(table.getClassName())) {
+                        else if (table.getMethods().contains(child.get("value"))){
                             Type returnType = table.getReturnType(methodSignature);
                             String t = OptUtils.toOllirType(returnType);
-                            code.append(t);
+                            code.append(")").append(t);
                         }
 
 
