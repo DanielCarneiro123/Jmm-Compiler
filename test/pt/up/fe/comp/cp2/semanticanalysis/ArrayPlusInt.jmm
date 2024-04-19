@@ -1,15 +1,13 @@
 import A;
 
-class ArrayPlusInt {
+class teste {
+    io a;
+    public static void main(String[] args){
 
-    public static void main(String[] args) {
-
+        foo(a);
     }
 
-    public int foo() {
-        int[] a;
-        int b;
-        b = A.foo()[0];
-        return b;
+    public int foo(){
+        return 0;
     }
 }

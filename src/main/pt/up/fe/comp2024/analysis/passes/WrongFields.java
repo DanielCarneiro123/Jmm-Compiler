@@ -23,7 +23,25 @@ public class WrongFields extends AnalysisVisitor {
     }
 
     private Void visitFields(JmmNode varDecl, SymbolTable table) {
-
+        var varType = getExprType(varDecl, table, method);
+        if (varType.getName().equals("int") || varType.getName().equals("boolean") || varType.getName().equals("String") || varType.getName().equals(table.getClassName())){
+            return null;
+        }
+        else {
+            for (var imp: table.getImports()){
+                if (imp.equals(varType.getName())){
+                    return null;
+                }
+            }
+        }
+        String message = "Variable Type is not valid";
+        addReport(Report.newError(
+                Stage.SEMANTIC,
+                NodeUtils.getLine(varDecl),
+                NodeUtils.getColumn(varDecl),
+                message,
+                null)
+        );
         return null;
     }
 }
