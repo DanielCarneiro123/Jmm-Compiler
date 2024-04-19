@@ -20,9 +20,9 @@ public class MainTest extends AnalysisVisitor {
         addVisit(Kind.FUNCTION_CALL, this::visitFunctioCallinMain);
     }
 
-
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
         currentMethod = method.get("name");
+
         if (currentMethod.equals("main")) {
 
             var isStatic = method.get("isStatic").equals("true");
@@ -86,7 +86,7 @@ public class MainTest extends AnalysisVisitor {
     private Void visitFunctioCallinMain(JmmNode functionCall, SymbolTable table) {
         if (currentMethod.equals("main")) {
             var functionCallChild = functionCall.getChild(0);
-            var isThis = functionCallChild.get("value").equals("this");
+            var isThis = functionCallChild.getOptional("value").orElse("").equals("this");
             if (isThis) {
                 String message = "This cannot be used, main is static";
                 addReport(Report.newError(

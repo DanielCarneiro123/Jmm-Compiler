@@ -76,7 +76,7 @@ public class UndeclaredMethod extends AnalysisVisitor {
             return null;
         }
 
-        if (functionCallChildName.equals("int") || functionCallChildName.equals("boolean") || functionCallChildType.isArray()) {
+        if (functionCallChildType.getName().equals("int") || functionCallChildType.getName().equals("boolean") || functionCallChildType.isArray()) {
             String message = "Wrong Type Caller";
             addReport(Report.newError(
                     Stage.SEMANTIC,

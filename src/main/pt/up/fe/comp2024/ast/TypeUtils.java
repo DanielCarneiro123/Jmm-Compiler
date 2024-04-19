@@ -105,6 +105,12 @@ public class TypeUtils {
                 return local.getType();
             }
         }
+        var params = table.getParameters(currMethod);
+        for (var param : params) {
+            if (param.getName().equals(varName)) {
+                return param.getType();
+            }
+        }
         var fields = table.getFields();
         for (var field : fields) {
             if (field.getName().equals(varName)) {
