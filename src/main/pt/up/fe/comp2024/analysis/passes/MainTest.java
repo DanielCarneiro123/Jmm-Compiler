@@ -16,27 +16,10 @@ public class MainTest extends AnalysisVisitor {
     @Override
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
-        addVisit(Kind.PROGRAM, this::mainEverywhere);
         addVisit(Kind.PROGRAM, this::visitDuplicatedMethods);
         addVisit(Kind.FUNCTION_CALL, this::visitFunctioCallinMain);
     }
 
-    private Void mainEverywhere(JmmNode program, SymbolTable table) {
-        for (var met: table.getMethods()){
-            if (met.equals("main")){
-                return null;
-            }
-        }
-        String message = "No main method";
-        addReport(Report.newError(
-                Stage.SEMANTIC,
-                NodeUtils.getLine(program),
-                NodeUtils.getColumn(program),
-                message,
-                null)
-        );
-        return null;
-    }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
         currentMethod = method.get("name");

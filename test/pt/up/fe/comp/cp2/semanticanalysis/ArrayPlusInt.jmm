@@ -1,13 +1,15 @@
-class teste {
-    int a;
-    public static void main(String[] args){
-        foo(a);
+class main {
+
+    public static void main(String[] args) {
+
     }
 
-    public int foo(int a){
+    public int foo() {
+        int[] a;
         int b;
-        a.foo(b);
-        return 0;
-    }
 
+        a = new int[2];
+        b = 10;
+        return a + b;
+    }
 }
