@@ -1,14 +1,30 @@
 import foo.bar.A;
+<<<<<<< Updated upstream
+=======
+import String1;
+>>>>>>> Stashed changes
 class Simple {
 
     public int test() {
         int c;
+<<<<<<< Updated upstream
         String d;
         d = A.foo();
         c = 0;
         return c;
     }
 
+=======
+        String1 d;
+        d = A.foo();
+        c = this.foo();
+        return c;
+    }
+
+    public int foo(){
+        return 3;
+    }
+>>>>>>> Stashed changes
 
     public static void main(String[] args){
        Simple s;
