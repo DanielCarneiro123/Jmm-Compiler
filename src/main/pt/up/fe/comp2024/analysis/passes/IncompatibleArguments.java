@@ -184,6 +184,9 @@ public class IncompatibleArguments extends AnalysisVisitor {
                 return null;
             }
         }
+        if (callerType.getName().equals(table.getClassName())){
+            return null;
+        }
 
         var funcName = functionCall.get("value");
         List<Symbol> realParam = null;
