@@ -1,8 +1,6 @@
 class VarNotDeclared {
 
-    public static void main(String[] args) {
-
-    }
+    var x;
 
     public int foo() {
         return x;
