@@ -7,4 +7,12 @@ class Test extends A{
         b = A.foo();
         a = [b];
     }
+
+    public int foo(){
+            int[] a;
+            int b;
+            b = A.foo();
+            a = [b];
+            return a;
+    }
 }

@@ -14,6 +14,7 @@ import static pt.up.fe.comp2024.ast.TypeUtils.getExprType;
 public class IncompatibleReturn extends AnalysisVisitor {
     private String method;
     private boolean tem_imports;
+
     @Override
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
@@ -25,6 +26,7 @@ public class IncompatibleReturn extends AnalysisVisitor {
         method = currMethod.get("name");
         return null;
     }
+
     private Void visitImport_Extend(JmmNode classDecl, SymbolTable table) {
         String extendedName = classDecl.getOptional("extendedClass").orElse("");
         for (int i = 0; i < classDecl.getParent().getChildren().size() - 1; i++) {
@@ -38,24 +40,23 @@ public class IncompatibleReturn extends AnalysisVisitor {
         tem_imports = false;
         return null;
     }
+
     private Void visitIncompatibleReturn(JmmNode expr, SymbolTable table) {
         JmmNode parentExpr = expr.getJmmParent();
         Type typeMethod = table.getReturnType(parentExpr.get("name"));
         JmmNode childExpr = expr.getJmmChild(0);
         Type typeExpr = getExprType(childExpr, table, method);
 
-        if(!tem_imports){
-            if (!typeExpr.equals(typeMethod)) {
-                String message = "Incompatible Return";
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        NodeUtils.getLine(expr),
-                        NodeUtils.getColumn(expr),
-                        message,
-                        null)
-                );
-                return null;
-            }
+        if (!typeExpr.equals(typeMethod)) {
+            String message = "Incompatible Return";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(expr),
+                    NodeUtils.getColumn(expr),
+                    message,
+                    null)
+            );
+            return null;
         }
 
 
