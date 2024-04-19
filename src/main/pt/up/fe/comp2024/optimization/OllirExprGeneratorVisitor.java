@@ -39,6 +39,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         addVisit(TRUE, this::visitBoolLiteral);
         addVisit(FALSE, this::visitBoolLiteral);
         addVisit(NEGATION, this::visitNegationExpr);
+        addVisit(OBJECT, this::visitThisExpr);
 
 
         setDefaultVisit(this::defaultVisit);
@@ -60,6 +61,14 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         return new OllirExprResult(negatedVar, code);
     }
 
+    private OllirExprResult visitThisExpr(JmmNode node, Void unused) {
+        // Visit the expression inside the parentheses
+        var code = new StringBuilder();
+        code.append("this.").append(table.getClassName());
+
+        // Return the computation and code of the inner expression
+        return new OllirExprResult(code.toString());
+    }
 
     private OllirExprResult visitBoolLiteral(JmmNode node, Void unused) {
         String value = node.get("value");
@@ -74,6 +83,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         // Return the computation and code of the inner expression
         return innerExpr;
     }
+
     private OllirExprResult visitNewClass(JmmNode node, Void unused) {
         StringBuilder code = new StringBuilder();
 
@@ -226,7 +236,40 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                             code.append(", ").append(argCode);
 
                         }
-                        code.append(").V");
+                        if(node.getParent().getKind().equals("Assignment")){
+                            code.append(")");
+                            String variableName = node.getParent().get("var");
+                            Optional<Symbol> matchingVariable = localVariables.stream()
+                                    .filter(variable -> variable.getName().equals(variableName))
+                                    .findFirst();
+
+                            if (!matchingVariable.isPresent()) {
+                                List<Symbol> fields = table.getFields();
+                                matchingVariable = fields.stream()
+                                        .filter(variable -> variable.getName().equals(variableName))
+                                        .findFirst();
+                            }
+
+                            if (matchingVariable.isPresent()) {
+                                Type parentType = matchingVariable.get().getType();
+                                code.append(OptUtils.toOllirType(parentType));
+                            }
+
+                        }
+
+                       else if(node.getParent().getKind().equals("BinaryOp")){
+                            var aux = OptUtils.getTemp();
+                            String resOllirType = node.getParent().get("op").equals("+") || node.getParent().get("op").equals("-") || node.getParent().get("op").equals("*") || node.getParent().get("op").equals("/") ? ".i32" : ".bool";
+                            computation.append(aux).append(resOllirType).append(ASSIGN).append(" ").append(resOllirType).append(" ").append(code).append(")").append(resOllirType).append(END_STMT);
+                            code = new StringBuilder(aux);
+                            code.append(resOllirType);
+
+                        }
+
+
+                        else{
+                            code.append(").V");
+                        }
 
                         return new OllirExprResult(code.toString(), computation.toString());
                     }
@@ -264,7 +307,40 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                             code.append(", ").append(argCode);
 
                         }
-                        code.append(").V");
+                        if(node.getParent().getKind().equals("Assignment")){
+                            code.append(")");
+                            String variableName = node.getParent().get("var");
+                            Optional<Symbol> matchingVariable = localVariables.stream()
+                                    .filter(variable -> variable.getName().equals(variableName))
+                                    .findFirst();
+
+                            if (!matchingVariable.isPresent()) {
+                                List<Symbol> fields = table.getFields();
+                                matchingVariable = fields.stream()
+                                        .filter(variable -> variable.getName().equals(variableName))
+                                        .findFirst();
+                            }
+
+                            if (matchingVariable.isPresent()) {
+                                Type parentType = matchingVariable.get().getType();
+                                code.append(OptUtils.toOllirType(parentType));
+                            }
+
+                        }
+
+                        else if(node.getParent().getKind().equals("BinaryOp")){
+                            var aux = OptUtils.getTemp();
+                            String resOllirType = node.getParent().get("op").equals("+") || node.getParent().get("op").equals("-") || node.getParent().get("op").equals("*") || node.getParent().get("op").equals("/") ? ".i32" : ".bool";
+                            computation.append(aux).append(resOllirType).append(ASSIGN).append(" ").append(resOllirType).append(" ").append(code).append(")").append(resOllirType).append(END_STMT);
+                            code = new StringBuilder(aux);
+                            code.append(resOllirType);
+
+                        }
+
+
+                        else{
+                            code.append(").V");
+                        }
 
                         return new OllirExprResult(code.toString(), computation.toString());
                     }
@@ -322,8 +398,106 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
 
             else if (leftChild.getKind().equals("Object")) {
-                //...
+
+                // computation.append(new.Computation)
+                computation.append(funcLhs.getComputation());
+
+
+                code.append("invokevirtual(")
+                        .append(funcLhs.getCode())
+                        .append(", \"")
+                        .append(methodSignature)
+                        .append("\"");
+
+                // arguments
+                List<JmmNode> arguments = child.getChildren().subList(1, child.getNumChildren());
+
+                for (int i = 0; i < arguments.size(); i++) {
+
+                    JmmNode argument = arguments.get(i);
+
+                    // Visit the argument to get its value
+                    OllirExprResult argumentResult = visit(argument);
+
+                    // Extract the code representing the argument value
+                    String argumentCode = argumentResult.getComputation();
+                    computation.append(argumentCode);
+
+                    String argCode = argumentResult.getCode();
+
+                    if (argument.getKind().equals("FunctionCall")) {   // tmp0.i32 =.i32 invokevirtual(tmp0.Simple, "add", 1.i32).i32
+                        String tmp = OptUtils.getTemp();
+                        String lastType = "";
+                        if (table.getMethods().contains(methodSignature)) {
+                            Type argType = table.getParameters(methodSignature).get(i).getType();
+                            lastType = OptUtils.toOllirType(argType);
+                        }
+                        else {
+                            lastType = argCode.substring(argCode.lastIndexOf("."));
+                        }
+                        computation.append(tmp).append(lastType)
+                                .append(" :=").append(lastType).append(" ")
+                                .append(argCode).append(END_STMT);
+                        argCode = tmp + lastType;
+
+                    }
+
+                    code.append(", ").append(argCode);
+
+                }
+                code.append(")");
+
+                // return type
+                if(node.getParent().getKind().equals("Assignment")){
+                    code.append(")");
+                    String variableName = node.getParent().get("var");
+                    Optional<Symbol> matchingVariable = localVariables.stream()
+                            .filter(variable -> variable.getName().equals(variableName))
+                            .findFirst();
+
+                    if (!matchingVariable.isPresent()) {
+                        List<Symbol> fields = table.getFields();
+                        matchingVariable = fields.stream()
+                                .filter(variable -> variable.getName().equals(variableName))
+                                .findFirst();
+                    }
+
+                    if (matchingVariable.isPresent()) {
+                        Type parentType = matchingVariable.get().getType();
+                        code.append(OptUtils.toOllirType(parentType));
+                    }
+
+                }
+
+                else if(node.getParent().getKind().equals("BinaryOp")){
+                    var aux = OptUtils.getTemp();
+                    String resOllirType = node.getParent().get("op").equals("+") || node.getParent().get("op").equals("-") || node.getParent().get("op").equals("*") || node.getParent().get("op").equals("/") ? ".i32" : ".bool";
+                    computation.append(aux).append(resOllirType).append(ASSIGN).append(" ").append(resOllirType).append(" ").append(code).append("").append(resOllirType).append(END_STMT);
+                    code = new StringBuilder(aux);
+                    code.append(resOllirType);
+
+                }
+
+
+                else{
+                    Type returnType = table.getReturnType(methodSignature);
+                    String t = OptUtils.toOllirType(returnType);
+                    code.append(t);
+                }
+
+
+
+
+
+
+                return new OllirExprResult(code.toString(), computation.toString());
+
             }
+
+
+
+
+
             String fName = firstChildName;
             Optional<Symbol> matchingVariable1 = localVariables.stream()
                     .filter(variable -> variable.getName().equals(fName))
