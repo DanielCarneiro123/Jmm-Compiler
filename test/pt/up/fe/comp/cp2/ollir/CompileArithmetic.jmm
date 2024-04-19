@@ -1,11 +1,16 @@
-import A.B.C;
+class CompileArithmetic {
 
-class test{
+    public static void main(String[] args) {
+
+    }
 
     public int foo() {
-        C c1;
-        int d;
-        d = c1.foo();
-        return 1;
+        int a;
+        int b;
+
+        a = 1;
+        b = 2;
+
+        return a + b;
     }
 }
