@@ -56,7 +56,7 @@ public class TypeUtils {
             case BINARY_OP -> getBinExprType(expr);
             case FUNCTION_CALL -> getFunctionType(expr, table);
             case NEW_CLASS -> new Type(expr.get("classname"), false);
-            case OBJECT -> new Type("object", false);
+            case OBJECT -> new Type(table.getClassName(), false);
             case TRUE, FALSE -> new Type(BOOLEAN_TYPE_NAME, false);
             case BRACKETS -> new Type("brackets", false);
             case LENGTH -> new Type(INT_TYPE_NAME, false);

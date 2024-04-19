@@ -1,9 +1,15 @@
-class ArrayInit {
+import A;
 
-    public int[] foo() {
-        int[] a;
-        a = [10, 20, 30];
-        return a;
+class ArrayInit extends A {
+
+
+    public ArrayInit bar (){
+
+        return this;
     }
+
+     public int bar2 (){
+            return 0;
+        }
 
 }
