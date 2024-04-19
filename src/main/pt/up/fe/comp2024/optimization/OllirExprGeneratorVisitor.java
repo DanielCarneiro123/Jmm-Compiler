@@ -3,6 +3,7 @@ package pt.up.fe.comp2024.optimization;
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
+import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
 import pt.up.fe.comp2024.ast.TypeUtils;
@@ -15,7 +16,7 @@ import static pt.up.fe.comp2024.ast.Kind.*;
 /**
  * Generates OLLIR code from JmmNodes that are expressions.
  */
-public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExprResult> {
+public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult> {
 
     private static final String SPACE = " ";
     private static final String ASSIGN = ":=";
@@ -130,6 +131,20 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         var funcLhs =  visit(node.getJmmChild(0));
         Type argTypeImport = new Type("aux",false);
         boolean foundMatchImports = false;
+        boolean parentIsAssign = false;
+        boolean parentIsBinOp = false;
+
+
+        if(node.getParent().getKind().equals("Assignment")){
+            parentIsAssign = true;
+        }
+
+        if(node.getParent().getKind().equals("BinaryOp")){
+            parentIsBinOp = true;
+        }
+
+        String methodSignature = node.get("value");
+
 
         var child = node;
 
@@ -148,10 +163,170 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
 
 // Get the name of the first child
 
-            String firstChildName = node.getChildren().get(0).get("value");
+            var leftChild = node.getJmmChild(0);
+            while (leftChild.getKind().equals("Parentesis")) {
+                leftChild = leftChild.getJmmChild(0);
+            }
 
+            String firstChildName = "";
+
+            if (leftChild.getKind().equals("Identifier")) {
+                firstChildName = leftChild.get("value");
+
+                Type type = TypeUtils.getExprType(leftChild, table, methodName);
+
+
+                String returnS = "";
+                // instance from the current class
+                if (type.getName().equals(table.getClassName())) {
+                    Type returnType = table.getReturnType(methodSignature);
+                    returnS = OptUtils.toOllirType(returnType);}
+
+                 else {
+
+                    // io.println
+                    if (table.getImports().contains(firstChildName)) {
+                        code.append("invokestatic(")
+                                .append(firstChildName)
+                                .append(", ")
+                                .append("\"").append(methodSignature).append("\"");
+
+                        // arguments
+                        List<JmmNode> arguments = child.getChildren().subList(1, child.getNumChildren());
+
+                        for (int i = 0; i < arguments.size(); i++) {
+                            JmmNode argument = arguments.get(i);
+
+                            // Visit the argument to get its value
+                            OllirExprResult argumentResult = visit(argument);
+
+                            // Extract the code representing the argument value
+                            String argumentCode = argumentResult.getComputation();
+                            computation.append(argumentCode);
+
+                            String argCode = argumentResult.getCode();
+
+                            if (argument.getKind().equals("FunctionCall")) {   // tmp0.i32 =.i32 invokevirtual(tmp0.Simple, "add", 1.i32).i32
+                                String tmp = OptUtils.getTemp();
+                                String lastType = "";
+                                if (table.getMethods().contains(methodSignature)) {
+                                    Type argType = table.getParameters(methodSignature).get(i).getType();
+                                    lastType = OptUtils.toOllirType(argType);
+                                }
+                                else {
+                                    lastType = argCode.substring(argCode.lastIndexOf("."));
+                                }
+                                computation.append(tmp).append(lastType)
+                                        .append(" :=").append(lastType).append(" ")
+                                        .append(argCode).append(END_STMT);
+                                argCode = tmp + lastType;
+
+                            }
+
+                            code.append(", ").append(argCode);
+
+                        }
+                        code.append(").V");
+
+                        return new OllirExprResult(code.toString(), computation.toString());
+                    }
+                    else {
+                        code.append("invokevirtual(")
+                                .append(firstChildName).append(".").append(type.getName())
+                                .append(", ")
+                                .append("\"").append(methodSignature).append("\"");
+
+                        // arguments
+                        List<JmmNode> arguments = child.getChildren().subList(1, child.getNumChildren());
+
+                        for (int i = 0; i < arguments.size(); i++) {
+                            JmmNode argument = arguments.get(i);
+
+                            // Visit the argument to get its value
+                            OllirExprResult argumentResult = visit(argument);
+
+                            // Extract the code representing the argument value
+                            String argumentCode = argumentResult.getComputation();
+                            computation.append(argumentCode);
+
+                            String argCode = argumentResult.getCode();
+
+                            if (argument.getKind().equals("FunctionCall")) {   // tmp0.i32 =.i32 invokevirtual(tmp0.Simple, "add", 1.i32).i32
+                                String tmp = OptUtils.getTemp();
+                                String lastType = argCode.substring(argCode.lastIndexOf("."));
+                                computation.append(tmp).append(lastType)
+                                        .append(" :=").append(lastType).append(" ")
+                                        .append(argCode).append(END_STMT);
+                                argCode = tmp + lastType;
+
+                            }
+
+                            code.append(", ").append(argCode);
+
+                        }
+                        code.append(").V");
+
+                        return new OllirExprResult(code.toString(), computation.toString());
+                    }
+
+                    // io c; c.println
+                }
+
+            }
+
+            else if (leftChild.getKind().equals("NewClass")) {
+                firstChildName = leftChild.get("classname");
+
+                // (new Simple()).add(1)
+
+                // computation.append(new.Computation)
+                computation.append(funcLhs.getComputation());
+
+                // invokevirtual(new.Code, "add", 1.i32).i32;
+                code.append("invokevirtual(")
+                        .append(funcLhs.getCode())
+                        .append(", \"")
+                        .append(methodSignature)
+                        .append("\"");
+
+                // arguments
+                List<JmmNode> arguments = child.getChildren().subList(1, child.getNumChildren());
+
+                for (int i = 0; i < arguments.size(); i++) {
+                    JmmNode argument = arguments.get(i);
+
+                    // Visit the argument to get its value
+                    OllirExprResult argumentResult = visit(argument);
+
+                    // Extract the code representing the argument value
+                    String argumentCode = argumentResult.getComputation();
+                    computation.append(argumentCode);
+
+                    code.append(", ").append(argumentResult.getCode());
+
+                }
+                code.append(")");
+
+                // return type
+                if (firstChildName.equals(table.getClassName())) {
+                    Type returnType = table.getReturnType(methodSignature);
+                    String t = OptUtils.toOllirType(returnType);
+                    code.append(t);
+                } else {
+                    code.append(".V");
+                }
+
+                return new OllirExprResult(code.toString(), computation.toString());
+
+            }
+
+
+            else if (leftChild.getKind().equals("Object")) {
+                //...
+            }
+            String fName = firstChildName;
             Optional<Symbol> matchingVariable1 = localVariables.stream()
-                    .filter(variable -> variable.getName().equals(firstChildName))
+                    .filter(variable -> variable.getName().equals(fName))
                     .findFirst();
 
             if (matchingVariable1.isPresent()) {
@@ -169,7 +344,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
 // Check if any local variable's name matches the first child's name
             boolean foundMatch1 = localVariables.stream()
                     .map(Symbol::getName)
-                    .anyMatch(name -> name.equals(firstChildName));
+                    .anyMatch(name -> name.equals(fName));
 
             if (foundMatchImports) {
                 code.append("invokevirtual");
