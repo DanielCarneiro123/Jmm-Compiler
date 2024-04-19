@@ -85,6 +85,11 @@ public class WrongAssign extends AnalysisVisitor {
                                 return null;
                             }
                         }
+                        for (var imp3 : table.getImports()) {
+                            if (imp3.equals(assigmentChilType.getName())) {
+                                return null;
+                            }
+                        }
                         String message = "Wrong Assign Types";
                         addReport(Report.newError(
                                 Stage.SEMANTIC,
