@@ -79,7 +79,7 @@ public class UndeclaredMethod extends AnalysisVisitor {
 
         // THIS
         if (leftType.getName().equals("object")) {
-            if (!table.getSuper().isEmpty()) {
+            if (!table.getSuper().isEmpty() && table.getSuper().equals(leftType.getName())) {
                 return null;
             }
             if (!table.getMethods().contains(methodSignature)) {
@@ -120,6 +120,10 @@ public class UndeclaredMethod extends AnalysisVisitor {
             );
             return null;
         }
+        var functionCallChildName = functionCallChild.getOptional("name").orElse("");
+        var functionCallChildType = new Type("", false);
+
+
 
 
         return null;
