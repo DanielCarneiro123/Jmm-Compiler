@@ -1,7 +1,12 @@
 import A;
 
 class ArrayInit extends A {
+    int x;
 
+    public static void main(String[] args) {
+        int x;
+        x = 10;
+    }
 
     public ArrayInit bar (){
 

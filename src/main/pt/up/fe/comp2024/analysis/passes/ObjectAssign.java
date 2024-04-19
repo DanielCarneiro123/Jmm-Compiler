@@ -57,6 +57,11 @@ public class ObjectAssign extends AnalysisVisitor {
             Boolean isStatic = Boolean.parseBoolean(assigment.getParent().get("isStatic"));
             if (field.getName().equals(assigmentName)) {
                 if (isStatic) {
+                    for (var local: table.getLocalVariables(method)){
+                        if (local.getName().equals(assigmentName)) {
+                            return null;
+                        }
+                    }
                     String message = "Non-static field cannot be referenced from a static context";
                     addReport(Report.newError(
                             Stage.SEMANTIC,

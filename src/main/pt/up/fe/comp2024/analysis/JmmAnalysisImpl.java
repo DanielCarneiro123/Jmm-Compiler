@@ -20,7 +20,7 @@ public class JmmAnalysisImpl implements JmmAnalysis {
 
     public JmmAnalysisImpl() {
 
-        this.analysisPasses = List.of(new DuplicatedParam(), new MainTest(), new WrongFields(), new ArrayLength(), new ArrayInitWrong1(), new varArgsSemantic(), new ObjectAssign(), new UndeclaredVariable(), new IncompatibleArguments(), new UndeclaredMethod(), new IncompatibleReturn(), /*new WrongWhileCondition(), new WrongIfCondition(),*/ new WrongAssign(), new ArrayInitWrong(), new WrongArrayAcess(), new ClassNotImported(), new ArrayArithmeticCheck(), new BruteForce());
+        this.analysisPasses = List.of(new DuplicatedParam(), new MainTest(), new WrongFields(), new ArrayLength(), new ArrayInitWrong1(), new varArgsSemantic(), new ObjectAssign(), new UndeclaredVariable(), new IncompatibleArguments(), new UndeclaredMethod(), new IncompatibleReturn(), new WrongWhileCondition(), new WrongIfCondition(), new WrongAssign(), new ArrayInitWrong(), new WrongArrayAcess(), new ClassNotImported(), new ArrayArithmeticCheck());
 
     }
 
