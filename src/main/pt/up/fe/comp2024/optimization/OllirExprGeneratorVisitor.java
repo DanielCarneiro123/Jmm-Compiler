@@ -129,8 +129,12 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         String code1 = "";
         var funcLhs =  visit(node.getJmmChild(0));
         Type argTypeImport = new Type("aux",false);
+        Type argTypeImportVar  = new Type("aux",false);
         boolean foundMatchImports = false;
         boolean isImportFunc = false;
+        boolean isBinaryOpPar = false;
+        boolean isAssignmentPar = false;
+
 
         var child = node;
 
@@ -156,7 +160,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                     .findFirst();
 
             if (matchingVariable1.isPresent()) {
-                argTypeImport = matchingVariable1.get().getType();
+                argTypeImportVar = matchingVariable1.get().getType();
                 String argTypeStr = OptUtils.toOllirType(argTypeImport).substring(1); // Remove the first character (the dot)
                 foundMatchImports = imports.contains(argTypeStr);
             }
@@ -165,21 +169,34 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                     .filter(variable -> variable.equals(firstChildName))
                     .findFirst();
 
-            if (imports1.isPresent()) {
-                isImportFunc = true;
+
                 var isBinaryOpNode = node.getAncestor("BinaryOp");
                 var isAssignment = node.getAncestor("Assignment");
 
                 if (isBinaryOpNode.isPresent()){
+                    isBinaryOpPar = true;
+                }
+
+                else
+                if(isAssignment.isPresent()){
+                    isAssignmentPar = true;
+
+                }
+
+
+
+
+
+            if (imports1.isPresent()) {
+                isImportFunc = true;
+                if(isBinaryOpPar){
                     var aux = OptUtils.getTemp();
                     String resOllirType = isBinaryOpNode.get().get("op").equals("+") || isBinaryOpNode.get().get("op").equals("-") || isBinaryOpNode.get().get("op").equals("*") || isBinaryOpNode.get().get("op").equals("/") ? ".i32" : ".bool";
                     computation.append(aux).append(resOllirType).append(ASSIGN).append(" ").append(resOllirType).append(" ").append(code).append(END_STMT);
                     code = new StringBuilder(aux);
                     code.append(resOllirType);
-                }
-
-                else
-                if(isAssignment.isPresent()){
+                } else
+                if(isAssignmentPar){
                     String varName = isAssignment.get().get("var");
 
                     Optional<Symbol> matchingVariable = localVariables.stream()
@@ -192,29 +209,37 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
 
                     }
                 }
-                else {
-                    // If no "Assignment" node is found, append ".V"
+                else{
                     argTypeImport = new Type("void",false);
                 }
-
-
-                if(isAssignment.isPresent() || isBinaryOpNode.isPresent()){
-                    code1 = OptUtils.getTemp() + OptUtils.toOllirType(argTypeImport);
-                    computation.append(funcLhs.getComputation());
-                    computation.append(code1).append(" :=").append(OptUtils.toOllirType(argTypeImport)).append(" ");
-                    funcLhs = new OllirExprResult(code1); // Include the type here
-                }
-
-
-
-
-
-
-
-
             }
 
+            if (matchingVariable1.isPresent()) {
+                foundMatchImports = true;
+                if(isBinaryOpPar){
+                    var aux = OptUtils.getTemp();
+                    String resOllirType = isBinaryOpNode.get().get("op").equals("+") || isBinaryOpNode.get().get("op").equals("-") || isBinaryOpNode.get().get("op").equals("*") || isBinaryOpNode.get().get("op").equals("/") ? ".i32" : ".bool";
+                    computation.append(aux).append(resOllirType).append(ASSIGN).append(" ").append(resOllirType).append(" ").append(code).append(END_STMT);
+                    code = new StringBuilder(aux);
+                    code.append(resOllirType);
+                } else
+                if(isAssignmentPar){
+                    String varName = isAssignment.get().get("var");
 
+                    Optional<Symbol> matchingVariable = localVariables.stream()
+                            .filter(variable -> variable.getName().equals(varName))
+                            .findFirst();
+
+
+                    if (matchingVariable.isPresent()) {
+                        argTypeImport = matchingVariable.get().getType();
+
+                    }
+                }
+                else{
+                    argTypeImport = new Type("void",false);
+                }
+            }
 
 // Check if the type of the first child's name is in the list of imports
 
@@ -225,17 +250,45 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                     .map(Symbol::getName)
                     .anyMatch(name -> name.equals(firstChildName));
 
+            if(isImportFunc) {
+                if (isAssignmentPar || isBinaryOpPar) {
+                    code1 = OptUtils.getTemp() + OptUtils.toOllirType(argTypeImport);
+                    //code.append(code1);
+                    computation.append(code1).append(" :=").append(OptUtils.toOllirType(argTypeImport)).append(" ");
+                    computation.append("invokestatic");
+                    computation.append("(");
+                    computation.append(child.getChildren().get(0).get("value"));
+
+
+                }
+                else{
+
+                    code.append("invokestatic");
+                    code.append("(");
+                    code.append(child.getChildren().get(0).get("value"));
+
+                }
+            }
+            else
 
             if (foundMatchImports) {
+                if(isAssignmentPar || isBinaryOpPar){
+                    code1 = OptUtils.getTemp() + OptUtils.toOllirType(argTypeImport);
+                   //code.append(code1);
+                    computation.append(code1).append(" :=").append(OptUtils.toOllirType(argTypeImport)).append(" ");
+                    computation.append("invokevirtual");
+                    computation.append("(");
+                    computation.append(child.getChildren().get(0).get("value"));
+                    computation.append(OptUtils.toOllirType(argTypeImportVar));
+
+                    //funcLhs = new OllirExprResult(code1); // Include the type here
+                }
+                else{
                 code.append("invokevirtual");
                 code.append("(");
                 code.append(child.getChildren().get(0).get("value"));
-                code.append(OptUtils.toOllirType(argTypeImport));
-                /*code1 = OptUtils.getTemp() + OptUtils.toOllirType(argTypeImport);
-                computation.append(funcLhs.getComputation());
-                computation.append(code1).append(" :=").append(OptUtils.toOllirType(argTypeImport)).append(" ");
-                funcLhs = new OllirExprResult(code1); // Include the type here
-                */
+                code.append(OptUtils.toOllirType(argTypeImportVar));}
+
 
 
 
@@ -331,10 +384,14 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         if(foundMatchImports) {
 
             //computation.append(funcLhs.getComputation());
-
+            if(isAssignmentPar || isBinaryOpPar){
             //computation.append("invokevirtual(").append(node.getChild(0).get("value")).append(OptUtils.toOllirType(argTypeImport)).append(code).append(OptUtils.toOllirType(argTypeImport)).append(END_STMT);
-            code.append(OptUtils.toOllirType(argTypeImport));
-           // return new OllirExprResult(code1,computation);
+            computation.append(code).append(OptUtils.toOllirType(argTypeImport)).append(END_STMT);
+            return new OllirExprResult(code1,computation);}
+            else {
+                computation.append(code).append(".V").append(END_STMT);
+                return new OllirExprResult(code1,computation);
+            }
         }
         else {
         Optional<Type> returnType = table.getReturnTypeTry(node.get("value"));
