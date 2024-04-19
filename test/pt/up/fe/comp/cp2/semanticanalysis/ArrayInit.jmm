@@ -9,7 +9,7 @@ class ArrayInit extends A {
     }
 
      public int bar2 (){
-            return 0;
-        }
+        return 0;
+    }
 
 }
