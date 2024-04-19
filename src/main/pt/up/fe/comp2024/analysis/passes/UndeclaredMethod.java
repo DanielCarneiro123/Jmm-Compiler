@@ -73,8 +73,15 @@ public class UndeclaredMethod extends AnalysisVisitor {
         String methodSignature = functionCall.get("value");
         JmmNode left = functionCall.getChild(0);
 
+
+
+        Type leftType = TypeUtils.getExprType(left, table, method);
+
         // THIS
-        if (left.getKind().equals("Object")) {
+        if (leftType.getName().equals("object")) {
+            if (!table.getSuper().isEmpty()) {
+                return null;
+            }
             if (!table.getMethods().contains(methodSignature)) {
                 addReport(Report.newError(
                         Stage.SEMANTIC,
@@ -86,8 +93,6 @@ public class UndeclaredMethod extends AnalysisVisitor {
             }
             return null;
         }
-
-        Type leftType = TypeUtils.getExprType(left, table, method);
 
         if (leftType.getName().equals(table.getClassName())) {
             if (!table.getSuper().isEmpty()) {

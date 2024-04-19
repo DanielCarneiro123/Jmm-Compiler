@@ -1,5 +1,5 @@
 import A;
-class CallToMethodAssumedInImport extends A {
+class CallToMethodAssumedInImport {
 
     public static void main(String[] args) {
 
@@ -8,8 +8,8 @@ class CallToMethodAssumedInImport extends A {
     public int foo() {
 
         CallToMethodAssumedInImport a;
-        // Assume bar() is in A
-        a.bar();
+
+        (new CallToMethodAssumedInImport()).foo();
 
         return 0;
     }
