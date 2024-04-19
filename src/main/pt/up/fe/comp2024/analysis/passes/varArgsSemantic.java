@@ -14,17 +14,11 @@ public class varArgsSemantic extends AnalysisVisitor {
     @Override
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
-        addVisit(Kind.METHOD_DECL, this::visitVarArguments);
-        addVisit(Kind.METHOD_DECL, this::visitVarReturn);
         addVisit(Kind.VAR_DECL, this::visitVarFields);
     }
 
-    private Void visitMethodDecl(JmmNode currMethod, SymbolTable table) {
-        method = currMethod.get("name");
-        return null;
-    }
-
-    private Void visitVarReturn(JmmNode methodDecl, SymbolTable table) {
+    private Void visitMethodDecl(JmmNode methodDecl, SymbolTable table) {
+        method = methodDecl.get("name");
         var returnType = methodDecl.getChildren().get(0).getKind();
 
         if (returnType.equals("VarArg")) {
@@ -38,10 +32,7 @@ public class varArgsSemantic extends AnalysisVisitor {
             );
             return null;
         }
-        return null;
-    }
 
-    private Void visitVarArguments(JmmNode methodDecl, SymbolTable table) {
         var argsList = methodDecl.getChildren(Kind.ARGUMENT);
         for (int i = 0; i < argsList.size(); i++) {
             String x = argsList.get(i).getChildren().get(0).getKind();
@@ -59,6 +50,9 @@ public class varArgsSemantic extends AnalysisVisitor {
         }
         return null;
     }
+
+
+
 
     private Void visitVarFields(JmmNode varDecl, SymbolTable table) {
         String varDeclName = varDecl.get("name");
