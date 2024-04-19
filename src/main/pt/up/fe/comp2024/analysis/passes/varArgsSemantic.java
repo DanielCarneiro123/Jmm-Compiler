@@ -15,11 +15,29 @@ public class varArgsSemantic extends AnalysisVisitor {
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.METHOD_DECL, this::visitVarArguments);
+        addVisit(Kind.METHOD_DECL, this::visitVarReturn);
         addVisit(Kind.VAR_DECL, this::visitVarFields);
     }
 
     private Void visitMethodDecl(JmmNode currMethod, SymbolTable table) {
         method = currMethod.get("name");
+        return null;
+    }
+
+    private Void visitVarReturn(JmmNode methodDecl, SymbolTable table) {
+        var returnType = methodDecl.getChildren().get(0).getKind();
+
+        if (returnType.equals("VarArg")) {
+            String message = "VarArguments Cant be a Return Type";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(methodDecl),
+                    NodeUtils.getColumn(methodDecl),
+                    message,
+                    null)
+            );
+            return null;
+        }
         return null;
     }
 
