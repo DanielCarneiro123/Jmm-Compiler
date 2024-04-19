@@ -70,9 +70,7 @@ public class ObjectAssign extends AnalysisVisitor {
                 }
             }
         }
-        if (assigmentChildName.equals("int") || assigmentChildName.equals("boolean") || assigmentChildName.equals("String") || assigmentChildName.equals(table.getClassName())) {
-            return null;
-        }
+
         if (extendedName.equals("")) {
             for (Symbol local : table.getLocalVariables(method)) {
                 if (local.getName().equals(assigmentName)) {
