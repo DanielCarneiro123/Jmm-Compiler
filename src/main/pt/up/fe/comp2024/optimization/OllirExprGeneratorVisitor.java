@@ -265,7 +265,11 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                             code.append(resOllirType);
 
                         }
-
+                        else if (firstChildName.equals(table.getClassName())) {
+                            Type returnType = table.getReturnType(methodSignature);
+                            String t = OptUtils.toOllirType(returnType);
+                            code.append(t);
+                        }
 
                         else{
                             code.append(").V");
@@ -336,6 +340,11 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                             code.append(resOllirType);
 
                         }
+                        else if (firstChildName.equals(table.getClassName())) {
+                            Type returnType = table.getReturnType(methodSignature);
+                            String t = OptUtils.toOllirType(returnType);
+                            code.append(t);
+                        }
 
 
                         else{
@@ -384,12 +393,44 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 code.append(")");
 
                 // return type
-                if (firstChildName.equals(table.getClassName())) {
+                if(node.getParent().getKind().equals("Assignment")){
+
+                    String variableName = node.getParent().get("var");
+                    Optional<Symbol> matchingVariable = localVariables.stream()
+                            .filter(variable -> variable.getName().equals(variableName))
+                            .findFirst();
+
+                    if (!matchingVariable.isPresent()) {
+                        List<Symbol> fields = table.getFields();
+                        matchingVariable = fields.stream()
+                                .filter(variable -> variable.getName().equals(variableName))
+                                .findFirst();
+                    }
+
+                    if (matchingVariable.isPresent()) {
+                        Type parentType = matchingVariable.get().getType();
+                        code.append(OptUtils.toOllirType(parentType));
+                    }
+
+                }
+
+                else if(node.getParent().getKind().equals("BinaryOp")){
+                    var aux = OptUtils.getTemp();
+                    String resOllirType = node.getParent().get("op").equals("+") || node.getParent().get("op").equals("-") || node.getParent().get("op").equals("*") || node.getParent().get("op").equals("/") ? ".i32" : ".bool";
+                    computation.append(aux).append(resOllirType).append(ASSIGN).append(" ").append(resOllirType).append(" ").append(code).append(resOllirType).append(END_STMT);
+                    code = new StringBuilder(aux);
+                    code.append(resOllirType);
+
+                }
+                else if (firstChildName.equals(table.getClassName())) {
                     Type returnType = table.getReturnType(methodSignature);
                     String t = OptUtils.toOllirType(returnType);
                     code.append(t);
-                } else {
-                    code.append(".V");
+                }
+
+
+                else{
+                    code.append(").V");
                 }
 
                 return new OllirExprResult(code.toString(), computation.toString());
@@ -449,7 +490,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
                 // return type
                 if(node.getParent().getKind().equals("Assignment")){
-                    code.append(")");
+
                     String variableName = node.getParent().get("var");
                     Optional<Symbol> matchingVariable = localVariables.stream()
                             .filter(variable -> variable.getName().equals(variableName))
