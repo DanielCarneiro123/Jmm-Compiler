@@ -93,7 +93,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         // Generate code for creating a new instance of the class
         String instanceVar = OptUtils.getTemp();
         code.append(instanceVar).append(".").append(className).append(SPACE)
-                .append(":=").append(".").append(className).append(SPACE).append("new(").append(className).append(")").append(".").append(className).append(END_STMT);
+                .append(" :=").append(".").append(className).append(SPACE).append("new(").append(className).append(")").append(".").append(className).append(END_STMT);
 
         // Generate code for calling the constructor
         code.append("invokespecial").append("(").append(instanceVar).append(".").append(className).append(", \"\").V").append(END_STMT);
@@ -128,7 +128,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         computation.append(rhs.getComputation());
 
-        computation.append(code).append(" := ").append(resOllirType).append(" ").append(lhs.getCode()).append(" ").append(node.get("op")).append(resOllirType).append(" ").append(rhs.getCode()).append(END_STMT);
+        computation.append(code).append(" :=").append(resOllirType).append(" ").append(lhs.getCode()).append(" ").append(node.get("op")).append(resOllirType).append(" ").append(rhs.getCode()).append(END_STMT);
 
         return new OllirExprResult(code, computation);
     }
