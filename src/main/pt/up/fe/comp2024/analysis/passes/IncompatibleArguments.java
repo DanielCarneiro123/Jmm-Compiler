@@ -253,9 +253,7 @@ public class IncompatibleArguments extends AnalysisVisitor {
                 return null;
             }
         }
-        var paramPassedTypeFinal = getExprType(paramsPassed.get(paramsPassed.size()-1), table, method);
-        var realParamTypeFinal = realParam.get(paramsPassed.size()-1).getType();
-        /*if ()*/
+
 
         return null;
 
