@@ -50,9 +50,7 @@ public class ObjectAssign extends AnalysisVisitor {
         Type assigmentChildType = getExprType(assigmentChild, table, method);
         var assigmentChildName = assigmentChildType.getName();
         String kindName = assigmentChild.getKind();
-        if (assigmentChildName.equals("int") || assigmentChildName.equals("boolean") || assigmentChildName.equals("String") || assigmentChildName.equals(table.getClassName())) {
-            return null;
-        }
+
         String assigmentName = assigment.get("var");
         for (Symbol field : table.getFields()) {
             Boolean isStatic = Boolean.parseBoolean(assigment.getParent().get("isStatic"));
@@ -71,6 +69,9 @@ public class ObjectAssign extends AnalysisVisitor {
                     return null;
                 }
             }
+        }
+        if (assigmentChildName.equals("int") || assigmentChildName.equals("boolean") || assigmentChildName.equals("String") || assigmentChildName.equals(table.getClassName())) {
+            return null;
         }
         if (extendedName.equals("")) {
             for (Symbol local : table.getLocalVariables(method)) {
