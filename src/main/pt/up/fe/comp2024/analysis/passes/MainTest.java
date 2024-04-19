@@ -16,7 +16,7 @@ public class MainTest extends AnalysisVisitor {
     @Override
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
-        addVisit(Kind.METHOD_DECL, this::mainEverywhere);
+        addVisit(Kind.PROGRAM, this::mainEverywhere);
         addVisit(Kind.PROGRAM, this::visitDuplicatedMethods);
         addVisit(Kind.FUNCTION_CALL, this::visitFunctioCallinMain);
     }
