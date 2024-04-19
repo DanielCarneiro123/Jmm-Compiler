@@ -10,6 +10,9 @@ import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static pt.up.fe.comp2024.ast.TypeUtils.getExprType;
 
 public class IncompatibleArguments extends AnalysisVisitor {
@@ -22,6 +25,7 @@ public class IncompatibleArguments extends AnalysisVisitor {
         addVisit(Kind.FUNCTION_CALL, this::visitIncompatibleArguments);
         addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
         addVisit(Kind.CLASS_INSTANTIATION, this::visitIncompatibleArguments2);
+        addVisit(Kind.FUNCTION_CALL, this::visitIncompatibleArguments3);
     }
 
     private Void visitMethodDecl(JmmNode currMethod, SymbolTable table) {
@@ -167,5 +171,73 @@ public class IncompatibleArguments extends AnalysisVisitor {
 
         return null;
     }
+    private Void visitIncompatibleArguments3(JmmNode functionCall, SymbolTable table){
+        var funcName = functionCall.get("value");
+        List<Symbol> realParam = null;
+        for (var args: table.getMethods()) {
+            if (args.equals(funcName)) {
+                realParam = table.getParameters(funcName);
+
+            }
+
+        }
+        if (realParam == null) {
+            String message = "Incompatible Arguments";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(functionCall),
+                    NodeUtils.getColumn(functionCall),
+                    message,
+                    null)
+            );
+            return null;
+        }
+
+
+        List<JmmNode> paramsPassed = functionCall.getChildren(Kind.EXPR).subList(1,functionCall.getChildren(Kind.EXPR).size());
+
+        if (realParam.size() < paramsPassed.size()){
+            String message = "Too Many Arguments Added";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(functionCall),
+                    NodeUtils.getColumn(functionCall),
+                    message,
+                    null)
+            );
+            return null;
+        }
+        if (realParam.size() > paramsPassed.size()){
+            String message = "Few Arguments Added";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(functionCall),
+                    NodeUtils.getColumn(functionCall),
+                    message,
+                    null)
+            );
+            return null;
+        }
+
+        for (int i = 0; i < paramsPassed.size()-1; i++){
+            var paramPassedType = getExprType(paramsPassed.get(i), table, method);
+            if (!paramPassedType.equals(realParam.get(i).getType())){
+                String message = "Invalid Arguments";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(functionCall),
+                        NodeUtils.getColumn(functionCall),
+                        message,
+                        null)
+                );
+                return null;
+            }
+        }
+
+        return null;
+
+    }
+
+
 
 }

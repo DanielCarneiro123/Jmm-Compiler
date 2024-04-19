@@ -8,11 +8,16 @@ class CallToMethodAssumedInImport extends A {
 
     public int foo() {
         A a;
+        int[] b;
+        int c;
         a = new A();
 
         // Assume bar() is in A
-        a.bar();
+        this.bar(b, b);
 
+        return 0;
+    }
+    public int bar(int[] a, int[] b){
         return 0;
     }
 }
