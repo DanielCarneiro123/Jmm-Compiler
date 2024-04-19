@@ -168,8 +168,8 @@ public class ObjectAssign extends AnalysisVisitor {
             );
             return null;
         }
-        var arrayElemType = arrayDecl.getChild(1).getKind();
-        if (!arrayElemType.equals("Integer")){
+        var arrayElemType = getExprType(arrayDecl.getChild(1), table, method);
+        if (!arrayElemType.getName().equals("int")) {
             String message = "Indexes must be Integers";
             addReport(Report.newError(
                     Stage.SEMANTIC,
@@ -180,6 +180,7 @@ public class ObjectAssign extends AnalysisVisitor {
             );
             return null;
         }
+
         return null;
     }
 }
