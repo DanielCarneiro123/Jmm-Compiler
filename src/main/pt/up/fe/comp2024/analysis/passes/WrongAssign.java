@@ -86,7 +86,7 @@ public class WrongAssign extends AnalysisVisitor {
                             }
                         }
                         for (var imp3 : table.getImports()) {
-                            if (imp3.equals(assigmentChilType.getName())) {
+                            if (imp3.equals(assigmentType.getName()) && !assigmentType.getName().equals(table.getSuper()) && !assigmentChilChilValue.equals(table.getSuper())) {
                                 return null;
                             }
                         }

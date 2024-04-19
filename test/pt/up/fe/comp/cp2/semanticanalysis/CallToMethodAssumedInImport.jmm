@@ -1,15 +1,17 @@
 import A;
-class CallToMethodAssumedInImport {
+
+class CallToMethodAssumedInImport extends A {
 
     public static void main(String[] args) {
 
     }
 
     public int foo() {
+        A a;
+        a = new A();
 
-        CallToMethodAssumedInImport a;
-
-        (new CallToMethodAssumedInImport()).foo();
+        // Assume bar() is in A
+        a.bar();
 
         return 0;
     }

@@ -120,11 +120,6 @@ public class UndeclaredMethod extends AnalysisVisitor {
             );
             return null;
         }
-        var functionCallChildName = functionCallChild.getOptional("name").orElse("");
-        var functionCallChildType = new Type("", false);
-
-
-
 
         return null;
     }
