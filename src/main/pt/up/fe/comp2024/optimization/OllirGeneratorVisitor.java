@@ -50,6 +50,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(RETURN_STMT, this::visitReturn);
         addVisit(VAR_DECL, this::visitVarDecl);
         addVisit(EXPR_STMT, this::visitExpressionStmt);
+        addVisit(IF_STMT, this::visitIfStatement);
 
 
 
@@ -57,6 +58,57 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(ASSIGNMENT, this::visitAssignStmt);
 
         setDefaultVisit(this::defaultVisit);
+    }
+
+
+    private int thenCounter = 0;
+    private int endCounter = 0;
+
+    private String getNextLabelThen() {
+        return "if_then_" + thenCounter++;
+    }
+
+    private String getCurrentLabelThen(){
+        var x = thenCounter-1;
+        return "if_then_" + x +":";
+    }
+
+    private String getNextLabelEnd() {
+        return "if_end_" + endCounter++;
+    }
+
+    private String getCurrentLabelEnd(){
+        var x = endCounter-1;
+        return "if_end_" + x +":";
+    }
+
+
+    private String visitIfStatement(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+        var ifChild = node.getChild(0);
+        var visitChild = exprVisitor.visit(ifChild.getChild(0));
+        code.append(visitChild.getComputation());
+        code.append("if(").append(visitChild.getCode()).append(") goto ");
+        code.append(getNextLabelThen()).append(";").append(NL);
+        code.append("handle else").append(NL);
+        code.append("goto ").append(getNextLabelEnd()).append(NL);
+        code.append(getCurrentLabelThen()).append(NL);
+
+        var ifContent = ifChild.getChild(1);
+        for (var child : ifContent.getChildren()){
+            var aux = visit(child);
+            //code.append(aux.getComputation());
+            code.append(aux);
+
+        }
+
+        code.append(getCurrentLabelEnd()).append(NL);
+
+
+
+
+
+        return code.toString();
     }
 
 
@@ -90,8 +142,8 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         StringBuilder code = new StringBuilder();
         code.append(rhsNode.getComputation());
 
-        List<Symbol> localVariables = table.getLocalVariables(node.getParent().get("name"));
-        List<Symbol> paramVariables = table.getParameters(node.getParent().get("name"));
+        List<Symbol> localVariables = table.getLocalVariables(node.getAncestor("MethodDecl").get().get("name"));
+        List<Symbol> paramVariables = table.getParameters(node.getAncestor("MethodDecl").get().get("name"));
         Type thisType = null;
 
         // Search for the variable in local variables
