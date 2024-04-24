@@ -20,7 +20,7 @@ public class JmmAnalysisImpl implements JmmAnalysis {
 
     public JmmAnalysisImpl() {
 
-        this.analysisPasses = List.of(new DuplicatedParam(), new MainTest(), new WrongFields(), new ArrayLength(), new ArrayInitWrong1(), new varArgsSemantic(), new ObjectAssign(), new UndeclaredVariable(), new IncompatibleArguments(), new UndeclaredMethod(), new IncompatibleReturn(), new WrongWhileCondition(), new WrongIfCondition(), new WrongAssign(), new ArrayInitWrong(), new WrongArrayAcess(), new ClassNotImported(), new ArrayArithmeticCheck());
+        this.analysisPasses = List.of(new UndeclaredVariable(), new UndeclaredMethod(), new ClassNotImported() ,new DuplicatedParam(), new MainTest(), new WrongFields(), new ArrayLength(), new ArrayInitWrong1(), new varArgsSemantic(), new ObjectAssign(), new IncompatibleArguments(), new IncompatibleReturn(), new WrongWhileCondition(), new WrongIfCondition(), new WrongAssign(), new ArrayInitWrong(), new WrongArrayAcess(), new ArrayArithmeticCheck());
 
     }
 
@@ -35,6 +35,7 @@ public class JmmAnalysisImpl implements JmmAnalysis {
 
         // Visit all nodes in the AST
         for (var analysisPass : analysisPasses) {
+            if (!reports.isEmpty()) break;
             try {
                 var passReports = analysisPass.analyze(rootNode, table);
                 reports.addAll(passReports);

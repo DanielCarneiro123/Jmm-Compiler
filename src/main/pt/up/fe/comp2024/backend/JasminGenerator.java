@@ -208,7 +208,6 @@ public class JasminGenerator {
                     .append("(");
         }
 
-        // tipos dos parametros, este comentário de merda não foi pelo chatgpt
         var parameterTypes = method.getParams();
         for (int i = 0; i < parameterTypes.size(); i++) {
             Type paramType = parameterTypes.get(i).getType();
