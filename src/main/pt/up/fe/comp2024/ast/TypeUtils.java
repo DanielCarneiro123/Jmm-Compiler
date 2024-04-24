@@ -36,6 +36,7 @@ public class TypeUtils {
             case IDENTIFIER -> getVarExprType(expr, table);
             case INTEGER -> new Type(INT_TYPE_NAME, false);
             case BOOLEAN -> new Type("boolean", false);
+            case BRACKETS -> getExprType(expr.getChild(0), table);
             default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
         };
 
@@ -58,7 +59,7 @@ public class TypeUtils {
             case NEW_CLASS -> new Type(expr.get("classname"), false);
             case OBJECT -> new Type(table.getClassName(), false);
             case TRUE, FALSE -> new Type(BOOLEAN_TYPE_NAME, false);
-            case BRACKETS -> new Type("brackets", false);
+            case BRACKETS -> getExprType(expr.getChild(0), table, currMethod);
             case LENGTH -> new Type(INT_TYPE_NAME, false);
             case ASSIGNMENT -> getVarExprTypeForAssigment(expr, table, currMethod);
             case PARENTESIS -> getExprType(expr.getChild(0), table, currMethod);

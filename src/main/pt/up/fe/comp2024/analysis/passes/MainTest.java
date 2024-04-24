@@ -18,6 +18,8 @@ public class MainTest extends AnalysisVisitor {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.PROGRAM, this::visitDuplicatedMethods);
         addVisit(Kind.FUNCTION_CALL, this::visitFunctioCallinMain);
+        addVisit(Kind.IDENTIFIER, this::visitIdentifierinMain);
+        addVisit(Kind.ASSIGNMENT, this::visitAssignmentinMain);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
@@ -64,6 +66,7 @@ public class MainTest extends AnalysisVisitor {
                 );
                 return null;
             }
+
             return null;
 
         } else {
@@ -80,6 +83,7 @@ public class MainTest extends AnalysisVisitor {
                 return null;
             }
         }
+
         return null;
     }
 
@@ -126,5 +130,50 @@ public class MainTest extends AnalysisVisitor {
         } else {
             return null;
         }
+    }
+    private Void visitIdentifierinMain(JmmNode identifier, SymbolTable table) {
+        if (currentMethod.equals("main")){
+            var varName = identifier.getOptional("value").orElse("");
+            if (!table.getLocalVariables(currentMethod).stream()
+                    .anyMatch(varDecl -> varDecl.getName().equals(varName))){
+                if (table.getFields().stream()
+                        .anyMatch(varDecl -> varDecl.getName().equals(varName))){
+                    String message = "Field cant be used in a static function.";
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(identifier),
+                            NodeUtils.getColumn(identifier),
+                            message,
+                            null)
+                    );
+                    return null;
+                }
+
+            }
+        }
+        return null;
+    }
+
+    private Void visitAssignmentinMain(JmmNode assignment, SymbolTable table){
+        if (currentMethod.equals("main")){
+            var varName = assignment.getOptional("var").orElse("");;
+            if (!table.getLocalVariables(currentMethod).stream()
+                    .anyMatch(varDecl -> varDecl.getName().equals(varName))){
+                if (table.getFields().stream()
+                        .anyMatch(varDecl -> varDecl.getName().equals(varName))){
+                    String message = "Field cant be used in a static function.";
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(assignment),
+                            NodeUtils.getColumn(assignment),
+                            message,
+                            null)
+                    );
+                    return null;
+                }
+
+            }
+        }
+        return null;
     }
 }
