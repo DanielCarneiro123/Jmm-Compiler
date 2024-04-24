@@ -32,7 +32,7 @@ public class WrongArrayAcess extends AnalysisVisitor {
         String varNameToCheck = arrayDecl.get("className");
 
         if (leftOperand.getKind().equals("Arraydefinition")) {
-            for (var parameter : table.getParameters(currentMethod)) {
+            /*for (var parameter : table.getParameters(currentMethod)) {
                 if (parameter.getType().getName().equals(varNameToCheck) && !parameter.getType().isArray()) {
                     String message = "It is not an array";
                     addReport(Report.newError(
@@ -44,7 +44,7 @@ public class WrongArrayAcess extends AnalysisVisitor {
                     );
                     return null;
                 }
-            }
+            }*/
             for (var localVariable : table.getLocalVariables(currentMethod)) {
                 if (localVariable.getName().equals(varNameToCheck) && !localVariable.getType().isArray()) {
                     String message = "It is not an array";
