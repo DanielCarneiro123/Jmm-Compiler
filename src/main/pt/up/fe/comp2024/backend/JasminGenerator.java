@@ -30,6 +30,10 @@ public class JasminGenerator {
 
     Method currentMethod;
 
+    int stack_value = 0;
+
+    int locals_value = 0;
+
     private final FunctionClassMap<TreeNode, String> generators;
 
     public JasminGenerator(OllirResult ollirResult) {
@@ -203,18 +207,19 @@ public class JasminGenerator {
             code.append("\n.method ").append(modifier).append("static ").append(methodName)
                     .append("("); //temos de ver se isto do [ só acontece para os main static ou para todos os tatic
         } else {
-            // nome do método, este comentário de merda não foi pelo chatgpt
             code.append("\n.method ").append(modifier).append(methodName)
                     .append("(");
         }
 
         var parameterTypes = method.getParams();
         for (int i = 0; i < parameterTypes.size(); i++) {
+            locals_value++;
+            stack_value++;
             Type paramType = parameterTypes.get(i).getType();
             String paramJasminType = getFieldType(paramType);
             code.append(paramJasminType);
         }
-        // tipo do retorno, este comentário de merda não foi pelo chatgpt
+
         Type methodReturnType = method.getReturnType();
         String methodReturnJasminType = getFieldType(methodReturnType);
         code.append(")").append(methodReturnJasminType).append(NL);
@@ -223,8 +228,14 @@ public class JasminGenerator {
 
         int maxStackSize = calculateMaxStackSize(method);//não sei se devemos chamar
         int maxLocals = calculateMaxLocals(method);//não sei se devemos chamar
-        code.append(TAB).append(".limit stack ").append("99").append(NL);
-        code.append(TAB).append(".limit locals ").append("99").append(NL);
+        if (stack_value == 0){
+            code.append(TAB).append(".limit stack ").append(1).append(NL);
+            code.append(TAB).append(".limit locals ").append(locals_value).append(NL);
+        }
+        if (locals_value == 0){
+            code.append(TAB).append(".limit stack ").append(stack_value).append(NL);
+            code.append(TAB).append(".limit locals ").append(1).append(NL);
+        }
 
 
         for (var inst : method.getInstructions()) {
@@ -335,11 +346,6 @@ public class JasminGenerator {
         return basicClassName;
     }
 
-    private String normalizeClassName2(String className) {
-        // Converte para minúsculas e remove espaços em branco extras
-        return className.toLowerCase().trim();
-    }
-
 
     private String normalizeClassName(String className) {
         return className.replace('.', '/');
@@ -368,18 +374,24 @@ public class JasminGenerator {
         switch (type) {
             case INT32, BOOLEAN:
                 if (reg > 3) {
+
+                    locals_value += reg+1;
                     code.append("istore ").append(reg).append(NL);
                     break;
 
                 } else {
+
+                    locals_value += reg+1;
                     code.append("istore_").append(reg).append(NL);
                 }
                 break;
             case CLASS, OBJECTREF, STRING:
                 if (reg > 3) {
+                    locals_value += reg+1;
                     code.append("astore ").append(reg).append(NL);
                     break;
                 } else {
+                    locals_value += reg+1;
                     code.append("astore_").append(reg).append(NL);
                 }
                 break;
@@ -470,6 +482,8 @@ public class JasminGenerator {
                 code.append(")");
                 code.append(getFieldType(callInstruction.getReturnType())).append(NL);
                 break;
+            case ldc:
+
             default:
                 throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
         }
@@ -485,7 +499,6 @@ public class JasminGenerator {
 
     private String generateLiteral(LiteralElement literal) {
         StringBuilder code = new StringBuilder();
-        ;
         String literalStr = literal.getLiteral();
         if (literal.getType().getTypeOfElement().name().equals("STRING")) {
             code.append(literalStr.replaceAll("\"", "")).append("(");
@@ -559,7 +572,6 @@ public class JasminGenerator {
         };
 
         code.append(op).append(NL);
-
         return code.toString();
     }
 
