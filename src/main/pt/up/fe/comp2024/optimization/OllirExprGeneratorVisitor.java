@@ -41,8 +41,23 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         addVisit(NEGATION, this::visitNegationExpr);
         addVisit(OBJECT, this::visitThisExpr);
 
+        addVisit(ARRAY_DECLARATION, this::visitArrayDecl);
+
 
         setDefaultVisit(this::defaultVisit);
+    }
+
+    private OllirExprResult visitArrayDecl(JmmNode node, Void unused) {
+        // Visit the child expression of the negation
+
+        // Generate the OLLIR code for the negation operation
+        StringBuilder code = new StringBuilder();
+        code.append("a");
+
+        // Append the OLLIR code for the negation operation
+        String negatedVar = "banana";
+
+        return new OllirExprResult(negatedVar, code);
     }
 
     private OllirExprResult visitNegationExpr(JmmNode node, Void unused) {

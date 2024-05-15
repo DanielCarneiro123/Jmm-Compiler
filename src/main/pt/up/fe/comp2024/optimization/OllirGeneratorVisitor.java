@@ -53,6 +53,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(IF_STMT, this::visitIfStatement);
         addVisit(WHILE_STMT, this::visitWhileStatement);
 
+
         addVisit(ASSIGNMENT, this::visitAssignStmt);
 
         setDefaultVisit(this::defaultVisit);
@@ -204,7 +205,8 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         var lhs = node.get("var");
 
         boolean isField = false;
-        var rhsNode = exprVisitor.visit(node.getJmmChild(0));
+        var x = node.getJmmChild(0);
+        var rhsNode = exprVisitor.visit(x);
 
         StringBuilder code = new StringBuilder();
         code.append(rhsNode.getComputation());
