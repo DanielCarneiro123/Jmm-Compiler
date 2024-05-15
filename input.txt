@@ -4,8 +4,10 @@ import A;
     public int bar() {
       int[] array;
       int a;
+      boolean b;
+      boolean c;
 
-      x[0] = 1;
+      while(b){ if(b){ while(b){} } else{b;} }
 
       return 0;
     }
