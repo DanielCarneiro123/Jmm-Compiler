@@ -27,7 +27,7 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
 
         if (operator.equals("==") || operator.equals("/=")) {
             return null;
-        } /*else if (isArithmeticOperator(operator)) {
+        } else if (isArithmeticOperator(operator)) {
             JmmNode leftOperand = binaryExpr.getChildren().get(0);
             JmmNode rightOperand = binaryExpr.getChildren().get(1);
             Type type1 = getExprType(leftOperand, table, method);
@@ -69,12 +69,12 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
                 return null;
             }
 
-        } */ else if (isBooleanOperator(operator)) {
+        } else if (isBooleanOperator(operator)) {
             JmmNode leftOperand = binaryExpr.getChildren().get(0);
             JmmNode rightOperand = binaryExpr.getChildren().get(1);
             Type type1 = getExprType(leftOperand, table, method);
             Type type2 = getExprType(rightOperand, table, method);
-            /*if (type1.isArray() || type2.isArray()) {
+            if (type1.isArray() || type2.isArray()) {
                 String message = "Arrays cannot be used in boolean operations.";
                 addReport(Report.newError(
                         Stage.SEMANTIC,
@@ -84,7 +84,7 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
                         null)
                 );
                 return null;
-            }*/
+            }
             if (type1.getName().equals("int") || type2.getName().equals("int")) {
                 String message = "Int cannot be used in boolean operations.";
                 addReport(Report.newError(
@@ -108,7 +108,6 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
                 return null;
             }
         }
-
         return null;
     }
 
