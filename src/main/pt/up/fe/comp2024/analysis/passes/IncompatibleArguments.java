@@ -23,7 +23,7 @@ public class IncompatibleArguments extends AnalysisVisitor {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.FUNCTION_CALL, this::visitIncompatibleArguments);
         addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
-        addVisit(Kind.CLASS_INSTANTIATION, this::visitIncompatibleArguments2);
+        addVisit(Kind.ARRAY_SUBSCRIPT, this::visitIncompatibleArguments2);
         addVisit(Kind.FUNCTION_CALL, this::visitIncompatibleArguments3);
     }
 
@@ -145,31 +145,22 @@ public class IncompatibleArguments extends AnalysisVisitor {
         return null;
     }
 
-    private Void visitIncompatibleArguments2(JmmNode classInst, SymbolTable table) {
-        var classInstKind = classInst.getKind();
-        if (classInstKind.equals("ClassInstantiation")) {
-            var classInstChild = classInst.getChild(0);
-            var classInstChildName = classInstChild.getKind();
-            if (classInstChildName.equals("Parentesis")) {
-                var classInstChildChild = classInstChild.getChild(0);
-                var classInstChildChildKind = classInstChildChild.getKind();
-                if (classInstKind.equals(classInstChildChildKind)) {
-                    String message = "Incompatible Argument";
-                    addReport(Report.newError(
-                            Stage.SEMANTIC,
-                            NodeUtils.getLine(classInst),
-                            NodeUtils.getColumn(classInst),
-                            message,
-                            null)
-                    );
-                    return null;
-                }
-                return null;
-            }
+    /*private Void visitIncompatibleArguments2(JmmNode arrSub, SymbolTable table) {
+        var arrSubChild = arrSub.getChild(0);
+        var arrSubChildName = arrSubChild.get("value");
+        if (arrSub.equals(arrSubChild)) {
+            String message = "Incompatible Argument";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(arrSub),
+                    NodeUtils.getColumn(arrSub),
+                    message,
+                    null)
+            );
+            return null;
         }
-
         return null;
-    }
+    }*/
 
     private Void visitIncompatibleArguments3(JmmNode functionCall, SymbolTable table) {
         /*if (tem_imports) {
