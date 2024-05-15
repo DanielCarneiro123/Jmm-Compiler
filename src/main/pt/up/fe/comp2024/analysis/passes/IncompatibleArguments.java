@@ -23,7 +23,7 @@ public class IncompatibleArguments extends AnalysisVisitor {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.FUNCTION_CALL, this::visitIncompatibleArguments);
         addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
-        //addVisit(Kind.CLASS_INSTANTIATION, this::visitIncompatibleArguments2);
+        addVisit(Kind.CLASS_INSTANTIATION, this::visitIncompatibleArguments2);
         addVisit(Kind.FUNCTION_CALL, this::visitIncompatibleArguments3);
     }
 
@@ -145,7 +145,7 @@ public class IncompatibleArguments extends AnalysisVisitor {
         return null;
     }
 
-    /*private Void visitIncompatibleArguments2(JmmNode classInst, SymbolTable table) {
+    private Void visitIncompatibleArguments2(JmmNode classInst, SymbolTable table) {
         var classInstKind = classInst.getKind();
         if (classInstKind.equals("ClassInstantiation")) {
             var classInstChild = classInst.getChild(0);
@@ -169,7 +169,7 @@ public class IncompatibleArguments extends AnalysisVisitor {
         }
 
         return null;
-    }*/
+    }
 
     private Void visitIncompatibleArguments3(JmmNode functionCall, SymbolTable table) {
         /*if (tem_imports) {
