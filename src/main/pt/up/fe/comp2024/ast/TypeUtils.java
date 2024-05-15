@@ -77,7 +77,7 @@ public class TypeUtils {
         var childName = exprChild.get("value");
         for (var imp : table.getImports()) {
             if (imp.equals(childName)) {
-                return new Type(childName, true);
+                return new Type(childName, false);
             }
         }
 
