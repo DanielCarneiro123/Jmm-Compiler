@@ -70,6 +70,7 @@ public class TypeUtils {
     }
 
     private static Type getFunctionType(JmmNode expr, SymbolTable table) {
+
         String methodName = expr.get("value");
 
         for (var child : expr.getChildren()) {
@@ -87,6 +88,8 @@ public class TypeUtils {
         }
         JmmNode exprChild = expr.getChild(0);
         return getExprType(exprChild, table, methodName);
+        //return new Type(BOOLEAN_TYPE_NAME, false);
+
     }
 
     private static Type getBinExprType(JmmNode binaryExpr) {
