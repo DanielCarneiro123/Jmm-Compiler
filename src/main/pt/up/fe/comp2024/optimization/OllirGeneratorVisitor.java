@@ -61,8 +61,12 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
     private int thenCounter = 0;
     private int endCounter = 0;
+    private int currentElseCounter1 = -1;
+    private int currentElseCounter2 = -1;
 
     private String getNextLabelThen() {
+        currentElseCounter1++;
+        currentElseCounter2++;
         return "if_then_" + thenCounter++;
     }
 
@@ -72,12 +76,15 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
     }
 
     private String getNextLabelEnd() {
-        return "if_end_" + endCounter++;
+        var x = currentElseCounter1--;
+        return "if_end_" + x;
+
     }
 
     private String getCurrentLabelEnd(){
-        var x = endCounter-1;
+        var x = currentElseCounter2--;
         return "if_end_" + x +":";
+
     }
 
 
