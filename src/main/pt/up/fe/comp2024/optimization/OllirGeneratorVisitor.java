@@ -60,7 +60,6 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
 
     private int thenCounter = 0;
-    private int endCounter = 0;
     private int currentElseCounter1 = -1;
     private int currentElseCounter2 = -1;
 
