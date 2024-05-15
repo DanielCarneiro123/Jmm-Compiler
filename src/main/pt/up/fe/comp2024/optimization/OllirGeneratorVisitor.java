@@ -51,9 +51,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(VAR_DECL, this::visitVarDecl);
         addVisit(EXPR_STMT, this::visitExpressionStmt);
         addVisit(IF_STMT, this::visitIfStatement);
-
-
-
+        addVisit(WHILE_STMT, this::visitWhileStatement);
 
         addVisit(ASSIGNMENT, this::visitAssignStmt);
 
@@ -100,7 +98,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         }
 
-        code.append("goto ").append(getNextLabelEnd()).append(NL);
+        code.append("goto ").append(getNextLabelEnd()).append(";").append(NL);
         code.append(getCurrentLabelThen()).append(NL);
 
         var ifContent = ifChild.getChild(1);
@@ -113,6 +111,62 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         code.append(getCurrentLabelEnd()).append(NL);
 
+
+        return code.toString();
+    }
+
+    private int whileCondCounter = 0;
+    private int whileLoopCounter = 0;
+
+    private int whileEndCounter = 0;
+
+    private String getNextLabelWhileCond() {
+        return "whileCond" + whileCondCounter++;
+    }
+
+    private String getCurrentLabelWhileCond(){
+        var x = whileCondCounter-1;
+        return "whileCond" + x + ";";
+    }
+
+    private String getNextLabelWhileLoop() {
+        return "whileLoop" + whileLoopCounter++ + ";";
+    }
+
+    private String getCurrentLabelWhileLoop(){
+        var x = whileLoopCounter-1;
+        return "whileLoop" + x +":";
+    }
+
+    private String getNextLabelWhileEnd() {
+        return "whileEnd" + whileEndCounter++ + ";";
+    }
+
+    private String getCurrentLabelWhileEnd(){
+        var x = whileEndCounter-1;
+        return "whileEnd" + x +":";
+    }
+
+    private String visitWhileStatement(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+        var condChild = node.getChild(0);
+        var visitChild = exprVisitor.visit(condChild);
+
+        code.append(getNextLabelWhileCond()).append(":").append(NL);
+        code.append(visitChild.getComputation());
+        code.append("if (").append(visitChild.getCode()).append(") ").append("goto ").append(getNextLabelWhileLoop()).append(NL);
+        code.append("goto ").append(getNextLabelWhileEnd()).append(NL);
+        code.append(getCurrentLabelWhileLoop()).append(NL);
+        var insideWhile = node.getChild(1);
+        for (var child : insideWhile.getChildren()){
+            var aux = visit(child);
+
+            code.append(aux);
+
+        }
+
+        code.append("goto ").append(getCurrentLabelWhileCond()).append(NL);
+        code.append(getCurrentLabelWhileEnd()).append(NL);
 
         return code.toString();
     }
