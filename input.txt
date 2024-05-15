@@ -1,9 +1,12 @@
-class Test{
+import A;
+ class Test extends A{
 
-    public static void main(String[] args) {
-            int[] d;
 
-            d[true] = 3;
+    public int bar() {
+      int[] array;
+      int a;
+      array = [1, [1,2], a];
+      return 1;
     }
 
 }
