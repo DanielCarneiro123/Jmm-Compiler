@@ -86,18 +86,27 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
     private String visitIfStatement(JmmNode node, Void unused) {
         StringBuilder code = new StringBuilder();
         var ifChild = node.getChild(0);
+        var elseChild = node.getChild(1);
         var visitChild = exprVisitor.visit(ifChild.getChild(0));
         code.append(visitChild.getComputation());
         code.append("if(").append(visitChild.getCode()).append(") goto ");
         code.append(getNextLabelThen()).append(";").append(NL);
-        code.append("handle else").append(NL);
+        //code.append("handle else").append(NL);
+        var elseContent = elseChild.getChild(0);
+        for (var child : elseContent.getChildren()){
+            var aux = visit(child);
+
+            code.append(aux);
+
+        }
+
         code.append("goto ").append(getNextLabelEnd()).append(NL);
         code.append(getCurrentLabelThen()).append(NL);
 
         var ifContent = ifChild.getChild(1);
         for (var child : ifContent.getChildren()){
             var aux = visit(child);
-            //code.append(aux.getComputation());
+
             code.append(aux);
 
         }
@@ -105,11 +114,9 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         code.append(getCurrentLabelEnd()).append(NL);
 
 
-
-
-
         return code.toString();
     }
+
 
 
     private String visitExpressionStmt(JmmNode node, Void unused) {
