@@ -73,20 +73,19 @@ public class TypeUtils {
 
         String methodName = expr.get("value");
 
-        for (var child : expr.getChildren()) {
-            var childName = child.get("value");
-            for (var imp : table.getImports()) {
-                if (imp.equals(childName)) {
-                    return new Type(childName, false);
-                }
+        JmmNode exprChild = expr.getChild(0);
+        var childName = exprChild.get("value");
+        for (var imp : table.getImports()) {
+            if (imp.equals(childName)) {
+                return new Type(childName, false);
             }
         }
+
         for (var method : table.getMethods()) {
             if (method.equals(methodName)) {
                 return table.getReturnType(methodName);
             }
         }
-        JmmNode exprChild = expr.getChild(0);
         return getExprType(exprChild, table, methodName);
         //return new Type(BOOLEAN_TYPE_NAME, false);
 
