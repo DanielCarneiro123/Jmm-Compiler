@@ -10,7 +10,6 @@ import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static pt.up.fe.comp2024.ast.TypeUtils.getExprType;
@@ -171,7 +170,8 @@ public class IncompatibleArguments extends AnalysisVisitor {
 
         return null;
     }
-    private Void visitIncompatibleArguments3(JmmNode functionCall, SymbolTable table){
+
+    private Void visitIncompatibleArguments3(JmmNode functionCall, SymbolTable table) {
         /*if (tem_imports) {
             return null;
 
@@ -179,18 +179,46 @@ public class IncompatibleArguments extends AnalysisVisitor {
         var caller = functionCall.getChildren().get(0);
         var callerType = getExprType(caller, table, method);
 
-        for (var imp: table.getImports()) {
-            if (imp.equals(callerType.getName())){
+        for (var imp : table.getImports()) {
+            if (imp.equals(callerType.getName())) {
                 return null;
             }
         }
-        if (callerType.getName().equals(table.getClassName())){
+        if (callerType.getName().equals(table.getClassName())) {
+            var functionCallName = functionCall.get("value");
+            var functionCallParams = table.getParameters(functionCallName);
+            if (functionCallParams.size() != functionCall.getChildren().size() - 1) {
+                String message = "Incompatible Arguments";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(functionCall),
+                        NodeUtils.getColumn(functionCall),
+                        message,
+                        null)
+                );
+                return null;
+            }
+            for (int i = 0; i < functionCallParams.size(); i++) {
+                var param = functionCall.getChildren().get(i + 1);
+                var paramType = getExprType(param, table, method);
+                if (!paramType.equals(functionCallParams.get(i).getType())) {
+                    String message = "Incompatible Arguments";
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(functionCall),
+                            NodeUtils.getColumn(functionCall),
+                            message,
+                            null)
+                    );
+                    return null;
+                }
+            }
             return null;
         }
 
         var funcName = functionCall.get("value");
         List<Symbol> realParam = null;
-        for (var args: table.getMethods()) {
+        for (var args : table.getMethods()) {
             if (args.equals(funcName)) {
                 realParam = table.getParameters(funcName);
 
@@ -210,13 +238,13 @@ public class IncompatibleArguments extends AnalysisVisitor {
         }
 
 
-        List<JmmNode> paramsPassed = functionCall.getChildren(Kind.EXPR).subList(1,functionCall.getChildren(Kind.EXPR).size());
+        List<JmmNode> paramsPassed = functionCall.getChildren(Kind.EXPR).subList(1, functionCall.getChildren(Kind.EXPR).size());
         for (int i = 0; i < realParam.size(); i++) {
-            if (realParam.get(i).getType().hasAttribute("varArg")){
+            if (realParam.get(i).getType().hasAttribute("varArg")) {
                 return null;
             }
         }
-        if (realParam.size() < paramsPassed.size()){
+        if (realParam.size() < paramsPassed.size()) {
             String message = "Too Many Arguments Added";
             addReport(Report.newError(
                     Stage.SEMANTIC,
@@ -227,7 +255,7 @@ public class IncompatibleArguments extends AnalysisVisitor {
             );
             return null;
         }
-        if (realParam.size() > paramsPassed.size()){
+        if (realParam.size() > paramsPassed.size()) {
             String message = "Few Arguments Added";
             addReport(Report.newError(
                     Stage.SEMANTIC,
@@ -239,9 +267,9 @@ public class IncompatibleArguments extends AnalysisVisitor {
             return null;
         }
 
-        for (int i = 0; i < paramsPassed.size()-1; i++){
+        for (int i = 0; i < paramsPassed.size() - 1; i++) {
             var paramPassedType = getExprType(paramsPassed.get(i), table, method);
-            if (!paramPassedType.equals(realParam.get(i).getType())){
+            if (!paramPassedType.equals(realParam.get(i).getType())) {
                 String message = "Invalid Arguments";
                 addReport(Report.newError(
                         Stage.SEMANTIC,
@@ -258,7 +286,6 @@ public class IncompatibleArguments extends AnalysisVisitor {
         return null;
 
     }
-
 
 
 }
