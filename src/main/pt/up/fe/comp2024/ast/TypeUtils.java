@@ -70,6 +70,7 @@ public class TypeUtils {
     }
 
     private static Type getFunctionType(JmmNode expr, SymbolTable table) {
+
         String methodName = expr.get("value");
 
         /*for (var child : expr.getChildren()) {
@@ -82,13 +83,14 @@ public class TypeUtils {
         }*/
         for (var method : table.getMethods()) {
             if (method.equals(methodName)) {
-                return table.getReturnType(methodName);
+//                return table.getReturnType(methodName);
             }
         }
         JmmNode exprChild = expr.getChild(0);
-        return getExprType(exprChild, table, methodName);
+        return new Type(BOOLEAN_TYPE_NAME, false);
 
-        // return new Type("", false); //aqui devia dar erro porque é um tipo que não existe (?)
+        //      return getExprType(exprChild, table, methodName);
+
     }
 
     private static Type getBinExprType(JmmNode binaryExpr) {
