@@ -81,7 +81,7 @@ public class WrongArrayAcess extends AnalysisVisitor {
 
         return null;
     }
-
+/*
     private Void visitArrayAssign(JmmNode arrayAssign, SymbolTable table) {
         SpecsCheck.checkNotNull(currentMethod, () -> "Expected current method to be set");
         String varNameToCheck = arrayAssign.get("var");
@@ -118,5 +118,5 @@ public class WrongArrayAcess extends AnalysisVisitor {
         }
 
         return null;
-    }
+    }*/
 }
