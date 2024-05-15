@@ -45,17 +45,6 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
                 return null;
             }
 
-            if (type1.getName().equals("boolean") || type2.getName().equals("boolean")) {
-                String message = "Booleans cannot be used in arithmetic operations.";
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        NodeUtils.getLine(binaryExpr),
-                        NodeUtils.getColumn(binaryExpr),
-                        message,
-                        null)
-                );
-                return null;
-            }
 
             if (!type1.getName().equals("int") || !type2.getName().equals("int")) {
                 String message = "Objects cannot be used in arithmetic operations.";
