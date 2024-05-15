@@ -72,14 +72,14 @@ public class TypeUtils {
     private static Type getFunctionType(JmmNode expr, SymbolTable table) {
         String methodName = expr.get("value");
 
-        for (var child : expr.getChildren()) {
+        /*for (var child : expr.getChildren()) {
             var childName = child.get("value");
             for (var imp : table.getImports()) {
                 if (imp.equals(childName)) {
                     return new Type(childName, false);
                 }
             }
-        }
+        }*/
         for (var method : table.getMethods()) {
             if (method.equals(methodName)) {
                 return table.getReturnType(methodName);
