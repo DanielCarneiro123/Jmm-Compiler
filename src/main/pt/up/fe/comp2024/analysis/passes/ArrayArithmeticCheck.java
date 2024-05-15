@@ -85,7 +85,7 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
                 );
                 return null;
             }
-            /*if (type1.getName().equals("int") || type2.getName().equals("int")) {
+            if (type1.getName().equals("int") || type2.getName().equals("int")) {
                 String message = "Int cannot be used in boolean operations.";
                 addReport(Report.newError(
                         Stage.SEMANTIC,
@@ -95,8 +95,8 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
                         null)
                 );
                 return null;
-            }*/
-            if (!type1.getName().equals("boolean") || !type2.getName().equals("boolean")) {
+            }
+            /*if (!type1.getName().equals("boolean") || !type2.getName().equals("boolean")) {
                 String message = "Objects cannot be used in boolean operations.";
                 addReport(Report.newError(
                         Stage.SEMANTIC,
@@ -106,7 +106,7 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
                         null)
                 );
                 return null;
-            }
+            }*/
         }
 
         return null;
