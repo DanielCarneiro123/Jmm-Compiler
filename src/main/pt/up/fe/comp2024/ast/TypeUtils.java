@@ -51,7 +51,7 @@ public class TypeUtils {
         Type type = switch (kind) {
             case IDENTIFIER, VAR_DECL, INT, ID -> getVarExprType(expr, table, currMethod);
             case ARRAYDEFINITION, ARRAY_DECLARATION -> new Type(INT_TYPE_NAME, true);
-            case INTEGER, ARRAY_SUBSCRIPT -> new Type(INT_TYPE_NAME, false);
+            case INTEGER, CLASS_INSTANTIATION, ARRAY_SUBSCRIPT -> new Type(INT_TYPE_NAME, false);
             case IFEXPR, ELSEEXPR -> new Type(BOOLEAN_TYPE_NAME, false);
             case BINARY_EXPR -> getBinExprType(expr);
             case BINARY_OP -> getBinExprType(expr);
