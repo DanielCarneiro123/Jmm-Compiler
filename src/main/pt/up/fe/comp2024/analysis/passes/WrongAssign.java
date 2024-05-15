@@ -69,6 +69,9 @@ public class WrongAssign extends AnalysisVisitor {
                             if (imp2.equals(assigmentTypeName)) {
                                 return null;
                             }
+                            if (imp2.equals(imp)) {
+                                return null;
+                            }
                         }
                     }
                     if (assigmentChilType.getName().equals(table.getClassName()) && imp.equals(assigmentTypeName) && imp.equals(table.getSuper())) {

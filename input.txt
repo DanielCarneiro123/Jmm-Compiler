@@ -1,8 +1,11 @@
 import A;
-class Test{
+class Test extends A{
 
     public int foo(int a, int b){
-        a = true;
-        return a;
+        boolean c;
+        c = A.foo();
+        while(c){
+        }
+        return 0;
     }
 }
