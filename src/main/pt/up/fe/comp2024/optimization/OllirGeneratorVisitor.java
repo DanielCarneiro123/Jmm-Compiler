@@ -12,7 +12,6 @@ import pt.up.fe.comp2024.ast.TypeUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.lang.Math.max;
 import static pt.up.fe.comp2024.ast.Kind.*;
 
 /**
@@ -52,7 +51,6 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(VAR_DECL, this::visitVarDecl);
         addVisit(EXPR_STMT, this::visitExpressionStmt);
         addVisit(IF_STMT, this::visitIfStatement);
-        addVisit(WHILE_STMT, this::visitWhileStatement);
 
 
 
@@ -76,7 +74,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
     }
 
     private String getNextLabelEnd() {
-        return "if_end_" + endCounter++ + ";";
+        return "if_end_" + endCounter++;
     }
 
     private String getCurrentLabelEnd(){
@@ -84,63 +82,22 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         return "if_end_" + x +":";
     }
 
-    private int whileCondCounter = 0;
-    private int whileLoopCounter = 0;
-
-    private int whileEndCounter = 0;
-
-    private String getNextLabelWhileCond() {
-        return "whileCond" + whileCondCounter++;
-    }
-
-    private String getCurrentLabelWhileCond(){
-        var x = whileCondCounter-1;
-        return "whileCond" + x + ";";
-    }
-
-    private String getNextLabelWhileLoop() {
-        return "whileLoop" + whileLoopCounter++ + ";";
-    }
-
-    private String getCurrentLabelWhileLoop(){
-        var x = whileLoopCounter-1;
-        return "whileLoop" + x +":";
-    }
-
-    private String getNextLabelWhileEnd() {
-        return "whileEnd" + whileEndCounter++ + ";";
-    }
-
-    private String getCurrentLabelWhileEnd(){
-        var x = whileEndCounter-1;
-        return "whileEnd" + x +":";
-    }
-
 
     private String visitIfStatement(JmmNode node, Void unused) {
         StringBuilder code = new StringBuilder();
         var ifChild = node.getChild(0);
-        var elseChild = node.getChild(1);
         var visitChild = exprVisitor.visit(ifChild.getChild(0));
         code.append(visitChild.getComputation());
         code.append("if(").append(visitChild.getCode()).append(") goto ");
         code.append(getNextLabelThen()).append(";").append(NL);
-        //code.append("handle else").append(NL);
-        var elseContent = elseChild.getChild(0);
-        for (var child : elseContent.getChildren()){
-            var aux = visit(child);
-
-            code.append(aux);
-
-        }
-
+        code.append("handle else").append(NL);
         code.append("goto ").append(getNextLabelEnd()).append(NL);
         code.append(getCurrentLabelThen()).append(NL);
 
         var ifContent = ifChild.getChild(1);
         for (var child : ifContent.getChildren()){
             var aux = visit(child);
-
+            //code.append(aux.getComputation());
             code.append(aux);
 
         }
@@ -148,29 +105,8 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         code.append(getCurrentLabelEnd()).append(NL);
 
 
-        return code.toString();
-    }
 
-    private String visitWhileStatement(JmmNode node, Void unused) {
-        StringBuilder code = new StringBuilder();
-        var condChild = node.getChild(0);
-        var visitChild = exprVisitor.visit(condChild);
 
-        code.append(getNextLabelWhileCond()).append(":").append(NL);
-        code.append(visitChild.getComputation());
-        code.append("if (").append(visitChild.getCode()).append(") ").append("goto ").append(getNextLabelWhileLoop()).append(NL);
-        code.append("goto ").append(getNextLabelWhileEnd()).append(NL);
-        code.append(getCurrentLabelWhileLoop()).append(NL);
-        var insideWhile = node.getChild(1);
-        for (var child : insideWhile.getChildren()){
-            var aux = visit(child);
-
-            code.append(aux);
-
-        }
-
-        code.append("goto ").append(getCurrentLabelWhileCond()).append(NL);
-        code.append(getCurrentLabelWhileEnd()).append(NL);
 
         return code.toString();
     }
@@ -480,7 +416,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         node.getChildren().stream()
                 .map(this::visit)
                 .forEach(code::append);
-        code.append("ananan");
+
         return code.toString();
     }
 
