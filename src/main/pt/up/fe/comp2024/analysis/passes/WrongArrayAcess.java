@@ -19,6 +19,7 @@ public class WrongArrayAcess extends AnalysisVisitor {
     public void buildVisitor() {
         addVisit(Kind.CLASS_INSTANTIATION, this::visitWrongArray);
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
+        addVisit(Kind.ARRAY_ASSIGN, this::visitArrayAssign);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
@@ -76,6 +77,44 @@ public class WrongArrayAcess extends AnalysisVisitor {
                 );
                 return null;
             }
+        }
+
+        return null;
+    }
+
+    private Void visitArrayAssign(JmmNode arrayAssign, SymbolTable table) {
+        SpecsCheck.checkNotNull(currentMethod, () -> "Expected current method to be set");
+        String varNameToCheck = arrayAssign.get("var");
+        for (var localVariable : table.getLocalVariables(currentMethod)) {
+            if (localVariable.getName().equals(varNameToCheck) && !localVariable.getType().isArray()) {
+                String message = "It is not an array";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(arrayAssign),
+                        NodeUtils.getColumn(arrayAssign),
+                        message,
+                        null)
+                );
+                return null;
+            }
+        }
+        String typeName = "";
+        if (arrayAssign.getChildren().size() > 0) {
+            JmmNode childOperand = arrayAssign.getChildren().get(0);
+            Type typeChildOperand = getExprType(childOperand, table, currentMethod);
+            typeName = typeChildOperand.getName();
+
+        }
+        if (!typeName.equals("int")) {
+            String message = "Array Index not int";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(arrayAssign),
+                    NodeUtils.getColumn(arrayAssign),
+                    message,
+                    null)
+            );
+            return null;
         }
 
         return null;
