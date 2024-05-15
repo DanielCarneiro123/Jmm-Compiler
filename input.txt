@@ -5,8 +5,8 @@ import A;
     public int bar() {
       int[] array;
       int a;
-      array = [1, [1,2], a];
-      return 1;
+
+      return [1,2,3][0];
     }
 
 }

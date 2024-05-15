@@ -51,11 +51,11 @@ public class ArrayInitWrong1 extends AnalysisVisitor {
             var childTypeName = childType.getName();
             var varRefChildTypeName = varRefChildType.getName();
 
-            for (var imp : table.getImports()) {
+            /*for (var imp : table.getImports()) {
                 if (imp.equals(childTypeName)) {
                     return null;
                 }
-            }
+            }*/
 
             if (!childTypeName.equals("int") || childType.isArray()) {
                 String message = "Incorrect Array Type";
