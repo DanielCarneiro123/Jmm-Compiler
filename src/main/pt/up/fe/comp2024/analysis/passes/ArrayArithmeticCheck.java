@@ -84,7 +84,7 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
                         null)
                 );
                 return null;
-            }/*
+            }
             if (type1.getName().equals("int") || type2.getName().equals("int")) {
                 String message = "Int cannot be used in boolean operations.";
                 addReport(Report.newError(
@@ -95,7 +95,7 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
                         null)
                 );
                 return null;
-            }
+            }/*
             if (!type1.getName().equals("boolean") || !type2.getName().equals("boolean")) {
                 String message = "Objects cannot be used in boolean operations.";
                 addReport(Report.newError(
