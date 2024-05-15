@@ -24,6 +24,7 @@ public class UndeclaredVariable extends AnalysisVisitor {
         addVisit(Kind.IDENTIFIER, this::visitVarRefExpr);
         addVisit(Kind.VAR_DECL, this::visitVarDecls);
         addVisit(Kind.IMPORT_DECLARATION, this::visitImpDecls);
+        addVisit(Kind.ARRAY_ASSIGN, this::visitArrayAssignIDs);
 
     }
 
@@ -156,6 +157,39 @@ public class UndeclaredVariable extends AnalysisVisitor {
                 doubleImp = true;
             }
         }
+        return null;
+    }
+
+    private Void visitArrayAssignIDs(JmmNode ArrayAssign, SymbolTable table) {
+        var ArrayAssignID = ArrayAssign.get("var");
+        if (table.getFields().stream()
+                .anyMatch(param -> param.getName().equals(ArrayAssignID))) {
+            return null;
+        }
+
+        if (table.getParameters(currentMethod).stream()
+                .anyMatch(param -> param.getName().equals(ArrayAssignID))) {
+            return null;
+        }
+
+        if (table.getLocalVariables(currentMethod).stream()
+                .anyMatch(varDecl -> varDecl.getName().equals(ArrayAssignID))) {
+            return null;
+        }
+
+        if (table.getImports().stream()
+                .anyMatch(param -> param.equals(ArrayAssignID))) {
+            return null;
+        }
+
+        var message = String.format("Variable '%s' does not exist.", ArrayAssign);
+        addReport(Report.newError(
+                Stage.SEMANTIC,
+                NodeUtils.getLine(ArrayAssign),
+                NodeUtils.getColumn(ArrayAssign),
+                message,
+                null)
+        );
         return null;
     }
 

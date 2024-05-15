@@ -1,15 +1,13 @@
 import A;
  class Test extends A{
 
-    public int foo(int[] b){
-      return 1;
-    }
-
     public int bar() {
       int[] array;
       int a;
 
-      return this.foo(a);
+      x[0] = 1;
+
+      return 0;
     }
 
 }
