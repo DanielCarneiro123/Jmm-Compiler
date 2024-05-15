@@ -69,7 +69,7 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
                 return null;
             }
 
-        } else if (isBooleanOperator(operator)) {
+        } /*else if (isBooleanOperator(operator)) {
             JmmNode leftOperand = binaryExpr.getChildren().get(0);
             JmmNode rightOperand = binaryExpr.getChildren().get(1);
             Type type1 = getExprType(leftOperand, table, method);
@@ -107,7 +107,7 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
                 );
                 return null;
             }
-        }
+        }*/
         return null;
     }
 
