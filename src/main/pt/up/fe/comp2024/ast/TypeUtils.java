@@ -74,12 +74,12 @@ public class TypeUtils {
         String methodName = expr.get("value");
         JmmNode exprChild = expr.getChild(0);
 
-        var childName = exprChild.get("value");
+        /*var childName = exprChild.get("value");
         for (var imp : table.getImports()) {
             if (imp.equals(childName)) {
                 return new Type(childName, false);
             }
-        }
+        }*/
 
         for (var method : table.getMethods()) {
             if (method.equals(methodName)) {
