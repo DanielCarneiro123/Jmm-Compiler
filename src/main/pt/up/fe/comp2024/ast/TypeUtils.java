@@ -83,11 +83,11 @@ public class TypeUtils {
 
         for (var method : table.getMethods()) {
             if (method.equals(methodName)) {
-                return table.getReturnType(methodName);
+                //return table.getReturnType(methodName);
             }
         }
-        return getExprType(exprChild, table, methodName);
-        //return new Type(BOOLEAN_TYPE_NAME, false);
+        //return getExprType(exprChild, table, methodName);
+        return new Type(BOOLEAN_TYPE_NAME, false);
 
     }
 
