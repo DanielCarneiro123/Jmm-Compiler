@@ -71,6 +71,15 @@ public class TypeUtils {
 
     private static Type getFunctionType(JmmNode expr, SymbolTable table) {
         String methodName = expr.get("value");
+
+        for (var child : expr.getChildren()) {
+            var childName = child.get("value");
+            for (var imp : table.getImports()) {
+                if (imp.equals(childName)) {
+                    return new Type(childName, false);
+                }
+            }
+        }
         for (var method : table.getMethods()) {
             if (method.equals(methodName)) {
                 return table.getReturnType(methodName);
@@ -89,7 +98,7 @@ public class TypeUtils {
 
         return switch (operator) {
             case "+", "*", "-", "/", "*=", "+=", "-=" -> new Type(INT_TYPE_NAME, false);
-            case "==", "&&", "||", "<=", ">=", "<", ">" , "!=", "/="  -> new Type("boolean", false);
+            case "==", "&&", "||", "<=", ">=", "<", ">", "!=", "/=" -> new Type("boolean", false);
             default ->
                     throw new RuntimeException("Unknown operator '" + operator + "' of expression '" + binaryExpr + "'");
         };
