@@ -19,7 +19,7 @@ public class WrongArrayAcess extends AnalysisVisitor {
     public void buildVisitor() {
         addVisit(Kind.CLASS_INSTANTIATION, this::visitWrongArray);
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
-        //addVisit(Kind.ARRAY_ASSIGN, this::visitArrayAssign);
+        addVisit(Kind.ARRAY_ASSIGN, this::visitArrayAssign);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
@@ -81,7 +81,7 @@ public class WrongArrayAcess extends AnalysisVisitor {
 
         return null;
     }
-/*
+
     private Void visitArrayAssign(JmmNode arrayAssign, SymbolTable table) {
         SpecsCheck.checkNotNull(currentMethod, () -> "Expected current method to be set");
         String varNameToCheck = arrayAssign.get("var");
@@ -118,5 +118,5 @@ public class WrongArrayAcess extends AnalysisVisitor {
         }
 
         return null;
-    }*/
+    }
 }
