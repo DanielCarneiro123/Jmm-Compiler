@@ -85,7 +85,7 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
                 );
                 return null;
             }
-            if (type1.getName().equals("int")) {
+            if (type2.getName().equals("int")) {
                 String message = "Int cannot be used in boolean operations.";
                 addReport(Report.newError(
                         Stage.SEMANTIC,
