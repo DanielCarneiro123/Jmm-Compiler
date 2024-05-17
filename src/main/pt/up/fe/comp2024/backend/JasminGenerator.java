@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.specs.comp.ollir.InstructionType.*;
+import static org.specs.comp.ollir.OperationType.*;
+
 
 /**
  * Generates Jasmin code from an OllirResult.
@@ -58,6 +61,8 @@ public class JasminGenerator {
         generators.put(Operand.class, this::generateOperand);
         generators.put(BinaryOpInstruction.class, this::generateBinaryOp);
         generators.put(ReturnInstruction.class, this::generateReturn);
+        generators.put(CondBranchInstruction.class, this::generateBranch);
+        generators.put(GotoInstruction.class, this::generateGoto);
     }
 
     public List<Report> getReports() {
@@ -574,8 +579,21 @@ public class JasminGenerator {
 
     }
 
+    private String generateBinaryOp(BinaryOpInstruction binaryOpInstruction) {
+        switch (binaryOpInstruction.getOperation().getOpType()){
+            case ADD, SUB, MUL, DIV, SHR, SHL, SHRR, XOR, AND, ANDB, OR, ORB -> {
+                return generateAritmeticBinaryOp(binaryOpInstruction);
+            }
+            case LTH, GTH, EQ, NEQ, LTE, GTE, NOTB, NOT -> {
+                return generateConditionalBinaryOp(binaryOpInstruction);
+            }
+        }
+        return null;
+    }
 
-    private String generateBinaryOp(BinaryOpInstruction binaryOp) {
+
+
+    private String generateAritmeticBinaryOp(BinaryOpInstruction binaryOp) {
         var code = new StringBuilder();
 
         // load values on the left and on the right
@@ -588,12 +606,32 @@ public class JasminGenerator {
             case MUL -> "imul";
             case SUB -> "isub";
             case DIV -> "idiv";
+            case XOR -> "xor";
+            case AND, ANDB -> "and";
+            case OR, ORB -> "or";
             default -> throw new NotImplementedException(binaryOp.getOperation().getOpType());
         };
 
         code.append(op).append(NL);
         curr_stack_value++;
         maxStackValue();
+        return code.toString();
+    }
+    private String generateConditionalBinaryOp(BinaryOpInstruction binaryOpInstruction) {
+        var code = new StringBuilder();
+        switch (binaryOpInstruction.getOperation().getOpType()) {
+            case LTH -> code.append("if_icmplt ");
+            case GTH -> code.append("if_icmpgt ");
+            case EQ -> code.append("if_icmpeq ");
+            case NEQ -> code.append("if_icmpne ");
+            case LTE -> code.append("if_icmple ");
+            case GTE -> code.append("if_icmpge ");
+            case NOTB -> code.append("ifle ");
+            case NOT -> code.append("not ");
+            default -> {
+                return "";
+            }
+        }
         return code.toString();
     }
 
@@ -625,8 +663,34 @@ public class JasminGenerator {
 
         return code.toString();
     }
+    private String generateBranch(CondBranchInstruction condBranchInstruction) {
+        var code = new StringBuilder();
+
+        if (condBranchInstruction.getCondition().getInstType().equals(UNARYOPER)){
+            var aritOp = (BinaryOpInstruction) condBranchInstruction.getCondition();
+            var op = generateBinaryOp(aritOp);
+            code.append(op).append(condBranchInstruction.getLabel()).append(NL);
+        }
+        else if (condBranchInstruction.getCondition().getInstType().equals(BINARYOPER)){
+            var binOp = (BinaryOpInstruction) condBranchInstruction.getCondition();
+            var op = generateBinaryOp(binOp);
+            code.append(op).append(" ").append(condBranchInstruction.getLabel()).append(NL);
+        }
+        else if (condBranchInstruction.getCondition().getInstType().equals(NOPER)){
+            code.append("ifne ").append(condBranchInstruction.getLabel()).append(NL);
+        }
+
+        return code.toString();
+    }
+
+    private String generateGoto(GotoInstruction gotoInstruction) {
+        var code = new StringBuilder();
+        code.append("goto ").append(gotoInstruction.getLabel()).append(NL);
+        return code.toString();
+    }
 
     public void maxStackValue(){
         stack_value = Math.max(stack_value, curr_stack_value);
     }
+
 }
