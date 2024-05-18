@@ -26,7 +26,7 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
         String method = binaryExpr.getJmmParent().getJmmParent().getOptional("name").orElse("");
 
         if (method.equals("")) {
-            method = binaryExpr.getJmmParent().getJmmParent().getOptional("value").orElse("");
+            method = binaryExpr.getJmmParent().getJmmParent().getOptional("classname").orElse("");
         }
 
         if (operator.equals("==") || operator.equals("/=")) {
