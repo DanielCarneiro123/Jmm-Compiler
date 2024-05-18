@@ -33,10 +33,6 @@ public class JmmAnalysisImpl implements JmmAnalysis {
 
         List<Report> reports = new ArrayList<>();
 
-        if (table.getClassName().equals("AssumeArguments") || table.getClassName().equals("Varargs") || table.getClassName().equals("Simple")) {
-            return new JmmSemanticsResult(parserResult, table, reports);
-        }
-
         // Visit all nodes in the AST
         for (var analysisPass : analysisPasses) {
             if (!reports.isEmpty()) break;
