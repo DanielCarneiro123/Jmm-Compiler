@@ -9,6 +9,8 @@ import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 import pt.up.fe.comp2024.ast.TypeUtils;
+import static pt.up.fe.comp2024.ast.TypeUtils.getExprType;
+
 
 public class UndeclaredMethod extends AnalysisVisitor {
     private String method;
