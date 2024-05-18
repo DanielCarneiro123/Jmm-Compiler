@@ -45,7 +45,7 @@ public class UndeclaredMethod extends AnalysisVisitor {
     private Void visitUndeclaredMethod(JmmNode newClass, SymbolTable table) {
         String newClassKind = newClass.getKind();
         String className = newClass.get("classname");
-/*
+
         if (table.getClassName().equals(className)) {
             return null;
         }
@@ -54,7 +54,7 @@ public class UndeclaredMethod extends AnalysisVisitor {
             if (importName.equals(className)) {
                 return null;
             }
-        }*/
+        }
 
         if (newClassKind.equals("NewClass")) {
             if (!table.getMethods().stream()
