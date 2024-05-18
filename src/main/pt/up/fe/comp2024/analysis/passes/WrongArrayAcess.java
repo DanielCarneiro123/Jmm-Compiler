@@ -17,7 +17,7 @@ public class WrongArrayAcess extends AnalysisVisitor {
 
     @Override
     public void buildVisitor() {
-        addVisit(Kind.CLASS_INSTANTIATION, this::visitWrongArray);
+        addVisit(Kind.ARRAY_SUBSCRIPT, this::visitWrongArray);
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.ARRAY_ASSIGN, this::visitArrayAssign);
     }
