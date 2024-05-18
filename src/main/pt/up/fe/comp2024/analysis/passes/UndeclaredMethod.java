@@ -46,7 +46,7 @@ public class UndeclaredMethod extends AnalysisVisitor {
         String newClassKind = newClass.getKind();
         String className = newClass.get("classname");
 
-        if (table.getClassName().equals(className)) {
+        /*if (table.getClassName().equals(className)) {
             return null;
         }
 
@@ -54,7 +54,7 @@ public class UndeclaredMethod extends AnalysisVisitor {
             if (importName.equals(className)) {
                 return null;
             }
-        }
+        }*/
 
         if (newClassKind.equals("NewClass")) {
             if (!table.getMethods().stream()
