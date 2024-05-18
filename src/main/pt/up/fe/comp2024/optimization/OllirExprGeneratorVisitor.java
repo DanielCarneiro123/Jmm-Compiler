@@ -48,16 +48,19 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
     }
 
     private OllirExprResult visitArrayDecl(JmmNode node, Void unused) {
-        // Visit the child expression of the negation
 
-        // Generate the OLLIR code for the negation operation
         StringBuilder code = new StringBuilder();
-        code.append("a");
+        StringBuilder computation = new StringBuilder();
 
-        // Append the OLLIR code for the negation operation
-        String negatedVar = "banana";
+        var sizeNode = visit(node.getJmmChild(1));
+        computation.append(sizeNode.getComputation());
 
-        return new OllirExprResult(negatedVar, code);
+        String ollirType = OptUtils.toOllirType(node.getChild(0));
+        code.append("new(array,").append(sizeNode.getCode()).append(").array").append(ollirType);
+
+
+
+        return new OllirExprResult(code.toString(),computation.toString());
     }
 
     private OllirExprResult visitNegationExpr(JmmNode node, Void unused) {
