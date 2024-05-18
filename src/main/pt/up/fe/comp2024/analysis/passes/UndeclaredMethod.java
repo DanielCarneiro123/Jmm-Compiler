@@ -43,6 +43,7 @@ public class UndeclaredMethod extends AnalysisVisitor {
     }
 
     private Void visitUndeclaredMethod(JmmNode newClass, SymbolTable table) {
+        String newClassKind = newClass.getKind();
         String className = newClass.get("classname");
 /*
         if (table.getClassName().equals(className)) {
@@ -55,20 +56,20 @@ public class UndeclaredMethod extends AnalysisVisitor {
             }
         }*/
 
-        //if (newClassKind.equals("NewClass")) {
-        if (!table.getMethods().stream()
-                .anyMatch(param -> param.equals(className))) {
-            String message = "Undeclared Method";
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    NodeUtils.getLine(newClass),
-                    NodeUtils.getColumn(newClass),
-                    message,
-                    null)
-            );
-            return null;
+        if (newClassKind.equals("NewClass")) {
+            if (!table.getMethods().stream()
+                    .anyMatch(param -> param.equals(className))) {
+                String message = "Undeclared Method";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(newClass),
+                        NodeUtils.getColumn(newClass),
+                        message,
+                        null)
+                );
+                return null;
+            }
         }
-        //}
 
         return null;
     }
