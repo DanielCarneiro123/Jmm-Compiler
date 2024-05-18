@@ -28,7 +28,6 @@ public class WrongArrayAcess extends AnalysisVisitor {
     }
 
     private Void visitWrongArray(JmmNode arrayDecl, SymbolTable table) {
-        SpecsCheck.checkNotNull(currentMethod, () -> "Expected current method to be set");
         JmmNode leftOperand = arrayDecl.getChildren().get(0); //para dar erro este tem de começar por ser Arraydefinition
         String varNameToCheck = arrayDecl.get("className");
 
