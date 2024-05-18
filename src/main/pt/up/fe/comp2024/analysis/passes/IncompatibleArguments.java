@@ -23,7 +23,7 @@ public class IncompatibleArguments extends AnalysisVisitor {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.FUNCTION_CALL, this::visitIncompatibleArguments);
         addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
-        addVisit(Kind.ARRAY_SUBSCRIPT, this::visitIncompatibleArguments2);
+        //addVisit(Kind.CLASS_INSTANTIATION, this::visitIncompatibleArguments2);
         addVisit(Kind.FUNCTION_CALL, this::visitIncompatibleArguments3);
     }
 
