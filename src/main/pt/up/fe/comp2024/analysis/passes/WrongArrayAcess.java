@@ -30,6 +30,20 @@ public class WrongArrayAcess extends AnalysisVisitor {
     private Void visitWrongArray(JmmNode arrayDecl, SymbolTable table) {
         String varNameToCheck = arrayDecl.get("value");
 
+        for (var x : table.getParameters(currentMethod)) {
+            if (x.getName().equals(varNameToCheck) && !x.getType().isArray()) {
+                String message = "It is not an array";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(arrayDecl),
+                        NodeUtils.getColumn(arrayDecl),
+                        message,
+                        null)
+                );
+                return null;
+            }
+        }
+
         for (var localVariable : table.getLocalVariables(currentMethod)) {
             if (localVariable.getName().equals(varNameToCheck) && !localVariable.getType().isArray()) {
                 String message = "It is not an array";
