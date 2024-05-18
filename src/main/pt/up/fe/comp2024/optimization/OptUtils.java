@@ -1,5 +1,6 @@
 package pt.up.fe.comp2024.optimization;
 
+import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 
 public class OptUtils {
@@ -30,10 +31,10 @@ public class OptUtils {
         return toOllirType(typeName);
     }
 
-    /*public static String toOllirType(Type type) {
-        if(type.isArray()) return ".array" + toOllirType(type.getName());
+    public static String toOllirType(Type type) {
+        if (type.isArray()) return ".array" + toOllirType(type.getName());
         return toOllirType(type.getName());
-    }*/
+    }
 
     private static String toOllirType(String typeName) {
 
