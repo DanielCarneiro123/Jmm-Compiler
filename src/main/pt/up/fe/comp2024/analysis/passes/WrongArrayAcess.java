@@ -28,7 +28,6 @@ public class WrongArrayAcess extends AnalysisVisitor {
     }
 
     private Void visitWrongArray(JmmNode arrayDecl, SymbolTable table) {
-        JmmNode leftOperand = arrayDecl.getChildren().get(0); //para dar erro este tem de começar por ser Arraydefinition
         String varNameToCheck = arrayDecl.get("className");
 
             /*for (var parameter : table.getParameters(currentMethod)) {
