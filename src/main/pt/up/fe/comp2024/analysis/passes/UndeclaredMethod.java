@@ -10,8 +10,6 @@ import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 import pt.up.fe.comp2024.ast.TypeUtils;
 
-import static pt.up.fe.comp2024.ast.TypeUtils.getExprType;
-
 public class UndeclaredMethod extends AnalysisVisitor {
     private String method;
     private boolean tem_imports;
@@ -74,7 +72,6 @@ public class UndeclaredMethod extends AnalysisVisitor {
         JmmNode left = functionCall.getChild(0);
 
 
-
         Type leftType = TypeUtils.getExprType(left, table, method);
 
         // THIS
@@ -108,8 +105,7 @@ public class UndeclaredMethod extends AnalysisVisitor {
                 );
             }
             return null;
-        }
-        else if (leftType.getName().equals("int") || leftType.getName().equals("boolean") || leftType.isArray()) {
+        } else if (leftType.getName().equals("int") || leftType.getName().equals("boolean") || leftType.isArray()) {
             String message = "Wrong Type Caller";
             addReport(Report.newError(
                     Stage.SEMANTIC,
