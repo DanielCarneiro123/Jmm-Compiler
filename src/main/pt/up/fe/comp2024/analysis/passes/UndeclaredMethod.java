@@ -8,7 +8,8 @@ import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
-import pt.up.fe.comp2024.ast.TypeUtils;
+
+import static pt.up.fe.comp2024.ast.TypeUtils.getExprType;
 
 public class UndeclaredMethod extends AnalysisVisitor {
     private String method;
@@ -79,7 +80,7 @@ public class UndeclaredMethod extends AnalysisVisitor {
         JmmNode left = functionCall.getChild(0);
 
 
-        Type leftType = TypeUtils.getExprType(left, table, method);
+        Type leftType = getExprType(left, table, method);
 
         // THIS
         if (leftType.getName().equals("object")) {
