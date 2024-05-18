@@ -28,7 +28,7 @@ public class WrongArrayAcess extends AnalysisVisitor {
     }
 
     private Void visitWrongArray(JmmNode arrayDecl, SymbolTable table) {
-        String varNameToCheck = arrayDecl.get("value");
+        String varNameToCheck = arrayDecl.get("className");
 
         for (var localVariable : table.getLocalVariables(currentMethod)) {
             if (localVariable.getName().equals(varNameToCheck) && !localVariable.getType().isArray()) {
