@@ -8,8 +8,7 @@ import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
-
-import static pt.up.fe.comp2024.ast.TypeUtils.getExprType;
+import pt.up.fe.comp2024.ast.TypeUtils;
 
 public class UndeclaredMethod extends AnalysisVisitor {
     private String method;
@@ -43,10 +42,9 @@ public class UndeclaredMethod extends AnalysisVisitor {
     }
 
     private Void visitUndeclaredMethod(JmmNode newClass, SymbolTable table) {
-        String newClassKind = newClass.getKind();
         String className = newClass.get("classname");
 
-        /*if (table.getClassName().equals(className)) {
+        if (table.getClassName().equals(className)) {
             return null;
         }
 
@@ -54,22 +52,22 @@ public class UndeclaredMethod extends AnalysisVisitor {
             if (importName.equals(className)) {
                 return null;
             }
-        }*/
-
-        if (newClassKind.equals("NewClass")) {
-            if (!table.getMethods().stream()
-                    .anyMatch(param -> param.equals(className))) {
-                String message = "Undeclared Method";
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        NodeUtils.getLine(newClass),
-                        NodeUtils.getColumn(newClass),
-                        message,
-                        null)
-                );
-                return null;
-            }
         }
+
+        //if (newClassKind.equals("NewClass")) {
+        if (!table.getMethods().stream()
+                .anyMatch(param -> param.equals(className))) {
+            String message = "Undeclared Method";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(newClass),
+                    NodeUtils.getColumn(newClass),
+                    message,
+                    null)
+            );
+            return null;
+        }
+        //}
 
         return null;
     }
@@ -81,7 +79,7 @@ public class UndeclaredMethod extends AnalysisVisitor {
         JmmNode left = functionCall.getChild(0);
 
 
-        Type leftType = getExprType(left, table, method);
+        Type leftType = TypeUtils.getExprType(left, table, method);
 
         // THIS
         if (leftType.getName().equals("object")) {
