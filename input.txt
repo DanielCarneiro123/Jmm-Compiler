@@ -2,10 +2,7 @@ import A;
  class Test extends A{
 
     public int bar() {
-      int[] array;
       int a;
-      boolean b;
-      boolean c;
 
       a = a + this.foo();
 

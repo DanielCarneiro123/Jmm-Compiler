@@ -25,6 +25,10 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
         String operator = binaryExpr.get("op");
         String method = binaryExpr.getJmmParent().getJmmParent().getOptional("name").orElse("");
 
+        if (method.equals("")) {
+            method = binaryExpr.getJmmParent().getJmmParent().getOptional("value").orElse("");
+        }
+
         if (operator.equals("==") || operator.equals("/=")) {
             return null;
         } else if (isArithmeticOperator(operator)) {
@@ -96,7 +100,7 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
                 );
                 return null;
             }
-
+/*
             if (!type1.getName().equals("boolean") || !type2.getName().equals("boolean")) {
                 String message = "Objects cannot be used in boolean operations.";
                 addReport(Report.newError(
@@ -107,7 +111,7 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
                         null)
                 );
                 return null;
-            }
+            }*/
         }
         return null;
     }
