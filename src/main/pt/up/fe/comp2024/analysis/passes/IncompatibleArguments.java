@@ -24,7 +24,7 @@ public class IncompatibleArguments extends AnalysisVisitor {
         addVisit(Kind.FUNCTION_CALL, this::visitIncompatibleArguments);
         addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
         addVisit(Kind.CLASS_INSTANTIATION, this::visitIncompatibleArguments2);
-        //addVisit(Kind.FUNCTION_CALL, this::visitIncompatibleArguments3);
+        addVisit(Kind.FUNCTION_CALL, this::visitIncompatibleArguments3);
     }
 
     private Void visitMethodDecl(JmmNode currMethod, SymbolTable table) {
