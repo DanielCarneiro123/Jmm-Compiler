@@ -57,7 +57,7 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
                 return null;
             }
 
-            if (!type1.getName().equals("int") || !type2.getName().equals("int")) {
+            /*if (!type1.getName().equals("int") || !type2.getName().equals("int")) {
                 String message = "Objects cannot be used in arithmetic operations.";
                 addReport(Report.newError(
                         Stage.SEMANTIC,
@@ -67,7 +67,7 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
                         null)
                 );
                 return null;
-            }
+            }*/
 
         } else if (isBooleanOperator(operator)) {
             JmmNode leftOperand = binaryExpr.getChildren().get(0);
