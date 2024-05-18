@@ -24,7 +24,7 @@ public class IncompatibleArguments extends AnalysisVisitor {
         addVisit(Kind.FUNCTION_CALL, this::visitIncompatibleArguments);
         addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
         addVisit(Kind.CLASS_INSTANTIATION, this::visitIncompatibleArguments2);
-        //addVisit(Kind.FUNCTION_CALL, this::visitIncompatibleArguments3);
+        addVisit(Kind.FUNCTION_CALL, this::visitIncompatibleArguments3);
     }
 
     private Void visitMethodDecl(JmmNode currMethod, SymbolTable table) {
@@ -49,15 +49,10 @@ public class IncompatibleArguments extends AnalysisVisitor {
     private Void visitIncompatibleArguments(JmmNode functionCall, SymbolTable table) {
         var functionCallValue = functionCall.get("value");
 
-
         for (int i = 0; i < functionCall.getChildren().size(); i++) {
             JmmNode functionCallChild = functionCall.getChildren().get(i);
             var functionCallChildType = getExprType(functionCallChild, table, method);
             var functionCallChildTypeName = getExprType(functionCallChild, table, method).getName();
-
-            if (functionCallChildTypeName.equals("Varargs")) {
-                return null;
-            }
 
             if (functionCallChild.getKind().equals("BinaryOp")) {
                 String message = "Incompatible Argument";
@@ -113,14 +108,13 @@ public class IncompatibleArguments extends AnalysisVisitor {
         }
 
         var sizeParamChamada = functionCall.getChildren().size();
-        for (int i = 0; i < functionCall.getChildren().size(); i++) {
+        for (int i = 1; i < functionCall.getChildren().size(); i++) {
             JmmNode child = functionCall.getChildren().get(i);
-            var functionCallChildTypeName = getExprType(child, table, method).getName();
             Type typeChild = getExprType(child, table, method);
             var sizeParamFunc = table.getParameters(functionCallValue).size();
 
-            if (!functionCallChildTypeName.equals("Varargs") && sizeParamChamada != sizeParamFunc) {
-                if (!table.getParameters(functionCallValue).get(i).getType().equals(typeChild)) {
+            if (!functionCallValue.equals("varargs") && sizeParamChamada != sizeParamFunc) {
+                if (!table.getParameters(functionCallValue).get(i - 1).getType().equals(typeChild)) {
                     String message = "Incompatible Argument";
                     addReport(Report.newError(
                             Stage.SEMANTIC,
@@ -132,7 +126,7 @@ public class IncompatibleArguments extends AnalysisVisitor {
                     return null;
                 }
             }
-            if (functionCallChildTypeName.equals("varargs")) {
+            if (functionCallValue.equals("varargs")) {
                 if (!typeChild.getName().equals("int")) {
                     String message = "Incompatible Argument";
                     addReport(Report.newError(
@@ -178,7 +172,10 @@ public class IncompatibleArguments extends AnalysisVisitor {
     }
 
     private Void visitIncompatibleArguments3(JmmNode functionCall, SymbolTable table) {
+        /*if (tem_imports) {
+            return null;
 
+        }*/
         var caller = functionCall.getChildren().get(0);
         var callerType = getExprType(caller, table, method);
 
