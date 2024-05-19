@@ -21,6 +21,7 @@ public class WrongAssign extends AnalysisVisitor {
         addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
         addVisit(Kind.ASSIGNMENT, this::visitWrongAssign2);
         addVisit(Kind.ARRAY_ASSIGN, this::visitWrongAssign3);
+        addVisit(Kind.ARRAY_ASSIGN, this::visitWrongAssign4);
     }
 
     private Void visitMethodDecl(JmmNode currMethod, SymbolTable table) {
@@ -123,7 +124,28 @@ public class WrongAssign extends AnalysisVisitor {
         if (assigmentType.isArray()) {
             return null;
         }
-        String message = "Wrong Assign Types";
+        String message = "Not an Array";
+        addReport(Report.newError(
+                Stage.SEMANTIC,
+                NodeUtils.getLine(assigment),
+                NodeUtils.getColumn(assigment),
+                message,
+                null)
+        );
+        return null;
+        //}
+
+    }
+
+    private Void visitWrongAssign4(JmmNode assigment, SymbolTable table) {
+        var assigmentType = getExprType(assigment, table, method);
+        var assigmentChil = assigment.getChildren().get(0);
+        Type assigmentChilType = getExprType(assigmentChil, table, method);
+
+        if (assigmentChilType.getName().equals("int") && !assigmentChilType.isArray()) {
+            return null;
+        }
+        String message = "Array index Invalid";
         addReport(Report.newError(
                 Stage.SEMANTIC,
                 NodeUtils.getLine(assigment),
