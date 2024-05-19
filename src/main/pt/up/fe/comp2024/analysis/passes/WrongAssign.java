@@ -20,8 +20,8 @@ public class WrongAssign extends AnalysisVisitor {
         //addVisit(Kind.STMT, this::visitWrongAssign);
         addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
         addVisit(Kind.ASSIGNMENT, this::visitWrongAssign2);
-        addVisit(Kind.ARRAY_ASSIGN, this::visitWrongAssign3);
         addVisit(Kind.ARRAY_ASSIGN, this::visitWrongAssign4);
+        addVisit(Kind.ARRAY_ASSIGN, this::visitWrongAssign3);
     }
 
     private Void visitMethodDecl(JmmNode currMethod, SymbolTable table) {
@@ -121,7 +121,22 @@ public class WrongAssign extends AnalysisVisitor {
 
     private Void visitWrongAssign3(JmmNode assigment, SymbolTable table) {
         var assigmentType = getExprType(assigment, table, method);
-        if (assigmentType.isArray()) {
+        if (!assigmentType.isArray()) {
+            String message = "Not an Array";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(assigment),
+                    NodeUtils.getColumn(assigment),
+                    message,
+                    null)
+            );
+            return null;
+        }
+
+        var assigmentChil = assigment.getChildren().get(1);
+        Type assigmentChilType = getExprType(assigmentChil, table, method);
+
+        if (assigmentChilType.getName().equals("int") && !assigmentChilType.isArray()) {
             return null;
         }
         String message = "Not an Array";
@@ -133,8 +148,6 @@ public class WrongAssign extends AnalysisVisitor {
                 null)
         );
         return null;
-        //}
-
     }
 
     private Void visitWrongAssign4(JmmNode assigment, SymbolTable table) {
@@ -154,8 +167,6 @@ public class WrongAssign extends AnalysisVisitor {
                 null)
         );
         return null;
-        //}
-
     }
 
 
