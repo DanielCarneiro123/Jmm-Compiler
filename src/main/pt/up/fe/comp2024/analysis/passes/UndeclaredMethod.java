@@ -45,6 +45,12 @@ public class UndeclaredMethod extends AnalysisVisitor {
         String newClassKind = newClass.getKind();
         String className = newClass.getOptional("classname").orElse("");
 
+        for (var importName : table.getImports()) {
+            if (importName.equals(className)) {
+                return null;
+            }
+        }
+
         if (!tem_imports) {
             if (newClassKind.equals("NewClass")) {
                 if (!table.getMethods().stream()
