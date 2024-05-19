@@ -47,7 +47,7 @@ public class IncompatibleReturn extends AnalysisVisitor {
         JmmNode childExpr = expr.getJmmChild(0);
         Type typeExpr = getExprType(childExpr, table, method);
 
-        if (!typeExpr.equals(typeMethod)) {
+        if (!typeExpr.equals(typeMethod) && (typeExpr.equals("int") || typeExpr.equals("boolean"))) {
             String message = "Incompatible Return";
             addReport(Report.newError(
                     Stage.SEMANTIC,
