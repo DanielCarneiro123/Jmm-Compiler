@@ -92,6 +92,7 @@ stmt
     | FOR LPAREN stmt expr SEMI expr RPAREN stmt #ForStmt
     | WHILE LPAREN expr RPAREN stmt #WhileStmt
     | var=ID EQUALS expr SEMI #Assignment
+    | var=ID LSTRAIGHT expr RSTRAIGHT EQUALS expr SEMI #ArrayAssign
     ;
 
 ifexpr

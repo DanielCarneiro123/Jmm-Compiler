@@ -20,7 +20,7 @@ public class WrongAssign extends AnalysisVisitor {
         //addVisit(Kind.STMT, this::visitWrongAssign);
         addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
         addVisit(Kind.ASSIGNMENT, this::visitWrongAssign2);
-        //addVisit(Kind.ARRAY_ASSIGN, this::visitWrongAssign3);
+        addVisit(Kind.ARRAY_ASSIGN, this::visitWrongAssign3);
     }
 
     private Void visitMethodDecl(JmmNode currMethod, SymbolTable table) {
@@ -119,78 +119,20 @@ public class WrongAssign extends AnalysisVisitor {
     }
 
     private Void visitWrongAssign3(JmmNode assigment, SymbolTable table) {
-        var assigmentChil = assigment.getChildren();
         var assigmentType = getExprType(assigment, table, method);
-        var assigmentTypeName = assigmentType.getName();
-        var assigmentChilType = getExprType(assigmentChil.get(0), table, method);
-
-        var isThisTest = assigmentChil.get(0).getOptional("value").orElse("");
-        var isThis = isThisTest.equals("this");
-        if (isThis) return null;
-
-        if (assigmentChilType.equals(assigmentType)) {
-            return null;
-        } else {
-            for (var imp : table.getImports()) {
-                if (imp.equals(assigmentTypeName) || imp.equals(assigmentChilType.getName())) {
-                    if (imp.equals(assigmentTypeName)) {
-                        for (var imp2 : table.getImports()) {
-                            if (imp2.equals(assigmentChilType.getName())) {
-                                return null;
-                            }
-                        }
-                    }
-                    if (imp.equals(assigmentChilType.getName())) {
-                        for (var imp2 : table.getImports()) {
-                            if (imp2.equals(assigmentTypeName)) {
-                                return null;
-                            }
-                            if (imp2.equals(imp)) {
-                                return null;
-                            }
-                        }
-                    }
-                    if (assigmentChilType.getName().equals(table.getClassName()) && imp.equals(assigmentTypeName) && imp.equals(table.getSuper())) {
-                        return null;
-                    } else if (assigmentTypeName.equals(table.getClassName()) && imp.equals(assigmentChilType.getName()) && imp.equals(table.getSuper())) {
-                        return null;
-                    } else {
-                        var assigmentChilChilValue = "";
-                        if (assigmentChil.get(0).getChildren().size() > 0) {
-                            assigmentChilChilValue = assigmentChil.get(0).getChildren().get(0).getOptional("value").orElse("");
-                        }
-                        for (var imp2 : table.getImports()) {
-                            if (imp2.equals(assigmentChilChilValue) && !assigmentTypeName.equals(table.getSuper()) && !assigmentChilChilValue.equals(table.getSuper())) {
-                                return null;
-                            }
-                        }
-                        for (var imp3 : table.getImports()) {
-                            if (imp3.equals(assigmentType.getName()) && !assigmentType.getName().equals(table.getSuper()) && !assigmentChilChilValue.equals(table.getSuper())) {
-                                return null;
-                            }
-                        }
-                        String message = "Wrong Assign Types";
-                        addReport(Report.newError(
-                                Stage.SEMANTIC,
-                                NodeUtils.getLine(assigment),
-                                NodeUtils.getColumn(assigment),
-                                message,
-                                null)
-                        );
-                        return null;
-                    }
-                }
-            }
-            String message = "Wrong Assign Types";
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    NodeUtils.getLine(assigment),
-                    NodeUtils.getColumn(assigment),
-                    message,
-                    null)
-            );
+        if (assigmentType.isArray()) {
             return null;
         }
+        String message = "Wrong Assign Types";
+        addReport(Report.newError(
+                Stage.SEMANTIC,
+                NodeUtils.getLine(assigment),
+                NodeUtils.getColumn(assigment),
+                message,
+                null)
+        );
+        return null;
+        //}
 
     }
 
