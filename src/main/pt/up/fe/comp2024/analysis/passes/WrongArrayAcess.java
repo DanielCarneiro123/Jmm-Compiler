@@ -19,7 +19,7 @@ public class WrongArrayAcess extends AnalysisVisitor {
     public void buildVisitor() {
         addVisit(Kind.ARRAY_SUBSCRIPT, this::visitWrongArray);
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
-        addVisit(Kind.ARRAY_ASSIGN, this::visitArrayAssign);
+        //addVisit(Kind.ARRAY_ASSIGN, this::visitArrayAssign);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
