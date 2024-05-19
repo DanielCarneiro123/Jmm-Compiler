@@ -10,8 +10,8 @@ class IntPlusObject {
         int a;
         int[] b;
 
-        b[1] = [1];
+        b[1] = [1 + b];
 
-        return 10 + b[1];
+        return 1;
     }
 }

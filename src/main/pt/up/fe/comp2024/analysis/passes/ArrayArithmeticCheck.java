@@ -16,14 +16,22 @@ import static pt.up.fe.comp2024.ast.TypeUtils.getExprType;
  */
 public class ArrayArithmeticCheck extends AnalysisVisitor {
 
+    private String method;
+
     @Override
     public void buildVisitor() {
+        addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.BINARY_OP, this::visitBinaryExpr);
+    }
+
+
+    private Void visitMethodDecl(JmmNode currMethod, SymbolTable table) {
+        method = currMethod.get("name");
+        return null;
     }
 
     private Void visitBinaryExpr(JmmNode binaryExpr, SymbolTable table) {
         String operator = binaryExpr.get("op");
-        String method = binaryExpr.getJmmParent().getJmmParent().getOptional("name").orElse("");
 
         if (method.equals("")) {
             method = binaryExpr.getJmmParent().getJmmParent().getOptional("classname").orElse("");
