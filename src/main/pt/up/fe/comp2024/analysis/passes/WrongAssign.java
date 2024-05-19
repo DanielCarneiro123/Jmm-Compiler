@@ -105,6 +105,16 @@ public class WrongAssign extends AnalysisVisitor {
                     }
                 }
             }
+
+            if (assigment.getChildren().get(0).getChildren().get(0).get("value").equals("this")) {
+                for (var imp : table.getImports()) {
+                    if (imp.equals(table.getSuper())) {
+                        return null;
+
+                    }
+                }
+            }
+
             String message = "Wrong Assign Types";
             addReport(Report.newError(
                     Stage.SEMANTIC,
