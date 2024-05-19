@@ -52,11 +52,28 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(EXPR_STMT, this::visitExpressionStmt);
         addVisit(IF_STMT, this::visitIfStatement);
         addVisit(WHILE_STMT, this::visitWhileStatement);
+        addVisit(ARRAY_ASSIGN, this::visitArrayAssignStatement);
 
 
         addVisit(ASSIGNMENT, this::visitAssignStmt);
 
         setDefaultVisit(this::defaultVisit);
+    }
+
+
+    private String visitArrayAssignStatement(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+
+        var indexNode = exprVisitor.visit(node.getChild(0));
+        var valueNode = exprVisitor.visit(node.getChild(1));
+
+        var indexType = indexNode.getCode().substring(indexNode.getCode().lastIndexOf("."));
+        code.append(indexNode.getComputation());
+        code.append(valueNode.getComputation());
+        code.append(node.get("var")).append("[").append(indexNode.getCode()).append("]").append(indexType);
+        code.append(ASSIGN).append(".i32 ").append(valueNode.getCode()).append(";").append(NL);
+
+        return code.toString();
     }
 
 

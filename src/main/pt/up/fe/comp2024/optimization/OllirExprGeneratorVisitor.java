@@ -42,9 +42,35 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         addVisit(OBJECT, this::visitThisExpr);
 
         addVisit(ARRAY_DECLARATION, this::visitArrayDecl);
+        addVisit(ARRAY_SUBSCRIPT, this::visitArraySubscript);
 
 
         setDefaultVisit(this::defaultVisit);
+    }
+
+    private OllirExprResult visitArraySubscript(JmmNode node, Void unused) {
+
+        StringBuilder code = new StringBuilder();
+        StringBuilder computation = new StringBuilder();
+
+        var isBinaryOpNode = node.getAncestor("BinaryOp");
+
+
+        var indexNode = visit(node.getJmmChild(1));
+        computation.append(indexNode.getComputation());
+
+        if(isBinaryOpNode.isPresent()){
+            var temp = OptUtils.getTemp() + ".i32";
+            computation.append(temp).append(" ").append(ASSIGN).append(".i32 ").append(node.getChild(0).get("value")).append("[").append(indexNode.getCode()).append("].i32").append(END_STMT);
+
+            code.append(temp);
+
+        }
+
+        else {
+            code.append(node.getChild(0).get("value")).append("[").append(indexNode.getCode()).append("].i32");
+        }
+        return new OllirExprResult(code.toString(),computation.toString());
     }
 
     private OllirExprResult visitArrayDecl(JmmNode node, Void unused) {
