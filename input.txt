@@ -8,7 +8,7 @@ class IntPlusObject {
         int[] b;
         int[] c;
 
-        b[1+1] = c;
+        b[1] = c;
         return 1;
     }
 }

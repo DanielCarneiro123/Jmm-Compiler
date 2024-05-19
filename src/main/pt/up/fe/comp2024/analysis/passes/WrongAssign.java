@@ -20,7 +20,6 @@ public class WrongAssign extends AnalysisVisitor {
         //addVisit(Kind.STMT, this::visitWrongAssign);
         addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
         addVisit(Kind.ASSIGNMENT, this::visitWrongAssign2);
-        addVisit(Kind.ARRAY_ASSIGN, this::visitWrongAssign4);
         addVisit(Kind.ARRAY_ASSIGN, this::visitWrongAssign3);
     }
 
@@ -133,42 +132,38 @@ public class WrongAssign extends AnalysisVisitor {
             return null;
         }
 
-        var assigmentChil = assigment.getChildren().get(1);
-        Type assigmentChilType = getExprType(assigmentChil, table, method);
+        var assigmentChil0 = assigment.getChildren().get(0);
+        Type assigmentChilType0 = getExprType(assigmentChil0, table, method);
 
-        if (assigmentChilType.getName().equals("int") && !assigmentChilType.isArray()) {
+        if (!assigmentChilType0.getName().equals("int") || assigmentChilType0.isArray()) {
+            String message = "Array index Invalid";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(assigment),
+                    NodeUtils.getColumn(assigment),
+                    message,
+                    null)
+            );
             return null;
         }
-        String message = "Not an Array";
-        addReport(Report.newError(
-                Stage.SEMANTIC,
-                NodeUtils.getLine(assigment),
-                NodeUtils.getColumn(assigment),
-                message,
-                null)
-        );
-        return null;
-    }
 
-    private Void visitWrongAssign4(JmmNode assigment, SymbolTable table) {
-        var assigmentType = getExprType(assigment, table, method);
-        var assigmentChil = assigment.getChildren().get(0);
-        Type assigmentChilType = getExprType(assigmentChil, table, method);
+        var assigmentChil1 = assigment.getChildren().get(1);
+        Type assigmentChilType = getExprType(assigmentChil1, table, method);
 
-        if (assigmentChilType.getName().equals("int") && !assigmentChilType.isArray()) {
+        if (!assigmentChilType.getName().equals("int") || assigmentChilType.isArray()) {
+            String message = "Not an Array";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(assigment),
+                    NodeUtils.getColumn(assigment),
+                    message,
+                    null)
+            );
             return null;
         }
-        String message = "Array index Invalid";
-        addReport(Report.newError(
-                Stage.SEMANTIC,
-                NodeUtils.getLine(assigment),
-                NodeUtils.getColumn(assigment),
-                message,
-                null)
-        );
+
         return null;
     }
-
 
     private Void visitWrongAssign(JmmNode stmtDecl, SymbolTable table) {
         for (JmmNode operand : stmtDecl.getChildren()) {
