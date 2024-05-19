@@ -37,9 +37,6 @@ public class ArrayArithmeticCheck extends AnalysisVisitor {
             Type type1 = getExprType(leftOperand, table, method);
             Type type2 = getExprType(rightOperand, table, method);
 
-            if (type1.getName().equals("int") && type2.getName().equals("int")) {
-                return null;
-            }
 
             if (type1.isArray() || type2.isArray()) {
                 String message = "Arrays cannot be used in arithmetic operations.";
