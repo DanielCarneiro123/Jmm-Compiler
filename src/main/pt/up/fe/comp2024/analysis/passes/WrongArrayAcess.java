@@ -58,6 +58,22 @@ public class WrongArrayAcess extends AnalysisVisitor {
                 return null;
             }
         }
+
+        JmmNode arrayDeclChildSecond = arrayDecl.getChildren().get(1);
+        String varNameToCheckSecond = arrayDeclChildSecond.getOptional("value").orElse("");
+        Type type = getExprType(arrayDeclChildSecond, table, currentMethod);
+
+        if (!type.getName().equals("int")) {
+            String message = "Array Index not int";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(arrayDecl),
+                    NodeUtils.getColumn(arrayDecl),
+                    message,
+                    null)
+            );
+            return null;
+        }
         return null;
     }
 
