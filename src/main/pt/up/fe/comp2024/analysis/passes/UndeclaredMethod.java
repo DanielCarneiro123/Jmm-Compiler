@@ -16,7 +16,7 @@ public class UndeclaredMethod extends AnalysisVisitor {
 
     @Override
     public void buildVisitor() {
-        //addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
+        addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.NEW_CLASS, this::visitUndeclaredMethod);
         //addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
         //addVisit(Kind.FUNCTION_CALL, this::visitFunctionCaller);
