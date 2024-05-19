@@ -43,7 +43,7 @@ public class UndeclaredMethod extends AnalysisVisitor {
 
     private Void visitUndeclaredMethod(JmmNode newClass, SymbolTable table) {
         String newClassKind = newClass.getKind();
-        String className = newClass.get("classname");
+        String className = newClass.getOptional("classname").orElse("");
 
         if (!tem_imports) {
             if (newClassKind.equals("NewClass")) {
