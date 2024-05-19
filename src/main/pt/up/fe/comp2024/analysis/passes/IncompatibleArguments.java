@@ -188,14 +188,14 @@ public class IncompatibleArguments extends AnalysisVisitor {
             var functionCallName = functionCall.get("value");
             var functionCallParams = table.getParameters(functionCallName);
 
-            if (functionCall.getChildren().get(0).get("value").equals("this")) {
+            /*if (functionCall.getChildren().get(0).get("value").equals("this")) {
                 for (var imp : table.getImports()) {
                     if (imp.equals(table.getSuper())) {
                         return null;
 
                     }
                 }
-            }
+            }*/
 
             if (functionCallParams.size() != functionCall.getChildren().size() - 1) {
                 String message = "Incompatible Arguments";
