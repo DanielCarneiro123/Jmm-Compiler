@@ -234,7 +234,8 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 // instance from the current class
                 if (type.getName().equals(table.getClassName())) {
                     Type returnType = table.getReturnType(methodSignature);
-                    returnS = OptUtils.toOllirType(returnType);}
+                   // returnS = OptUtils.toOllirType(returnType);
+                }
 
                  else {
 
