@@ -52,6 +52,9 @@ public class WrongAssign extends AnalysisVisitor {
         var isThis = isThisTest.equals("this");
         if (isThis) return null;
 
+        if (assigmentChilType.getName().equals(table.getClassName())) {
+            return null;
+        }
         if (assigmentChilType.equals(assigmentType)) {
             return null;
         } else {
