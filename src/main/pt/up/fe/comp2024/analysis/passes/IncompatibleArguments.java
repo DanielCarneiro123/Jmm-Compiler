@@ -186,16 +186,18 @@ public class IncompatibleArguments extends AnalysisVisitor {
         }
         if (callerType.getName().equals(table.getClassName())) {
             var functionCallName = functionCall.get("value");
-            var functionCallParams = table.getParameters(functionCallName);
 
-            if (functionCall.getChildren().get(0).get("value").equals("this")) {
-                for (var imp : table.getImports()) {
-                    if (imp.equals(table.getSuper())) {
-                        return null;
-
-                    }
+            var existe_nesta_class = false;
+            for (var method : table.getMethods()) {
+                if (method.equals(functionCallName)) {
+                    existe_nesta_class = true;
                 }
             }
+            if (!existe_nesta_class) {
+                return null;
+            }
+
+            var functionCallParams = table.getParameters(functionCallName);
 
             if (functionCallParams.size() != functionCall.getChildren().size() - 1) {
                 String message = "Incompatible Arguments";

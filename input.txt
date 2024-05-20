@@ -8,7 +8,8 @@ class ClassImported extends A{
 
     public int foo() {
         int a;
-        a = this.bar(a,a,a);
+        ClassImported x;
+        a = x.bar(a,a,a);
         return a;
     }
 }
