@@ -251,27 +251,13 @@ public class IncompatibleArguments extends AnalysisVisitor {
             }
 
             var sizeParamChamada = functionCall.getChildren().size();
-            for (int i = 0; i < functionCall.getChildren().size(); i++) {
+            for (int i = 1; i < functionCall.getChildren().size(); i++) {
                 JmmNode child = functionCall.getChildren().get(i);
                 Type typeChild = getExprType(child, table, method);
-                var functionCallChildTypeName = getExprType(child, table, method).getName();
                 var sizeParamFunc = table.getParameters(functionCallValue).size();
 
-                if (!functionCallChildTypeName.equals("Varargs") && sizeParamChamada != sizeParamFunc) {
-                    if (!table.getParameters(functionCallValue).get(i).getType().equals(typeChild)) {
-                        String message = "Incompatible Argument";
-                        addReport(Report.newError(
-                                Stage.SEMANTIC,
-                                NodeUtils.getLine(functionCall),
-                                NodeUtils.getColumn(functionCall),
-                                message,
-                                null)
-                        );
-                        return null;
-                    }
-                }
-                if (functionCallChildTypeName.equals("Varargs")) {
-                    if (!typeChild.getName().equals("int")) {
+                if (sizeParamChamada != sizeParamFunc) {
+                    if (!table.getParameters(functionCallValue).get(i - 1).getType().equals(typeChild)) {
                         String message = "Incompatible Argument";
                         addReport(Report.newError(
                                 Stage.SEMANTIC,
