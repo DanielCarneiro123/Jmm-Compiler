@@ -1,13 +1,17 @@
-import B;
+import A;
+class Varargs {
 
-class Simple extends B{
+    public static void main(String[] args) {
 
-    public static void main(String[] args){
     }
 
-    public int foo(int a) {
-        a = this.bar();
-
+    public int foo() {
+        int a;
+        a = this.varargs(10, 20, 30);
         return a;
+    }
+
+    public int varargs(int... a) {
+        return a[0];
     }
 }
