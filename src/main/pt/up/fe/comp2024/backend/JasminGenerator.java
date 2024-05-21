@@ -678,12 +678,16 @@ public class JasminGenerator {
         };
 
         code.append(op).append(NL);
-        curr_stack_value++;
-        maxStackValue();
+
         return code.toString();
     }
     private String generateConditionalBinaryOp(BinaryOpInstruction binaryOpInstruction) {
         var code = new StringBuilder();
+        curr_stack_value--;
+        maxStackValue();
+        code.append(generators.apply(binaryOpInstruction.getLeftOperand()));
+        code.append(generators.apply(binaryOpInstruction.getRightOperand()));
+
         switch (binaryOpInstruction.getOperation().getOpType()) {
             case LTH -> code.append("if_icmplt ");
             case GTH -> code.append("if_icmpgt ");
