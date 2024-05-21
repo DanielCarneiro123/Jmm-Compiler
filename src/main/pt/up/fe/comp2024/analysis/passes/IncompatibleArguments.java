@@ -22,26 +22,10 @@ public class IncompatibleArguments extends AnalysisVisitor {
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.FUNCTION_CALL, this::visitIncompatibleArguments);
-        addVisit(Kind.CLASS_DECLARATION, this::visitImport_Extend);
-        //addVisit(Kind.FUNCTION_CALL, this::visitIncompatibleArguments3);
     }
 
     private Void visitMethodDecl(JmmNode currMethod, SymbolTable table) {
         method = currMethod.get("name");
-        return null;
-    }
-
-    private Void visitImport_Extend(JmmNode classDecl, SymbolTable table) {
-        String extendedName = classDecl.getOptional("extendedClass").orElse("");
-        for (int i = 0; i < classDecl.getParent().getChildren().size() - 1; i++) {
-            JmmNode child = classDecl.getParent().getChildren().get(i);
-            String childName = child.get("ID");
-            //if (childName.equals(extendedName)) {
-            tem_imports = true;
-            return null;
-            //}
-        }
-        tem_imports = false;
         return null;
     }
 
@@ -270,137 +254,7 @@ public class IncompatibleArguments extends AnalysisVisitor {
                     }
                 }
             }
-
         }
         return null;
-
     }
-
-    private Void visitIncompatibleArguments3(JmmNode functionCall, SymbolTable table) {
-
-        var caller = functionCall.getChildren().get(0);
-        var callerType = getExprType(caller, table, method);
-
-
-        for (var imp : table.getImports()) {
-            if (imp.equals(callerType.getName())) {
-                return null;
-            }
-        }
-        if (callerType.getName().equals(table.getClassName())) {
-            var functionCallName = functionCall.get("value");
-
-            var existe_nesta_class = false;
-            for (var method : table.getMethods()) {
-                if (method.equals(functionCallName)) {
-                    existe_nesta_class = true;
-                }
-            }
-            if (!existe_nesta_class) {
-                return null;
-            }
-
-            var functionCallParams = table.getParameters(functionCallName);
-
-            if (functionCallParams.size() != functionCall.getChildren().size() - 1) {
-                String message = "Incompatible Arguments";
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        NodeUtils.getLine(functionCall),
-                        NodeUtils.getColumn(functionCall),
-                        message,
-                        null)
-                );
-                return null;
-            }
-            for (int i = 0; i < functionCallParams.size(); i++) {
-                var param = functionCall.getChildren().get(i + 1);
-                var paramType = getExprType(param, table, method);
-                if (!paramType.equals(functionCallParams.get(i).getType())) {
-                    String message = "Incompatible Arguments";
-                    addReport(Report.newError(
-                            Stage.SEMANTIC,
-                            NodeUtils.getLine(functionCall),
-                            NodeUtils.getColumn(functionCall),
-                            message,
-                            null)
-                    );
-                    return null;
-                }
-            }
-            return null;
-        }
-
-        var funcName = functionCall.get("value");
-        List<Symbol> realParam = null;
-        for (var args : table.getMethods()) {
-            if (args.equals(funcName)) {
-                realParam = table.getParameters(funcName);
-
-            }
-
-        }
-        if (realParam == null) {
-            String message = "Incompatible Arguments";
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    NodeUtils.getLine(functionCall),
-                    NodeUtils.getColumn(functionCall),
-                    message,
-                    null)
-            );
-            return null;
-        }
-
-
-        List<JmmNode> paramsPassed = functionCall.getChildren(Kind.EXPR).subList(1, functionCall.getChildren(Kind.EXPR).size());
-        for (int i = 0; i < realParam.size(); i++) {
-            if (realParam.get(i).getType().hasAttribute("varArg")) {
-                return null;
-            }
-        }
-        if (realParam.size() < paramsPassed.size()) {
-            String message = "Too Many Arguments Added";
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    NodeUtils.getLine(functionCall),
-                    NodeUtils.getColumn(functionCall),
-                    message,
-                    null)
-            );
-            return null;
-        }
-        if (realParam.size() > paramsPassed.size()) {
-            String message = "Few Arguments Added";
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    NodeUtils.getLine(functionCall),
-                    NodeUtils.getColumn(functionCall),
-                    message,
-                    null)
-            );
-            return null;
-        }
-
-        for (int i = 0; i < paramsPassed.size() - 1; i++) {
-            var paramPassedType = getExprType(paramsPassed.get(i), table, method);
-            if (!paramPassedType.equals(realParam.get(i).getType())) {
-                String message = "Invalid Arguments";
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        NodeUtils.getLine(functionCall),
-                        NodeUtils.getColumn(functionCall),
-                        message,
-                        null)
-                );
-                return null;
-            }
-        }
-
-
-        return null;
-
-    }
-
-
 }
