@@ -784,15 +784,18 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         var id = node.get("value");
         var parentNode = node.getAncestor("MethodDecl");
         boolean isField = false;
+        boolean isParam = false;
         List<Symbol> fields = table.getFields();
+
         String rhs ="";
         StringBuilder code = new StringBuilder();
         StringBuilder computation = new StringBuilder();
 
-
         if (parentNode.isPresent()){
             methodName = parentNode.get().get("name");
         }
+
+        List<Symbol> params = table.getParameters(methodName);
         Type type = TypeUtils.getExprType(node, table,methodName);
         String ollirType = OptUtils.toOllirType(type);
 
@@ -801,6 +804,18 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             if (field.getName().equals(rhs)){
                 isField = true;
             }
+        }
+
+        for (Symbol p : params) {
+            if (p.getName().equals(rhs)){
+                isParam = true;
+            }
+        }
+
+        if(isParam){
+            code.append(id).append(ollirType);
+
+            return new OllirExprResult(code.toString());
         }
 
         if (isField){
@@ -812,9 +827,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         }
 
         code.append(id).append(ollirType);
-
-
-
         return new OllirExprResult(code.toString());
     }
 

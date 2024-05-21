@@ -1,17 +1,23 @@
-import A;
-class Varargs {
+import io;
 
-    public static void main(String[] args) {
+class Simple {
 
+    int a;
+
+    public static void main(String[] args){
+        int b;
+        int c;
+        Simple s;
+        b = 10;
+        s = new Simple();
+        c = s.foo(2);
+        io.println(c);
     }
 
-    public int foo() {
-        int a;
-        a = this.varargs(10, 20, 30);
+    public int foo(int a) {
+        io.println(a);
+        a = 20;
+        io.println(a);
         return a;
-    }
-
-    public int varargs(int... a) {
-        return a[0];
     }
 }
