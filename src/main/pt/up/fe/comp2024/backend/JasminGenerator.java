@@ -260,7 +260,7 @@ public class JasminGenerator {
 
         var methodCode = methodPrint(method);
 
-        if (stack_value == 0){
+        /*if (stack_value == 0){
             code.append(TAB).append(".limit stack ").append(1).append(NL);
             code.append(TAB).append(".limit locals ").append(locals_value).append(NL);
         }
@@ -271,7 +271,9 @@ public class JasminGenerator {
         else {
             code.append(TAB).append(".limit stack ").append(stack_value).append(NL);
             code.append(TAB).append(".limit locals ").append(locals_value).append(NL);
-        }
+        }*/
+        code.append(TAB).append(".limit stack 99").append(NL);
+        code.append(TAB).append(".limit locals 99").append(NL);
 
         code.append(methodCode);
 
