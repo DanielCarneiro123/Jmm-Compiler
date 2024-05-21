@@ -49,22 +49,10 @@ public class WrongAssign extends AnalysisVisitor {
         var assigmentChilType = getExprType(assigmentChil.get(0), table, method);
 
         var isThisTest = assigmentChil.get(0).getOptional("value").orElse("");
-        var isThisTest2 = assigmentChil.get(0).getChildren().get(0).getOptional("value").orElse("");
-        var isThis = isThisTest.equals("this") || isThisTest2.equals("this");
+        var isThis = isThisTest.equals("this");
         if (isThis) return null;
 
         if (assigmentChilType.getName().equals(table.getClassName())) {
-            if (!assigmentChilType.equals(assigmentType) && (!assigmentType.getName().equals(table.getSuper()) && !assigmentChilType.getName().equals(table.getSuper()))) {
-                String message = "Wrong Assign Types";
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        NodeUtils.getLine(assigment),
-                        NodeUtils.getColumn(assigment),
-                        message,
-                        null)
-                );
-                return null;
-            }
             return null;
         }
         if (assigmentChilType.equals(assigmentType)) {
