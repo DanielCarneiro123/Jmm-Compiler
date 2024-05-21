@@ -8,6 +8,7 @@ import pt.up.fe.specs.util.classmap.FunctionClassMap;
 import pt.up.fe.specs.util.exceptions.NotImplementedException;
 import pt.up.fe.specs.util.utilities.StringLines;
 
+import java.util.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,11 +35,13 @@ public class JasminGenerator {
 
     Method currentMethod;
 
-    int stack_value = 0;
+    int stack_value;
 
-    int curr_stack_value = 1;
+    int curr_stack_value;
 
     int locals_value;
+
+    int stackVariation;
 
     private final FunctionClassMap<TreeNode, String> generators;
 
@@ -63,6 +66,18 @@ public class JasminGenerator {
         generators.put(ReturnInstruction.class, this::generateReturn);
         generators.put(CondBranchInstruction.class, this::generateBranch);
         generators.put(GotoInstruction.class, this::generateGoto);
+        generators.put(ArrayOperand.class, this::generateLoadArray);
+        generators.put(UnaryOpInstruction.class, this::generateUnaryOp);
+    }
+
+    private String generateLoadArray(ArrayOperand arrayOperand) {
+        var code = new StringBuilder();
+        this.curr_stack_value++;
+        maxStackValue();
+        int reg = currentMethod.getVarTable().get(arrayOperand.getName()).getVirtualReg();
+        code.append("aload").append(reg < 4 ? '_' : ' ').append(reg).append(NL);
+        code.append(generators.apply(arrayOperand.getIndexOperands().get(0))).append(NL).append("iaload").append(NL);
+        return code.toString();
     }
 
     public List<Report> getReports() {
@@ -200,9 +215,14 @@ public class JasminGenerator {
     }
 
     private String generateMethod(Method method) {
-        locals_value = 1;
         // set method
         currentMethod = method;
+        this.curr_stack_value = 0;
+        this.stack_value = 0;
+
+        var regs = new HashSet<Integer>();
+        currentMethod.getVarTable().values().forEach(descriptor -> regs.add(descriptor.getVirtualReg()));
+        this.locals_value = regs.size();
 
         var code = new StringBuilder();
 
@@ -218,13 +238,15 @@ public class JasminGenerator {
             code.append("\n.method ").append(modifier).append("static ").append(methodName)
                     .append("("); //temos de ver se isto do [ só acontece para os main static ou para todos os tatic
         } else {
+            if (!method.getVarTable().containsKey("this")) {
+                this.locals_value++;
+            }
             code.append("\n.method ").append(modifier).append(methodName)
                     .append("(");
         }
 
         var parameterTypes = method.getParams();
         for (int i = 0; i < parameterTypes.size(); i++) {
-            stack_value++;
             Type paramType = parameterTypes.get(i).getType();
             String paramJasminType = getFieldType(paramType);
             code.append(paramJasminType);
@@ -263,7 +285,6 @@ public class JasminGenerator {
     }
 
     private String methodPrint(Method method){
-        locals_value += method.getVarTable().size();
         var code = new StringBuilder();
         for (var inst : method.getInstructions()) {
             for (var label: method.getLabels().entrySet()){
@@ -398,6 +419,12 @@ public class JasminGenerator {
         ElementType type = operand.getType().getTypeOfElement();
         switch (type) {
             case INT32, BOOLEAN:
+                if (currentMethod.getVarTable().get(operand.getName()).getVarType().getTypeOfElement() == ElementType.ARRAYREF) {
+                    code.append("iastore").append(NL);
+                    curr_stack_value -= 3;
+                    maxStackValue();
+                    break;
+                }
                 curr_stack_value--;
                 maxStackValue();
                 if (reg > 3) {
@@ -429,24 +456,23 @@ public class JasminGenerator {
 
     private String generateCallInstruction(CallInstruction callInstruction) {
         var code = new StringBuilder();
-        var v = callInstruction.getOperands();
-
+        this.stackVariation = 0;
         switch (callInstruction.getInvocationType()) {
             case invokestatic:
                 for (var op : callInstruction.getArguments()) {
-                    curr_stack_value--;
-                    maxStackValue();
+                    this.stackVariation++;
                     code.append(generators.apply(op));
                 }
                 code.append("invokestatic ").append(getImportedClassName(generators.apply(callInstruction.getCaller()))).append("/").append(generators.apply(callInstruction.getMethodName()));
                 //code.append("(");
                 for (var arg : callInstruction.getArguments()) {
-                    curr_stack_value--;
-                    maxStackValue();
                     code.append(getFieldType(arg.getType()));
                 }
                 code.append(")");
                 code.append(getFieldType(callInstruction.getReturnType())).append(NL);
+                if (!callInstruction.getReturnType().getTypeOfElement().equals(ElementType.VOID)) {
+                    this.stackVariation--;
+                }
                 break;
             case invokespecial:
                 code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
@@ -462,24 +488,26 @@ public class JasminGenerator {
 
 
                 for (var elem: callInstruction.getArguments()){
-                    curr_stack_value--;
-                    maxStackValue();
                     code.append(getFieldType(elem.getType()));
                 }
                 code.append(")");
                 code.append(getFieldType(callInstruction.getReturnType())).append(NL);
+                if (!callInstruction.getReturnType().getTypeOfElement().equals(ElementType.VOID)) {
+                    this.stackVariation--;
+                }
                 code.append("pop");
                 break;
             case NEW:
                 for (Element objetElement : callInstruction.getArguments()) {
+                    this.stackVariation++;
                     code.append(generators.apply(objetElement));
                 }
                 if (!callInstruction.getReturnType().getTypeOfElement().equals(ElementType.ARRAYREF)){
                     code.append(NL).append("new ").append(getImportedClassName(((Operand) callInstruction.getCaller()).getName())).append(NL).append("dup").append(NL);
-                    curr_stack_value++;
-                    maxStackValue();
+                    this.stackVariation--;
                 }
                 else {
+                    this.stackVariation--;
                     code.append("newarray int").append(NL);
                 }
                 curr_stack_value++;
@@ -489,6 +517,8 @@ public class JasminGenerator {
                 code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
                 Operand firstVirtual = (Operand) callInstruction.getOperands().get(0);
                 for (var op : callInstruction.getArguments()) {
+                    curr_stack_value--;
+                    maxStackValue();
                     code.append(generators.apply(op));
                 }
                 code.append("invokevirtual ").append(getImportedClassName(((ClassType) firstVirtual.getType()).getName())).append("/").append(generators.apply(callInstruction.getMethodName()));
@@ -496,6 +526,8 @@ public class JasminGenerator {
                     code.append(getFieldType(arg.getType()));
                 }
                 code.append(")").append(getFieldType(callInstruction.getReturnType())).append(NL);
+
+                if (!(callInstruction.getReturnType().getTypeOfElement().equals(ElementType.VOID))) this.stackVariation--;
                 break;
             case arraylength:
                 code.append(generators.apply(callInstruction.getOperands().get(0)));
@@ -517,12 +549,11 @@ public class JasminGenerator {
                 }
                 code.append(")").append(getFieldType(callInstruction.getReturnType())).append(NL);
                 break;
-            case ldc:
-
             default:
                 throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
         }
-
+        //this.curr_stack_value -= this.stackVariation;
+        //maxStackValue();
         return code.toString();
     }
 
@@ -555,8 +586,6 @@ public class JasminGenerator {
 
     private String generateOperand(Operand operand) {
         String name = operand.getName();
-        curr_stack_value++;
-        maxStackValue();
         // Verificar se o nome está na varTable
         if (currentMethod.getVarTable().containsKey(name)) {
             int reg = currentMethod.getVarTable().get(name).getVirtualReg();
@@ -565,6 +594,8 @@ public class JasminGenerator {
                 return "aload_0";
             }
             else if (type.equals("INT32") || type.equals("BOOLEAN")) {
+                curr_stack_value++;
+                maxStackValue();
                 if (reg > 3) {
                     return "iload " + reg + NL;
                 }
@@ -607,6 +638,24 @@ public class JasminGenerator {
         return null;
     }
 
+    private String generateUnaryOp(UnaryOpInstruction unaryOpInstruction) {
+        var code = new StringBuilder();
+        code.append(generators.apply(unaryOpInstruction.getOperand()));
+        switch (unaryOpInstruction.getOperation().getOpType()){
+            case NOT -> code.append("not");
+            case NOTB -> {
+                code.append("iconst_1").append(NL);
+                code.append("ixor").append(NL);
+            }
+            case GTH -> code.append("ifgt");
+            case LTH -> code.append("iflt");
+            case NEQ -> code.append("ifne");
+            case EQ -> code.append("ifeq");
+            case GTE -> code.append("ifge");
+            case LTE -> code.append("ifle");
+        }
+        return code.toString();
+    }
 
 
     private String generateAritmeticBinaryOp(BinaryOpInstruction binaryOp) {
@@ -658,7 +707,8 @@ public class JasminGenerator {
         if (returnInst.getOperand() != null) {
             code.append(generators.apply(returnInst.getOperand()));
         }
-
+        curr_stack_value--;
+        maxStackValue();
         ElementType returnType = returnInst.getReturnType().getTypeOfElement();
         switch (returnType) {
             case INT32:
@@ -693,6 +743,7 @@ public class JasminGenerator {
             code.append(op).append(" ").append(condBranchInstruction.getLabel()).append(NL);
         }
         else if (condBranchInstruction.getCondition().getInstType().equals(NOPER)){
+            code.append("iconst_0").append(NL);
             code.append("ifne ").append(condBranchInstruction.getLabel()).append(NL);
         }
         curr_stack_value--;
@@ -707,7 +758,7 @@ public class JasminGenerator {
     }
 
     public void maxStackValue(){
-        stack_value = Math.max(stack_value, curr_stack_value);
+        this.stack_value = Math.max(this.stack_value, this.curr_stack_value);
     }
 
 }
