@@ -53,6 +53,17 @@ public class WrongAssign extends AnalysisVisitor {
         if (isThis) return null;
 
         if (assigmentChilType.getName().equals(table.getClassName())) {
+            if (!assigmentChilType.equals(assigmentType) && (!assigmentType.getName().equals(table.getSuper()) && !assigmentChilType.getName().equals(table.getSuper()))) {
+                String message = "Wrong Assign Types";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(assigment),
+                        NodeUtils.getColumn(assigment),
+                        message,
+                        null)
+                );
+                return null;
+            }
             return null;
         }
         if (assigmentChilType.equals(assigmentType)) {
@@ -72,9 +83,9 @@ public class WrongAssign extends AnalysisVisitor {
                             if (imp2.equals(assigmentTypeName)) {
                                 return null;
                             }
-                            if (imp2.equals(imp)) {
+                            /*if (imp2.equals(imp)) {
                                 return null;
-                            }
+                            }*/
                         }
                     }
                     if (assigmentChilType.getName().equals(table.getClassName()) && imp.equals(assigmentTypeName) && imp.equals(table.getSuper())) {

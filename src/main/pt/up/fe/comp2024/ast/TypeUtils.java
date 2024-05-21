@@ -152,6 +152,14 @@ public class TypeUtils {
                 return local.getType();
             }
         }
+
+        var parameters = table.getParameters(currMethod);
+        for (var param : parameters) {
+            if (param.getName().equals(varName)) {
+                return param.getType();
+            }
+        }
+
         var fields = table.getFields();
         for (var field : fields) {
             if (field.getName().equals(varName)) {
@@ -165,7 +173,7 @@ public class TypeUtils {
             return new Type(varName, false);
         }
 
-        return new Type(INT_TYPE_NAME, false);
+        return new Type(null, false);
     }
 
     private static Type getVarExprType(JmmNode varRefExpr, SymbolTable table) {
