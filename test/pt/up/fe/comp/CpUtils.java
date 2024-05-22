@@ -530,6 +530,7 @@ public class CpUtils {
         try {
             var output = SpecsStrings.normalizeFileContents(jasminResult.run(), true);
             assertEquals("Jasmin output", expected, output, jasminResult);
+            System.out.println(jasminResult.getJasminCode());
         } catch (Exception e) {
             throw new RuntimeException("Problems while running Jasmin code:\n" + jasminResult.getJasminCode(), e);
         }
