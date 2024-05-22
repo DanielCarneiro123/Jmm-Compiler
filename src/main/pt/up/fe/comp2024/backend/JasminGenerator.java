@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import static org.specs.comp.ollir.InstructionType.*;
 import static org.specs.comp.ollir.OperationType.*;
 
-
+//FALTAM OTIMIZACOES E STACK
 /**
  * Generates Jasmin code from an OllirResult.
  * <p>
@@ -166,7 +166,7 @@ public class JasminGenerator {
 
     private String generatePutFieldInstruction(PutFieldInstruction putFieldInst) {
         StringBuilder code = new StringBuilder();
-        curr_stack_value -= 2;
+        this.curr_stack_value -= 2;
         maxStackValue();
         // Load the object reference onto the stack
         code.append(generators.apply(putFieldInst.getObject()));
@@ -194,7 +194,7 @@ public class JasminGenerator {
 
     private String generateGetFieldInstruction(GetFieldInstruction getFieldInst) {
         StringBuilder code = new StringBuilder();
-        curr_stack_value++;
+        this.curr_stack_value++;
         maxStackValue();
         // Load the object reference onto the stack
         code.append(generators.apply(getFieldInst.getObject()));
@@ -222,9 +222,10 @@ public class JasminGenerator {
         this.curr_stack_value = 0;
         this.stack_value = 0;
 
-        var regs = new HashSet<Integer>();
-        currentMethod.getVarTable().values().forEach(descriptor -> regs.add(descriptor.getVirtualReg()));
-        this.locals_value = regs.size();
+        this.locals_value = currentMethod.getVarTable().values().stream()
+                .map(Descriptor::getVirtualReg)
+                .collect(Collectors.toSet())
+                .size();
 
         var code = new StringBuilder();
 
@@ -262,18 +263,9 @@ public class JasminGenerator {
 
         var methodCode = methodPrint(method);
 
-        if (stack_value == 0){
-            code.append(TAB).append(".limit stack ").append(1).append(NL);
-            code.append(TAB).append(".limit locals ").append(locals_value).append(NL);
-        }
-        else if (locals_value == 0){
-            code.append(TAB).append(".limit stack ").append(stack_value).append(NL);
-            code.append(TAB).append(".limit locals ").append(1).append(NL);
-        }
-        else {
-            code.append(TAB).append(".limit stack ").append(stack_value).append(NL);
-            code.append(TAB).append(".limit locals ").append(locals_value).append(NL);
-        }
+        code.append(TAB).append(".limit stack ").append(stack_value).append(NL);
+        code.append(TAB).append(".limit locals ").append(locals_value).append(NL);
+
 
         code.append(methodCode);
 
@@ -350,7 +342,6 @@ public class JasminGenerator {
                 return "[L" + "java/lang/String" + ";";
             case ARRAYREF:
                 return "L" + "java/lang/String" + ";";
-
             default:
                 return null;
         }
@@ -404,8 +395,6 @@ public class JasminGenerator {
         var code = new StringBuilder();
         this.curr_stack_value++;
         maxStackValue();
-        // generate code for loading what's on the right
-
 
         // store value in the stack in destination
         var lhs = assign.getDest();
@@ -418,7 +407,6 @@ public class JasminGenerator {
 
         // get register
         var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
-
         //deal with array content
         if (lhs instanceof ArrayOperand arrayOperand) {
             if (reg >= 4){
@@ -456,7 +444,7 @@ public class JasminGenerator {
                     }
                 }
                 break;
-            case CLASS, OBJECTREF, STRING, ARRAYREF, THIS:
+            case OBJECTREF, STRING, ARRAYREF, THIS:
                 curr_stack_value--;
                 maxStackValue();
                 if (reg > 3) {
@@ -553,7 +541,7 @@ public class JasminGenerator {
                 break;
             case arraylength:
                 code.append(generators.apply(callInstruction.getOperands().get(0)));
-                code.append(" arraylength").append(NL);
+                code.append("arraylength").append(NL);
                 break;
             case invokeinterface:
                 code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
@@ -598,7 +586,7 @@ public class JasminGenerator {
         if (value == -1) {
             return NL + "iconst_m1" + NL;
         }
-        else if (value >= 0 && value <= 5) {
+        else if (value >= -1 && value <= 5) {
             return NL + "iconst_" + value + NL;
         } else if (value >= -128 && value <= 127) {
             return NL +"bipush " + value + NL;
@@ -653,17 +641,17 @@ public class JasminGenerator {
 
     private String generateBinaryOp(BinaryOpInstruction binaryOpInstruction) {
         var code = new StringBuilder();
-
-        code.append(generators.apply(binaryOpInstruction.getRightOperand()));
-        code.append(generators.apply(binaryOpInstruction.getLeftOperand()));
-
+        //acho que é erro descomentar
+        //code.append(generators.apply(binaryOpInstruction.getLeftOperand()));
+        //code.append(generators.apply(binaryOpInstruction.getRightOperand()));
 
         switch (binaryOpInstruction.getOperation().getOpType()){
-            case ADD, SUB, MUL, DIV, SHR, SHL, SHRR, XOR, AND, ANDB, OR, ORB -> {
-                return generateAritmeticBinaryOp(binaryOpInstruction);
-            }
             case LTH, GTH, EQ, NEQ, LTE, GTE, NOTB, NOT -> {
                 return generateConditionalBinaryOp(binaryOpInstruction);
+            }
+
+            case ADD, SUB, MUL, DIV, XOR, AND, OR, ANDB, ORB -> {
+                return generateAritmeticBinaryOp(binaryOpInstruction);
             }
         }
         this.curr_stack_value--;
@@ -673,6 +661,8 @@ public class JasminGenerator {
 
     private String generateUnaryOp(UnaryOpInstruction unaryOpInstruction) {
         var code = new StringBuilder();
+        curr_stack_value--;
+        maxStackValue();
         code.append(generators.apply(unaryOpInstruction.getOperand()));
         switch (unaryOpInstruction.getOperation().getOpType()){
             case NOT -> code.append("not");
@@ -700,9 +690,19 @@ public class JasminGenerator {
     private String generateAritmeticBinaryOp(BinaryOpInstruction binaryOp) {
         var code = new StringBuilder();
         // load values on the left and on the right
-        code.append(generators.apply(binaryOp.getRightOperand()));
         code.append(generators.apply(binaryOp.getLeftOperand()));
+        code.append(generators.apply(binaryOp.getRightOperand()));
 
+        String prefix;
+
+        //verification (prob not needed)
+        /*var typeOfOp = binaryOp.getOperation().getTypeInfo().getTypeOfElement();
+        if (typeOfOp.equals(ElementType.INT32) || typeOfOp.equals(ElementType.BOOLEAN)) {
+            prefix = "i";
+        }
+        else {
+            prefix = "a";
+        }*/
         curr_stack_value--;
         maxStackValue();
 
@@ -719,9 +719,9 @@ public class JasminGenerator {
             case MUL -> "imul";
             case SUB -> "isub";
             case DIV -> "idiv";
-            case XOR -> "xor";
-            case AND, ANDB -> "and";
-            case OR, ORB -> "or";
+            case XOR -> "ixor";
+            case AND, ANDB -> "iand";
+            case OR, ORB -> "ior";
             default -> throw new NotImplementedException(binaryOp.getOperation().getOpType());
         };
 
@@ -785,8 +785,8 @@ public class JasminGenerator {
         var code = new StringBuilder();
 
         if (condBranchInstruction.getCondition().getInstType().equals(UNARYOPER)){
-            var aritOp = (BinaryOpInstruction) condBranchInstruction.getCondition();
-            var op = generateBinaryOp(aritOp);
+            var aritOp = (UnaryOpInstruction) condBranchInstruction.getCondition();
+            var op = generateUnaryOp(aritOp);
             code.append(op).append(condBranchInstruction.getLabel()).append(NL);
         }
         else if (condBranchInstruction.getCondition().getInstType().equals(BINARYOPER)){
@@ -795,7 +795,6 @@ public class JasminGenerator {
             code.append(op).append(" ").append(condBranchInstruction.getLabel()).append(NL);
         }
         else{
-
             code.append(generators.apply(condBranchInstruction.getCondition())).append(NL);
             code.append("ifne").append(" ").append(condBranchInstruction.getLabel()).append(NL);
         }
