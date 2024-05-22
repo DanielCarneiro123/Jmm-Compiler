@@ -151,9 +151,18 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
     private OllirExprResult visitNewClass(JmmNode node, Void unused) {
         StringBuilder code = new StringBuilder();
+        StringBuilder computation = new StringBuilder();
 
         // Get the class name
         String className = node.get("classname");
+
+        if(node.getParent().getKind().equals("Assignment")){
+            code.append("new(").append(className).append(")").append(".").append(className).append(";").append("\n");
+
+            code.append("invokespecial").append("(").append(node.getParent().get("var")).append(".").append(className).append(", \"\").V");
+
+            return new OllirExprResult(code.toString());
+        }
 
         // Generate code for creating a new instance of the class
         String instanceVar = OptUtils.getTemp();
@@ -175,6 +184,32 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         return new OllirExprResult(code);
     }
 
+    private int thenCounter = 0;
+    private int currentElseCounter1 = -1;
+    private int currentElseCounter2 = -1;
+    private String getNextLabelTrue() {
+        currentElseCounter1++;
+        currentElseCounter2++;
+        return "true_" + thenCounter++;
+    }
+
+    private String getCurrentLabelTrue(){
+        var x = thenCounter-1;
+        return "true_" + x +":";
+    }
+
+    private String getNextLabelEnd() {
+        var x = currentElseCounter1--;
+        return "end_" + x;
+
+    }
+
+    private String getCurrentLabelEnd(){
+        var x = currentElseCounter2--;
+        return "end_" + x +":";
+
+    }
+
 
     private OllirExprResult visitBinExpr(JmmNode node, Void unused) {
         var lhs = visit(node.getJmmChild(0));
@@ -183,6 +218,25 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         StringBuilder computation = new StringBuilder();
         String resOllirType = node.get("op").equals("+") || node.get("op").equals("-") || node.get("op").equals("*") || node.get("op").equals("/") ? ".i32" : ".bool";
 
+        if(node.get("op").equals("&&")){
+            StringBuilder code = new StringBuilder();
+
+
+            code.append(lhs.getComputation());
+            String tempStore = OptUtils.getTemp() + ".bool";
+            String tempAux = OptUtils.getTemp() + ".bool";
+            code.append("if (").append(lhs.getCode()).append(") goto ").append(getNextLabelTrue()).append(END_STMT);
+            code.append(tempStore).append(ASSIGN).append(".bool 0.bool;\n");
+            code.append("goto ").append(getNextLabelEnd()).append(END_STMT);
+            code.append(getCurrentLabelTrue()).append("\n");
+            code.append(rhs.getComputation());
+            code.append(tempAux).append(ASSIGN).append(".bool ").append(rhs.getCode()).append(END_STMT);
+            code.append(tempStore).append(ASSIGN).append(".bool ").append(tempAux).append(END_STMT);
+            code.append(getCurrentLabelEnd()).append("\n");
+            computation.append(tempStore);
+
+            return new OllirExprResult(computation.toString(),code);
+        }
         // Check if either lhs or rhs is a function call, and if so, store their result in temporary variables
 
 
