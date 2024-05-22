@@ -41,7 +41,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         //addVisit(VAR_ARG, this::visitVarArg);
         addVisit(NEGATION, this::visitNegationExpr);
         addVisit(OBJECT, this::visitThisExpr);
-
+        addVisit(ARRAYDEFINITION, this::visitArrayDef);
         addVisit(ARRAY_DECLARATION, this::visitArrayDecl);
         addVisit(ARRAY_SUBSCRIPT, this::visitArraySubscript);
         addVisit(LENGTH, this::visitLength);
@@ -56,6 +56,33 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         StringBuilder computation = new StringBuilder();
 
         code.append("SIGALE SIGALE");
+
+
+        return new OllirExprResult(code.toString(),computation.toString());
+    }
+
+    private int arrayCounter = 0;
+
+    private String getNextLabelArray() {
+        return "__varargs_array_" + arrayCounter++;
+    }
+
+    private String getCurrentLabelArray(){
+        var x = arrayCounter-1;
+        return "__varargs_array_" + x;
+    }
+    private OllirExprResult visitArrayDef(JmmNode node, Void unused) {
+
+        StringBuilder code = new StringBuilder();
+        StringBuilder computation = new StringBuilder();
+
+        code.append(getNextLabelArray()).append("array.i32");
+        String tempInit = OptUtils.getTemp() + ".array.i32";
+        computation.append(tempInit).append(ASSIGN).append(".array.i32 new(array, ").append(node.getChildren().size()).append(".i32)").append(".array.i32").append(END_STMT);
+        computation.append(getCurrentLabelArray()).append(".array.i32").append(ASSIGN).append(".array.i32 ").append(tempInit).append(END_STMT);
+        for(int i = 0; i < node.getChildren().size(); i++){
+            computation.append(getCurrentLabelArray()).append(".array.i32").append("[").append(i).append(".i32].i32").append(ASSIGN).append(".i32 ").append(node.getChild(i).get("value")).append(".i32").append(END_STMT);
+        }
 
 
         return new OllirExprResult(code.toString(),computation.toString());

@@ -108,7 +108,7 @@ expr
     | NEW type LSTRAIGHT expr RSTRAIGHT #ArrayDeclaration
     | NEW classname=ID LPAREN (expr (COMMA expr) *)? RPAREN #NewClass
     | expr LSTRAIGHT expr RSTRAIGHT #ArraySubscript
-    | LSTRAIGHT (expr (COMMA expr) *)? RSTRAIGHT #Arraydefinition //perguntar ao luis onde tem
+    | LSTRAIGHT (expr (COMMA expr) *)? RSTRAIGHT #Arraydefinition
     | expr '.' value=ID LPAREN (expr (COMMA expr) *)? RPAREN #FunctionCall
     | expr '.' len=ID #Length
     | value=THIS #Object
