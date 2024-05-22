@@ -72,7 +72,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         StringBuilder code = new StringBuilder();
         StringBuilder computation = new StringBuilder();
 
-        var isBinaryOpNode = node.getAncestor("BinaryOp");
+
 
 
 
