@@ -38,6 +38,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         addVisit(PARENTESIS, this::visitParentesis);
         addVisit(TRUE, this::visitBoolLiteral);
         addVisit(FALSE, this::visitBoolLiteral);
+        //addVisit(VAR_ARG, this::visitVarArg);
         addVisit(NEGATION, this::visitNegationExpr);
         addVisit(OBJECT, this::visitThisExpr);
 
@@ -47,6 +48,17 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
 
         setDefaultVisit(this::defaultVisit);
+    }
+
+    private OllirExprResult visitVarArg(JmmNode node, Void unused) {
+
+        StringBuilder code = new StringBuilder();
+        StringBuilder computation = new StringBuilder();
+
+        code.append("SIGALE SIGALE");
+
+
+        return new OllirExprResult(code.toString(),computation.toString());
     }
 
 

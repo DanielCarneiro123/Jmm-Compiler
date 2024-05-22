@@ -63,6 +63,7 @@ public class TypeUtils {
             case LENGTH -> new Type(INT_TYPE_NAME, false);
             case ASSIGNMENT, ARRAY_ASSIGN -> getVarExprTypeForAssigment(expr, table, currMethod);
             case PARENTESIS -> getExprType(expr.getChild(0), table, currMethod);
+            case NEGATION -> getExprType(expr.getChild(0), table, currMethod);
             default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
         };
 

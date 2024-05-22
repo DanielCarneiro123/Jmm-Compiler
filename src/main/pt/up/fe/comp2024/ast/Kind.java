@@ -24,6 +24,7 @@ public enum Kind {
     ID,
     TRUE,
     FALSE,
+
     ARGUMENT,
     STRING,
     STMT,
