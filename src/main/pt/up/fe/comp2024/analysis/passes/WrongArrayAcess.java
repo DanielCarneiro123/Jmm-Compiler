@@ -17,8 +17,9 @@ public class WrongArrayAcess extends AnalysisVisitor {
 
     @Override
     public void buildVisitor() {
-        addVisit(Kind.CLASS_INSTANTIATION, this::visitWrongArray);
+        addVisit(Kind.ARRAY_SUBSCRIPT, this::visitWrongArray);
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
+        //addVisit(Kind.ARRAY_ASSIGN, this::visitArrayAssign);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
@@ -27,46 +28,12 @@ public class WrongArrayAcess extends AnalysisVisitor {
     }
 
     private Void visitWrongArray(JmmNode arrayDecl, SymbolTable table) {
-        SpecsCheck.checkNotNull(currentMethod, () -> "Expected current method to be set");
-        JmmNode leftOperand = arrayDecl.getChildren().get(0); //para dar erro este tem de começar por ser Arraydefinition
-        String varNameToCheck = arrayDecl.get("className");
+        JmmNode arrayDeclChild = arrayDecl.getChildren().get(0);
+        String varNameToCheck = arrayDeclChild.getOptional("value").orElse("");
 
-        if (leftOperand.getKind().equals("Arraydefinition")) {
-            /*for (var parameter : table.getParameters(currentMethod)) {
-                if (parameter.getType().getName().equals(varNameToCheck) && !parameter.getType().isArray()) {
-                    String message = "It is not an array";
-                    addReport(Report.newError(
-                            Stage.SEMANTIC,
-                            NodeUtils.getLine(arrayDecl),
-                            NodeUtils.getColumn(arrayDecl),
-                            message,
-                            null)
-                    );
-                    return null;
-                }
-            }*/
-            for (var localVariable : table.getLocalVariables(currentMethod)) {
-                if (localVariable.getName().equals(varNameToCheck) && !localVariable.getType().isArray()) {
-                    String message = "It is not an array";
-                    addReport(Report.newError(
-                            Stage.SEMANTIC,
-                            NodeUtils.getLine(arrayDecl),
-                            NodeUtils.getColumn(arrayDecl),
-                            message,
-                            null)
-                    );
-                    return null;
-                }
-            }
-            String typeName = "";
-            if (leftOperand.getChildren().size() > 0) {
-                JmmNode childOperand = leftOperand.getChildren().get(0);
-                Type typeChildOperand = getExprType(childOperand, table, currentMethod);
-                typeName = typeChildOperand.getName();
-
-            }
-            if (!typeName.equals("int")) {
-                String message = "Array Index not int";
+        for (var field : table.getFields()) {
+            if (field.getName().equals(varNameToCheck) && !field.getType().isArray()) {
+                String message = "It is not an array";
                 addReport(Report.newError(
                         Stage.SEMANTIC,
                         NodeUtils.getLine(arrayDecl),
@@ -76,6 +43,73 @@ public class WrongArrayAcess extends AnalysisVisitor {
                 );
                 return null;
             }
+        }
+
+        for (var localVariable : table.getLocalVariables(currentMethod)) {
+            if (localVariable.getName().equals(varNameToCheck) && !localVariable.getType().isArray()) {
+                String message = "It is not an array";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(arrayDecl),
+                        NodeUtils.getColumn(arrayDecl),
+                        message,
+                        null)
+                );
+                return null;
+            }
+        }
+
+        JmmNode arrayDeclChildSecond = arrayDecl.getChildren().get(1);
+        String varNameToCheckSecond = arrayDeclChildSecond.getOptional("value").orElse("");
+        Type type = getExprType(arrayDeclChildSecond, table, currentMethod);
+
+        if (!type.getName().equals("int")) {
+            String message = "Array Index not int";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(arrayDecl),
+                    NodeUtils.getColumn(arrayDecl),
+                    message,
+                    null)
+            );
+            return null;
+        }
+        return null;
+    }
+
+    private Void visitArrayAssign(JmmNode arrayAssign, SymbolTable table) {
+        SpecsCheck.checkNotNull(currentMethod, () -> "Expected current method to be set");
+        String varNameToCheck = arrayAssign.get("var");
+        for (var localVariable : table.getLocalVariables(currentMethod)) {
+            if (localVariable.getName().equals(varNameToCheck) && !localVariable.getType().isArray()) {
+                String message = "It is not an array";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(arrayAssign),
+                        NodeUtils.getColumn(arrayAssign),
+                        message,
+                        null)
+                );
+                return null;
+            }
+        }
+        String typeName = "";
+        if (arrayAssign.getChildren().size() > 0) {
+            JmmNode childOperand = arrayAssign.getChildren().get(0);
+            Type typeChildOperand = getExprType(childOperand, table, currentMethod);
+            typeName = typeChildOperand.getName();
+
+        }
+        if (!typeName.equals("int")) {
+            String message = "Array Index not int";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(arrayAssign),
+                    NodeUtils.getColumn(arrayAssign),
+                    message,
+                    null)
+            );
+            return null;
         }
 
         return null;

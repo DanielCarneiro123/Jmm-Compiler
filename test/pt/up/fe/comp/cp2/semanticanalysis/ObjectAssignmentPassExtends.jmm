@@ -14,7 +14,7 @@ class ObjectAssignmentPassExtends extends B {
         b = new B();
 
         // ObjectAssignmentPassExtends extends B
-        b = a;
+        a = b;
 
         return a;
     }

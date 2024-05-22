@@ -467,7 +467,7 @@ public class JasminGenerator {
                 }
                 break;
             case VOID:
-                {}
+            {}
             default:
                 throw new NotImplementedException("Type not supported: " + type.name());
         }

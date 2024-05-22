@@ -50,8 +50,8 @@ public class TypeUtils {
 
         Type type = switch (kind) {
             case IDENTIFIER, VAR_DECL, INT, ID -> getVarExprType(expr, table, currMethod);
-            case ARRAYDEFINITION, ARRAY_DECLARATION, ARRAY_SUBSCRIPT -> new Type(INT_TYPE_NAME, true);
-            case INTEGER, CLASS_INSTANTIATION -> new Type(INT_TYPE_NAME, false);
+            case ARRAYDEFINITION, ARRAY_DECLARATION -> new Type(INT_TYPE_NAME, true);
+            case INTEGER, CLASS_INSTANTIATION, ARRAY_SUBSCRIPT -> new Type(INT_TYPE_NAME, false);
             case IFEXPR, ELSEEXPR -> new Type(BOOLEAN_TYPE_NAME, false);
             case BINARY_EXPR -> getBinExprType(expr);
             case BINARY_OP -> getBinExprType(expr);
@@ -61,7 +61,7 @@ public class TypeUtils {
             case TRUE, FALSE -> new Type(BOOLEAN_TYPE_NAME, false);
             case BRACKETS -> getExprType(expr.getChild(0), table, currMethod);
             case LENGTH -> new Type(INT_TYPE_NAME, false);
-            case ASSIGNMENT -> getVarExprTypeForAssigment(expr, table, currMethod);
+            case ASSIGNMENT, ARRAY_ASSIGN -> getVarExprTypeForAssigment(expr, table, currMethod);
             case PARENTESIS -> getExprType(expr.getChild(0), table, currMethod);
             default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
         };
@@ -70,16 +70,25 @@ public class TypeUtils {
     }
 
     private static Type getFunctionType(JmmNode expr, SymbolTable table) {
+
         String methodName = expr.get("value");
+        JmmNode exprChild = expr.getChild(0);
+
+        /*var childName = exprChild.get("value");
+        for (var imp : table.getImports()) {
+            if (imp.equals(childName)) {
+                return new Type(childName, false);
+            }
+        }*/
+
         for (var method : table.getMethods()) {
             if (method.equals(methodName)) {
                 return table.getReturnType(methodName);
             }
         }
-        JmmNode exprChild = expr.getChild(0);
         return getExprType(exprChild, table, methodName);
+        //return new Type(BOOLEAN_TYPE_NAME, false);
 
-        // return new Type("", false); //aqui devia dar erro porque é um tipo que não existe (?)
     }
 
     private static Type getBinExprType(JmmNode binaryExpr) {
@@ -89,7 +98,7 @@ public class TypeUtils {
 
         return switch (operator) {
             case "+", "*", "-", "/", "*=", "+=", "-=" -> new Type(INT_TYPE_NAME, false);
-            case "==", "&&", "||", "<=", ">=", "<", ">" , "!=", "/="  -> new Type("boolean", false);
+            case "==", "&&", "||", "<=", ">=", "<", ">", "!=", "/=" -> new Type("boolean", false);
             default ->
                     throw new RuntimeException("Unknown operator '" + operator + "' of expression '" + binaryExpr + "'");
         };
@@ -143,6 +152,14 @@ public class TypeUtils {
                 return local.getType();
             }
         }
+
+        var parameters = table.getParameters(currMethod);
+        for (var param : parameters) {
+            if (param.getName().equals(varName)) {
+                return param.getType();
+            }
+        }
+
         var fields = table.getFields();
         for (var field : fields) {
             if (field.getName().equals(varName)) {
@@ -156,7 +173,7 @@ public class TypeUtils {
             return new Type(varName, false);
         }
 
-        return new Type(INT_TYPE_NAME, false);
+        return new Type(null, false);
     }
 
     private static Type getVarExprType(JmmNode varRefExpr, SymbolTable table) {
