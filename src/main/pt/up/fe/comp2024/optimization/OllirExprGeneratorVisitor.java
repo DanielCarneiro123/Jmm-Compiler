@@ -75,10 +75,12 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         var isBinaryOpNode = node.getAncestor("BinaryOp");
 
 
+
         var indexNode = visit(node.getJmmChild(1));
         computation.append(indexNode.getComputation());
 
-        if(isBinaryOpNode.isPresent()){
+        if(!node.getParent().getKind().equals("Assignment")){
+
             var temp = OptUtils.getTemp() + ".i32";
             computation.append(temp).append(" ").append(ASSIGN).append(".i32 ").append(node.getChild(0).get("value")).append("[").append(indexNode.getCode()).append("].i32").append(END_STMT);
 
