@@ -393,8 +393,46 @@ public class JasminGenerator {
 
     private String generateAssign(AssignInstruction assign) {
         var code = new StringBuilder();
-        this.curr_stack_value++;
-        maxStackValue();
+        /*this.curr_stack_value++;
+        maxStackValue();*/
+
+        if (assign.getRhs().getInstType().equals(BINARYOPER)){
+            var leftSide = assign.getDest();
+            var firstRightSide = assign.getRhs().getChildren().get(0);
+            var secondRightSide = assign.getRhs().getChildren().get(1);
+            var bin = (BinaryOpInstruction) assign.getRhs();
+            var op = bin.getOperation().getOpType();
+            if (leftSide.toString().equals(firstRightSide.toString()) && op.equals(ADD)){
+                var operand = (Operand) leftSide;
+                var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
+                var num = (LiteralElement) secondRightSide;
+                code.append("iinc ").append(reg).append(" ").append(Integer.parseInt(num.getLiteral()));
+            }
+            else if (leftSide.toString().equals(firstRightSide.toString()) && op.equals(SUB)){
+                var operand = (Operand) leftSide;
+                var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
+                var num = (LiteralElement) secondRightSide;
+                code.append("iinc ").append(reg).append(" ").append("- ").append(Integer.parseInt(num.getLiteral()));
+            }
+
+            else if (leftSide.toString().equals(secondRightSide.toString()) && op.equals(ADD)){
+                var operand = (Operand) leftSide;
+                var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
+                var num = (LiteralElement) firstRightSide;
+                code.append("iinc ").append(reg).append(" ").append(Integer.parseInt(num.getLiteral()));
+            }
+            else if (leftSide.toString().equals(secondRightSide.toString()) && op.equals(SUB)){
+                var operand = (Operand) leftSide;
+                var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
+                var num = (LiteralElement) firstRightSide;
+                code.append("iinc ").append(reg).append(" ").append("- ").append(Integer.parseInt(num.getLiteral()));
+            }
+            if (!code.toString().isEmpty()){
+                curr_stack_value--;
+                maxStackValue();
+                return code.toString();
+            }
+        }
 
         // store value in the stack in destination
         var lhs = assign.getDest();
@@ -586,7 +624,7 @@ public class JasminGenerator {
         if (value == -1) {
             return NL + "iconst_m1" + NL;
         }
-        else if (value >= -1 && value <= 5) {
+        else if (value >= 0 && value <= 5) {
             return NL + "iconst_" + value + NL;
         } else if (value >= -128 && value <= 127) {
             return NL +"bipush " + value + NL;
@@ -641,9 +679,6 @@ public class JasminGenerator {
 
     private String generateBinaryOp(BinaryOpInstruction binaryOpInstruction) {
         var code = new StringBuilder();
-        //acho que é erro descomentar
-        //code.append(generators.apply(binaryOpInstruction.getLeftOperand()));
-        //code.append(generators.apply(binaryOpInstruction.getRightOperand()));
 
         switch (binaryOpInstruction.getOperation().getOpType()){
             case LTH, GTH, EQ, NEQ, LTE, GTE, NOTB, NOT -> {
@@ -658,6 +693,7 @@ public class JasminGenerator {
         maxStackValue();
         return null;
     }
+
 
     private String generateUnaryOp(UnaryOpInstruction unaryOpInstruction) {
         var code = new StringBuilder();
@@ -692,26 +728,8 @@ public class JasminGenerator {
         // load values on the left and on the right
         code.append(generators.apply(binaryOp.getLeftOperand()));
         code.append(generators.apply(binaryOp.getRightOperand()));
-
-        String prefix;
-
-        //verification (prob not needed)
-        /*var typeOfOp = binaryOp.getOperation().getTypeInfo().getTypeOfElement();
-        if (typeOfOp.equals(ElementType.INT32) || typeOfOp.equals(ElementType.BOOLEAN)) {
-            prefix = "i";
-        }
-        else {
-            prefix = "a";
-        }*/
         curr_stack_value--;
         maxStackValue();
-
-
-        /*if (binaryOp.getRightOperand().toString().equals("LiteralElement: 1.INT32") && binaryOp.getOperation().getOpType().equals(ADD)) {
-            var opName = getOperandName((Operand) binaryOp.getLeftOperand());
-            code.append("iinc ").append(opName).append(" ").append("1").append(NL);
-            return code.toString();
-        }*/
 
         // apply operation
         var op = switch (binaryOp.getOperation().getOpType()) {
@@ -735,15 +753,28 @@ public class JasminGenerator {
         maxStackValue();
         code.append(generators.apply(binaryOpInstruction.getLeftOperand()));
         code.append(generators.apply(binaryOpInstruction.getRightOperand()));
-
+        var y = binaryOpInstruction.getLeftOperand();
+        var z = binaryOpInstruction.getRightOperand();
         switch (binaryOpInstruction.getOperation().getOpType()) {
-            case GTE -> code.append("if_icmpge ");
-            case LTH -> code.append("if_icmplt ");
-            case GTH -> code.append("if_icmpgt ");
-            case EQ -> code.append("if_icmpeq ");
-            case NEQ -> code.append("if_icmpne ");
-            case LTE -> code.append("if_icmple ");
-            case NOTB -> code.append("ifle ");
+            case GTE -> {
+                //otimizacoes a implementar
+                code.append("if_icmpge ");
+            }
+            case LTH -> {
+                code.append("if_icmplt ");
+            }
+            case GTH -> {
+                code.append("if_icmpgt ");
+            }
+            case EQ -> {
+                code.append("if_icmpeq ");
+            }
+            case NEQ -> {
+                code.append("if_icmpne ");
+            }
+            case LTE -> {
+                code.append("if_icmple ");
+            }
             case NOT -> code.append("not ");
             default -> {
                 return "";
