@@ -405,7 +405,7 @@ public class JasminGenerator {
         this.curr_stack_value++;
         maxStackValue();
         // generate code for loading what's on the right
-        code.append(generators.apply(assign.getRhs()));
+
 
         // store value in the stack in destination
         var lhs = assign.getDest();
@@ -418,6 +418,22 @@ public class JasminGenerator {
 
         // get register
         var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
+
+        //deal with array content
+        if (lhs instanceof ArrayOperand arrayOperand) {
+            if (reg >= 4){
+                code.append("aload ").append(reg).append(NL);
+            }
+            else {
+                code.append("aload_").append(reg).append(NL);
+            }
+            curr_stack_value++;
+            maxStackValue();
+            for (var elem: arrayOperand.getIndexOperands()){
+                code.append(generators.apply(elem));
+            }
+        }
+        code.append(generators.apply(assign.getRhs()));
 
         ElementType type = operand.getType().getTypeOfElement();
         switch (type) {
@@ -579,7 +595,10 @@ public class JasminGenerator {
             return code.toString();
         }
         int value = Integer.parseInt(literalStr);
-        if (value >= -1 && value <= 5) {
+        if (value == -1) {
+            return NL + "iconst_m1" + NL;
+        }
+        else if (value >= 0 && value <= 5) {
             return NL + "iconst_" + value + NL;
         } else if (value >= -128 && value <= 127) {
             return NL +"bipush " + value + NL;
@@ -633,6 +652,12 @@ public class JasminGenerator {
     }
 
     private String generateBinaryOp(BinaryOpInstruction binaryOpInstruction) {
+        var code = new StringBuilder();
+
+        code.append(generators.apply(binaryOpInstruction.getRightOperand()));
+        code.append(generators.apply(binaryOpInstruction.getLeftOperand()));
+
+
         switch (binaryOpInstruction.getOperation().getOpType()){
             case ADD, SUB, MUL, DIV, SHR, SHL, SHRR, XOR, AND, ANDB, OR, ORB -> {
                 return generateAritmeticBinaryOp(binaryOpInstruction);
@@ -641,6 +666,8 @@ public class JasminGenerator {
                 return generateConditionalBinaryOp(binaryOpInstruction);
             }
         }
+        this.curr_stack_value--;
+        maxStackValue();
         return null;
     }
 
@@ -663,14 +690,29 @@ public class JasminGenerator {
         return code.toString();
     }
 
+    private int getOperandName(Operand operand) {
+        String name = operand.getName();
+        int reg = currentMethod.getVarTable().get(name).getVirtualReg();
+        return reg;
+    }
+
 
     private String generateAritmeticBinaryOp(BinaryOpInstruction binaryOp) {
         var code = new StringBuilder();
         // load values on the left and on the right
-        code.append(generators.apply(binaryOp.getLeftOperand()));
         code.append(generators.apply(binaryOp.getRightOperand()));
+        code.append(generators.apply(binaryOp.getLeftOperand()));
+
         curr_stack_value--;
         maxStackValue();
+
+
+        /*if (binaryOp.getRightOperand().toString().equals("LiteralElement: 1.INT32") && binaryOp.getOperation().getOpType().equals(ADD)) {
+            var opName = getOperandName((Operand) binaryOp.getLeftOperand());
+            code.append("iinc ").append(opName).append(" ").append("1").append(NL);
+            return code.toString();
+        }*/
+
         // apply operation
         var op = switch (binaryOp.getOperation().getOpType()) {
             case ADD -> "iadd";
@@ -695,12 +737,12 @@ public class JasminGenerator {
         code.append(generators.apply(binaryOpInstruction.getRightOperand()));
 
         switch (binaryOpInstruction.getOperation().getOpType()) {
+            case GTE -> code.append("if_icmpge ");
             case LTH -> code.append("if_icmplt ");
             case GTH -> code.append("if_icmpgt ");
             case EQ -> code.append("if_icmpeq ");
             case NEQ -> code.append("if_icmpne ");
             case LTE -> code.append("if_icmple ");
-            case GTE -> code.append("if_icmpge ");
             case NOTB -> code.append("ifle ");
             case NOT -> code.append("not ");
             default -> {
@@ -752,9 +794,10 @@ public class JasminGenerator {
             var op = generateBinaryOp(binOp);
             code.append(op).append(" ").append(condBranchInstruction.getLabel()).append(NL);
         }
-        else if (condBranchInstruction.getCondition().getInstType().equals(NOPER)){
-            code.append("iconst_0").append(NL);
-            code.append("ifne ").append(condBranchInstruction.getLabel()).append(NL);
+        else{
+
+            code.append(generators.apply(condBranchInstruction.getCondition())).append(NL);
+            code.append("ifne").append(" ").append(condBranchInstruction.getLabel()).append(NL);
         }
         curr_stack_value--;
         maxStackValue();
