@@ -695,13 +695,14 @@ public class JasminGenerator {
 
         String prefix;
 
-        var typeOfOp = binaryOp.getOperation().getTypeInfo().getTypeOfElement();
+        //verification (prob not needed)
+        /*var typeOfOp = binaryOp.getOperation().getTypeInfo().getTypeOfElement();
         if (typeOfOp.equals(ElementType.INT32) || typeOfOp.equals(ElementType.BOOLEAN)) {
             prefix = "i";
         }
         else {
             prefix = "a";
-        }
+        }*/
         curr_stack_value--;
         maxStackValue();
 
@@ -714,13 +715,13 @@ public class JasminGenerator {
 
         // apply operation
         var op = switch (binaryOp.getOperation().getOpType()) {
-            case ADD -> prefix + "add";
-            case MUL -> prefix + "mul";
-            case SUB -> prefix + "sub";
-            case DIV -> prefix + "div";
-            case XOR -> prefix + "xor";
-            case AND, ANDB -> prefix + "and";
-            case OR, ORB -> prefix + "or";
+            case ADD -> "iadd";
+            case MUL -> "imul";
+            case SUB -> "isub";
+            case DIV -> "idiv";
+            case XOR -> "ixor";
+            case AND, ANDB -> "iand";
+            case OR, ORB -> "ior";
             default -> throw new NotImplementedException(binaryOp.getOperation().getOpType());
         };
 
