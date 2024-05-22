@@ -396,7 +396,7 @@ public class JasminGenerator {
         /*this.curr_stack_value++;
         maxStackValue();*/
 
-        if (assign.getRhs().getInstType().equals(BINARYOPER)){
+        /*if (assign.getRhs().getInstType().equals(BINARYOPER)){
             var leftSide = assign.getDest();
             var firstRightSide = assign.getRhs().getChildren().get(0);
             var secondRightSide = assign.getRhs().getChildren().get(1);
@@ -432,7 +432,7 @@ public class JasminGenerator {
                 maxStackValue();
                 return code.toString();
             }
-        }
+        }*/
 
         // store value in the stack in destination
         var lhs = assign.getDest();
