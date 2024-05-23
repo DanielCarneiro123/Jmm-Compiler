@@ -290,10 +290,14 @@ public class JasminGenerator {
                     .collect(Collectors.joining(NL + TAB, TAB, NL));
 
             code.append(instCode);
-            if (inst.getInstType() == InstructionType.CALL && ((CallInstruction) inst).getReturnType().getTypeOfElement() != ElementType.VOID) {
+            if (inst.getInstType() == CALL && ((CallInstruction) inst).getReturnType().getTypeOfElement() != ElementType.VOID) {
                 code.append(TAB).append("pop").append(NL);
                 curr_stack_value--;
                 maxStackValue();
+            }
+
+            if (inst.getInstType() == ASSIGN && ((AssignInstruction) inst).getRhs().getInstType().equals(GETFIELD)){
+                code.append(TAB).append(generators.apply(((AssignInstruction) inst).getRhs().getChildren().get(1)));
             }
 
         }
@@ -395,8 +399,8 @@ public class JasminGenerator {
         var code = new StringBuilder();
         /*this.curr_stack_value++;
         maxStackValue();*/
-
-        if (assign.getRhs().getInstType().equals(BINARYOPER)){
+        //having doubts about this
+        /*if (assign.getRhs().getInstType().equals(BINARYOPER)){
             var leftSide = assign.getDest();
             var firstRightSide = assign.getRhs().getChildren().get(0);
             var secondRightSide = assign.getRhs().getChildren().get(1);
@@ -432,7 +436,7 @@ public class JasminGenerator {
                 maxStackValue();
                 return code.toString();
             }
-        }
+        }*/
 
         // store value in the stack in destination
         var lhs = assign.getDest();
@@ -646,17 +650,20 @@ public class JasminGenerator {
             if (type.equals("THIS")) {
                 return "aload_0";
             }
-            else if (type.equals("INT32") || type.equals("BOOLEAN")) {
-                if (reg > 3) {
-                    return "iload " + reg + NL;
+            else if (reg > -1){
+                if (type.equals("INT32") || type.equals("BOOLEAN")) {
+                    if (reg > 3) {
+                        return "iload " + reg + NL;
+                    }
+                    return "iload_" + reg + NL;
+                } else {
+                    if (reg > 3) {
+                        return "aload " + reg + NL;
+                    }
+                    return "aload_" + reg + NL;
                 }
-                return "iload_" + reg + NL;
-            } else {
-                if (reg > 3) {
-                    return "aload " + reg + NL;
-                }
-                return "aload_" + reg + NL;
             }
+
         }
 
         if (currentMethod.getOllirClass().getImports().contains(name)) {
@@ -673,7 +680,7 @@ public class JasminGenerator {
             }
         }
 
-        return null;
+        return "";
 
     }
 
@@ -694,24 +701,29 @@ public class JasminGenerator {
         return null;
     }
 
-
+    //needs optimizations
     private String generateUnaryOp(UnaryOpInstruction unaryOpInstruction) {
         var code = new StringBuilder();
         curr_stack_value--;
         maxStackValue();
         code.append(generators.apply(unaryOpInstruction.getOperand()));
-        switch (unaryOpInstruction.getOperation().getOpType()){
-            case NOT -> code.append("not");
-            case NOTB -> {
-                code.append("iconst_1").append(NL);
-                code.append("ixor").append(NL);
-            }
-            case GTH -> code.append("ifgt");
-            case LTH -> code.append("iflt");
-            case NEQ -> code.append("ifne");
-            case EQ -> code.append("ifeq");
-            case GTE -> code.append("ifge");
-            case LTE -> code.append("ifle");
+        if (unaryOpInstruction.getOperation().getOpType() == NOT) {
+            code.append("not");
+        } else if (unaryOpInstruction.getOperation().getOpType() == NOTB) {
+            code.append("iconst_1").append(NL);
+            code.append("ixor").append(NL);
+        } else if (unaryOpInstruction.getOperation().getOpType() == GTH) {
+            code.append("ifgt");
+        } else if (unaryOpInstruction.getOperation().getOpType() == LTH) {
+            code.append("iflt");
+        } else if (unaryOpInstruction.getOperation().getOpType() == NEQ) {
+            code.append("ifne");
+        } else if (unaryOpInstruction.getOperation().getOpType() == EQ) {
+            code.append("ifeq");
+        } else if (unaryOpInstruction.getOperation().getOpType() == GTE) {
+            code.append("ifge");
+        } else if (unaryOpInstruction.getOperation().getOpType() == LTE) {
+            code.append("ifle");
         }
         return code.toString();
     }
