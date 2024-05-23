@@ -135,8 +135,10 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
             var temp = OptUtils.getTemp() + ".i32";
             computation.append(temp).append(" ").append(ASSIGN).append(".i32 ").append(node.getChild(0).get("value"));
-            computation.append(".array.i32");
-          computation.append("[").append(indexNode.getCode()).append("].i32").append(END_STMT);
+                    if (isVarArgBool){
+                        computation.append(".array.i32");
+                    }
+                    computation.append("[").append(indexNode.getCode()).append("].i32").append(END_STMT);
 
             code.append(temp);
 
@@ -152,6 +154,29 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         StringBuilder code = new StringBuilder();
         StringBuilder computation = new StringBuilder();
+        boolean isField = false;
+        List<Symbol> fields = table.getFields();
+        if(node.getParent().getKind().equals("Assignment")){
+            var aux = node.getParent().get("var");
+            for (Symbol field : fields) {
+                if (field.getName().equals(aux)){
+                    isField = true;
+                }}
+        }
+
+        if(isField){
+            var auxTemp = OptUtils.getTemp() + ".array.i32";
+
+            var sizeNode = visit(node.getJmmChild(1));
+            computation.append(sizeNode.getComputation());
+
+            String ollirType = OptUtils.toOllirType(node.getChild(0));
+            computation.append(auxTemp).append(ASSIGN).append(".array.i32 ");
+            computation.append("new(array,").append(sizeNode.getCode()).append(").array").append(ollirType).append(END_STMT);
+
+            code.append(auxTemp);
+            return new OllirExprResult(code.toString(),computation.toString());
+        }
 
         var sizeNode = visit(node.getJmmChild(1));
         computation.append(sizeNode.getComputation());
