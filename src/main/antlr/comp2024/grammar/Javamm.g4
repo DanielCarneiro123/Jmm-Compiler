@@ -61,13 +61,13 @@ varDecl
     : type name=ID SEMI
     ;
 
-type locals[boolean isArray=false]
+type locals[boolean isArray=false, boolean isVarArg=false]
     : value=INT LSTRAIGHT RSTRAIGHT {$isArray=true;} #Array
     | value=BOOLEAN            #Boolean
     | value=INT                #Int
     | value=ID                  #Id
     | value=VOID                 #Void
-    | value=INT ELLIPSIS {$isArray=true;} #VarArg
+    | value=INT ELLIPSIS {$isArray=true;$isVarArg=true;} #VarArg
     ;
 
 argument

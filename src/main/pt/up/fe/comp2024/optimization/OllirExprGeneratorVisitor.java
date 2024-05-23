@@ -1,11 +1,13 @@
 package pt.up.fe.comp2024.optimization;
 
+import com.sun.jdi.BooleanValue;
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
+import pt.up.fe.comp2024.ast.NodeUtils;
 import pt.up.fe.comp2024.ast.TypeUtils;
 
 import java.util.List;
@@ -76,7 +78,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         StringBuilder code = new StringBuilder();
         StringBuilder computation = new StringBuilder();
 
-        code.append(getNextLabelArray()).append("array.i32");
+        code.append(getNextLabelArray()).append(".array.i32");
         String tempInit = OptUtils.getTemp() + ".array.i32";
         computation.append(tempInit).append(ASSIGN).append(".array.i32 new(array, ").append(node.getChildren().size()).append(".i32)").append(".array.i32").append(END_STMT);
         computation.append(getCurrentLabelArray()).append(".array.i32").append(ASSIGN).append(".array.i32 ").append(tempInit).append(END_STMT);
@@ -111,6 +113,17 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         StringBuilder code = new StringBuilder();
         StringBuilder computation = new StringBuilder();
 
+        var x = node.getAncestor("MethodDecl").get().get("name");
+
+      // var isVarArg = table.getParameters(x).get(0).getType().getObject("varArg");
+       //String isVarArgString = isVarArg.toString();
+       boolean isVarArgBool = false;
+      /* if (isVarArgString.equals("true")){
+           isVarArgBool = true;
+       }
+       else{
+           isVarArgBool = false;
+       }*/
 
 
 
@@ -121,7 +134,11 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         if(!node.getParent().getKind().equals("Assignment")){
 
             var temp = OptUtils.getTemp() + ".i32";
-            computation.append(temp).append(" ").append(ASSIGN).append(".i32 ").append(node.getChild(0).get("value")).append("[").append(indexNode.getCode()).append("].i32").append(END_STMT);
+            computation.append(temp).append(" ").append(ASSIGN).append(".i32 ").append(node.getChild(0).get("value"));
+                    if (isVarArgBool){
+                        computation.append(".array.i32");
+                    }
+                    computation.append("[").append(indexNode.getCode()).append("].i32").append(END_STMT);
 
             code.append(temp);
 
