@@ -296,9 +296,9 @@ public class JasminGenerator {
                 maxStackValue();
             }
 
-            /*if (inst.getInstType() == ASSIGN && ((AssignInstruction) inst).getRhs().getInstType().equals(GETFIELD)){
+            if (inst.getInstType() == ASSIGN && ((AssignInstruction) inst).getRhs().getInstType().equals(GETFIELD)){
                 code.append(generators.apply(((AssignInstruction) inst).getRhs().getChildren().get(1)));
-            }*/
+            }
 
         }
         return code.toString();
