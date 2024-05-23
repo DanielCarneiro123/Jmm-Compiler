@@ -1,23 +1,16 @@
-import io;
-
-class Simple {
-
-    int a;
-
-    public static void main(String[] args){
-        int b;
-        int c;
-        Simple s;
-        b = 10;
-        s = new Simple();
-        c = s.foo(2);
-        io.println(c);
+class RegAlloc {
+    public int soManyRegisters(int arg){
+       int a;
+       int b;
+       int c;
+       int d;
+       a = 0;
+       b = a;
+       c = b;
+       d = c;
+       return d;
     }
 
-    public int foo(int a) {
-        io.println(a);
-        a = 20;
-        io.println(a);
-        return a;
-    }
+	public static void main(String[] args) {
+	}
 }
