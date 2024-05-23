@@ -12,10 +12,10 @@ import pt.up.fe.comp2024.parser.JmmParserImpl;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsSystem;
 
-import java.util.Collections;
 import java.util.Map;
 
 public class Launcher {
+
     public static void main(String[] args) {
         SpecsSystem.programStandardInit();
 
@@ -40,15 +40,14 @@ public class Launcher {
         JmmSemanticsResult semanticsResult = sema.semanticAnalysis(parserResult);
         TestUtils.noErrors(semanticsResult.getReports());
 
+
         // Optimization stage
         JmmOptimizationImpl ollirGen = new JmmOptimizationImpl();
         OllirResult ollirResult = ollirGen.toOllir(semanticsResult);
-        OllirResult optimizedResult = ollirGen.optimize(ollirResult);
         TestUtils.noErrors(ollirResult.getReports());
 
         // Print OLLIR code
-        System.out.println(ollirResult.getOllirCode());
-        System.out.println(optimizedResult.getOllirCode());
+        //System.out.println(ollirResult.getOllirCode());
 
         // Code generation stage
         JasminBackendImpl jasminGen = new JasminBackendImpl();
@@ -57,7 +56,6 @@ public class Launcher {
 
         // Print Jasmin code
         //System.out.println(jasminResult.getJasminCode());
-        TestUtils.runJasmin(jasminResult.getJasminCode(), Collections.emptyMap());
     }
 
 }
