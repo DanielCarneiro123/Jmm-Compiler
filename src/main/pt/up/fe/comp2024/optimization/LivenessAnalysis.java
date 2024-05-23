@@ -28,37 +28,39 @@ public class LivenessAnalysis {
         boolean naoAcabou;
         do {
             naoAcabou = false;
-            for (int i = method.getInstructions().size() - 1; i >= 0; i--) {
+            if (method.getInstructions().size() > 1) {
+                for (int i = method.getInstructions().size() - 1; i >= 0; i--) {
 
-                var inst = method.getInstructions().get(i);
-                var liveOutAntigoInst = liveOut.get(inst);
-                var liveInAntigoInst = liveIn.get(inst);
+                    var inst = method.getInstructions().get(i);
+                    var liveOutAntigoInst = liveOut.get(inst);
+                    var liveInAntigoInst = liveIn.get(inst);
 
-                var LiveInAtual = new HashSet<>(liveOutAntigoInst);
-                var LiveOutAtual = new HashSet<>(liveInAntigoInst);
+                    var LiveInAtual = new HashSet<>(liveOutAntigoInst);
+                    var LiveOutAtual = new HashSet<>(liveInAntigoInst);
 
-                Set<String> novoLiveOut = new HashSet<>();
-                Set<String> novoLiveIn = new HashSet<>();
-                var usos = getUse(inst);
-                var defs = getDef(inst);
-                var livoOutAtualInst = liveOut.get(inst);
-                novoLiveIn.addAll(usos);
-                novoLiveIn.addAll(livoOutAtualInst);
-                novoLiveIn.removeAll(defs);
+                    Set<String> novoLiveOut = new HashSet<>();
+                    Set<String> novoLiveIn = new HashSet<>();
+                    var usos = getUse(inst);
+                    var defs = getDef(inst);
+                    var livoOutAtualInst = liveOut.get(inst);
+                    novoLiveIn.addAll(usos);
+                    novoLiveIn.addAll(livoOutAtualInst);
+                    novoLiveIn.removeAll(defs);
 
-                var succList = inst.getSuccessors();
-                for (var succ : succList) {
-                    var liveInAntigoSucc = liveIn.get(succ);
-                    novoLiveOut.addAll(liveInAntigoSucc);
-                }
-                liveOut.put(inst, novoLiveOut);
-                liveIn.put(inst, novoLiveIn);
+                    var succList = inst.getSuccessors();
+                    for (var succ : succList) {
+                        var liveInAntigoSucc = liveIn.get(succ);
+                        novoLiveOut.addAll(liveInAntigoSucc);
+                    }
+                    liveOut.put(inst, novoLiveOut);
+                    liveIn.put(inst, novoLiveIn);
 
-                var MudouLiveIn = !liveInAntigoInst.equals(novoLiveIn);
-                var mudouLiveOut = !liveOutAntigoInst.equals(novoLiveOut);
+                    var MudouLiveIn = !liveInAntigoInst.equals(novoLiveIn);
+                    var mudouLiveOut = !liveOutAntigoInst.equals(novoLiveOut);
 
-                if (MudouLiveIn || mudouLiveOut) {
-                    naoAcabou = true;
+                    if (MudouLiveIn || mudouLiveOut) {
+                        naoAcabou = true;
+                    }
                 }
             }
         } while (naoAcabou);
