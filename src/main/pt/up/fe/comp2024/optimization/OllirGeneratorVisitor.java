@@ -315,9 +315,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
 
         String code = ".field public " + varName;
-        if (isField){
-            code = code + ".array";
-        }
+
 
         code = code + typeCode + ";" + NL;
 
