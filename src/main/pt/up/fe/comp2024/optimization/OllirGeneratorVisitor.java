@@ -306,8 +306,20 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         String varName = node.get("name"); // Get the variable name
 
 
-        // Construct the field declaration code
-        String code = ".field public " + varName + typeCode + ";" + NL;
+        var fields = table.getFields();
+        boolean isField = false;
+        for (Symbol field : fields) {
+            if (field.getName().equals(varName)){
+                isField = true;
+            }}
+
+
+        String code = ".field public " + varName;
+        if (isField){
+            code = code + ".array";
+        }
+
+        code = code + typeCode + ";" + NL;
 
         return code;
     }
