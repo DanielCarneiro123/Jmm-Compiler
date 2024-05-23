@@ -296,9 +296,9 @@ public class JasminGenerator {
                 maxStackValue();
             }
 
-            if (inst.getInstType() == ASSIGN && ((AssignInstruction) inst).getRhs().getInstType().equals(GETFIELD)){
-                code.append(TAB).append(generators.apply(((AssignInstruction) inst).getRhs().getChildren().get(1)));
-            }
+            /*if (inst.getInstType() == ASSIGN && ((AssignInstruction) inst).getRhs().getInstType().equals(GETFIELD)){
+                code.append(generators.apply(((AssignInstruction) inst).getRhs().getChildren().get(1)));
+            }*/
 
         }
         return code.toString();
@@ -336,7 +336,7 @@ public class JasminGenerator {
 
     private String getJasminType(ElementType paramType) {
         switch (paramType) {
-            case INT32:
+            case INT32, ARRAYREF:
                 return "I";
             case BOOLEAN:
                 return "Z";
@@ -344,8 +344,8 @@ public class JasminGenerator {
                 return "V";
             case STRING:
                 return "[L" + "java/lang/String" + ";";
-            case ARRAYREF:
-                return "L" + "java/lang/String" + ";";
+            /*case ARRAYREF:
+                return "L" + "java/lang/String" + ";";*/
             default:
                 return null;
         }
@@ -360,8 +360,8 @@ public class JasminGenerator {
     }
 
     private String getArrayType(Type type) {
-        if (type.toString().equals("INT32[]")){
-            return "[" + this.getJasminType(ElementType.INT32);
+        if (type.toString().equals("STRING[]")){
+            return "[" + "L" + "java/lang/String" + ";";
         }
         return "[" + this.getJasminType(type.getTypeOfElement());
     }
