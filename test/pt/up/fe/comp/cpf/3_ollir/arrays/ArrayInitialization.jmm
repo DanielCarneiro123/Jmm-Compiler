@@ -1,19 +1,19 @@
-import ioPlus;
-class ArrayAsArg {
+import io;
 
+class ArrayInitialization {
 
-    int[] arr;
-    public int func(int[] a)
-    {
-        int x;
+    public static void main(String[] args) {
+        ArrayInitialization a;
+        a = new ArrayInitialization();
 
-        ArrayAsArg c;
-
-		c = new ArrayAsArg();
-        arr =  new int[2];
-        x = c.func(arr);
-        return x;
+        io.println(a.foo());
     }
 
+    int foo() {
+        int[] a;
 
+        a = [1, 2, 3, 4];
+
+        return a[2];
+    }
 }
