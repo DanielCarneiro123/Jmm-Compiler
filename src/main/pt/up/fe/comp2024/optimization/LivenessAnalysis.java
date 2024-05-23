@@ -149,6 +149,49 @@ public class LivenessAnalysis {
                     uses.add(retInstOPName);
                 }
             }
+            case "BRANCH" -> {
+                var branchInstOP = ((CondBranchInstruction) inst).getOperands();
+                for (Element elem : branchInstOP)
+                    if (elem instanceof Operand) {
+                        var elemName = ((Operand) elem).getName();
+                        uses.add(elemName);
+                    }
+            }
+
+            case "UNARYOPER" -> {
+                var unaryOpInst = ((UnaryOpInstruction) inst).getOperand();
+                if (unaryOpInst instanceof Operand) {
+                    var unaryOpInstName = ((Operand) unaryOpInst).getName();
+                    uses.add(unaryOpInstName);
+                }
+            }
+
+            case "BINARYOPER" -> {
+                var BinaryOpInstructionOps = ((BinaryOpInstruction) inst).getOperands();
+                if (BinaryOpInstructionOps != null) {
+                    for (Element elem : BinaryOpInstructionOps) {
+                        if (elem instanceof Operand) {
+                            var elemName = ((Operand) elem).getName();
+                            uses.add(elemName);
+                        }
+                    }
+                }
+            }
+
+            case "GETFIELD" -> {
+                var firstOp = ((GetFieldInstruction) inst).getOperands().get(0);
+                if (firstOp instanceof Operand) {
+                    var firstOpName = ((Operand) firstOp).getName();
+                    uses.add(firstOpName);
+                }
+                var secondOp = ((GetFieldInstruction) inst).getOperands().get(1);
+                if (secondOp instanceof Operand) {
+                    var secondOpName = ((Operand) secondOp).getName();
+                    uses.add(secondOpName);
+                }
+
+            }
+
             default -> {
                 throw new IllegalArgumentException("Unexpected instruction type: " + instType);
             }
