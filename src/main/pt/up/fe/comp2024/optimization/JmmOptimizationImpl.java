@@ -23,16 +23,16 @@ public class JmmOptimizationImpl implements JmmOptimization {
 
     @Override
     public OllirResult optimize(OllirResult ollirResult) {
-        var config = ollirResult.getConfig();
+        /*var config = ollirResult.getConfig();
         if (0 > getRegisterAllocation(config)) {
             return ollirResult;
-        }
+        }*/
         
-        List methods = ollirResult.getOllirClass().getMethods();
+        /*List methods = ollirResult.getOllirClass().getMethods();
 
         for (Object method : methods) {
             performRegisterAllocation((org.specs.comp.ollir.Method) method);
-        }
+        }*/
         return ollirResult;
     }
 
