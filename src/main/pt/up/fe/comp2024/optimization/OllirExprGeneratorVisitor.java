@@ -660,7 +660,10 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 var allParams= table.getParameters(methodSignature);
                 int varArgParamNum = allParams.size()-1;
                 boolean varArgParamCurr = false;
-                boolean isVarArgLastParam = (!allParams.get(allParams.size()-1).getType().getAttributes().isEmpty());
+                boolean isVarArgLastParam = false;
+                if(allParams.size() != 0){
+                isVarArgLastParam = (!allParams.get(allParams.size()-1).getType().getAttributes().isEmpty());
+                }
                 var tempVarArgAux = "";
 
 
