@@ -281,11 +281,9 @@ public class JasminGenerator {
     private String methodPrint(Method method){
         var code = new StringBuilder();
         for (var inst : method.getInstructions()) {
-            for (var label: method.getLabels().entrySet()){
-                if (label.getValue().equals(inst)){
-                    code.append(label.getKey()).append(":").append(NL);
-                }
-            }
+            method.getLabels().entrySet().stream()
+                    .filter(label -> label.getValue().equals(inst))
+                    .forEach(label -> code.append(label.getKey()).append(":").append(NL));
             var instCode = StringLines.getLines(generators.apply(inst)).stream()
                     .collect(Collectors.joining(NL + TAB, TAB, NL));
 
@@ -400,43 +398,23 @@ public class JasminGenerator {
         /*this.curr_stack_value++;
         maxStackValue();*/
         //having doubts about this
-        /*if (assign.getRhs().getInstType().equals(BINARYOPER)){
+        if (assign.getRhs().getInstType().equals(BINARYOPER)){
             var leftSide = assign.getDest();
             var firstRightSide = assign.getRhs().getChildren().get(0);
             var secondRightSide = assign.getRhs().getChildren().get(1);
             var bin = (BinaryOpInstruction) assign.getRhs();
             var op = bin.getOperation().getOpType();
-            if (leftSide.toString().equals(firstRightSide.toString()) && op.equals(ADD)){
-                var operand = (Operand) leftSide;
-                var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
-                var num = (LiteralElement) secondRightSide;
-                code.append("iinc ").append(reg).append(" ").append(Integer.parseInt(num.getLiteral()));
-            }
-            else if (leftSide.toString().equals(firstRightSide.toString()) && op.equals(SUB)){
-                var operand = (Operand) leftSide;
-                var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
-                var num = (LiteralElement) secondRightSide;
-                code.append("iinc ").append(reg).append(" ").append("- ").append(Integer.parseInt(num.getLiteral()));
-            }
-
-            else if (leftSide.toString().equals(secondRightSide.toString()) && op.equals(ADD)){
-                var operand = (Operand) leftSide;
-                var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
-                var num = (LiteralElement) firstRightSide;
-                code.append("iinc ").append(reg).append(" ").append(Integer.parseInt(num.getLiteral()));
-            }
-            else if (leftSide.toString().equals(secondRightSide.toString()) && op.equals(SUB)){
-                var operand = (Operand) leftSide;
-                var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
-                var num = (LiteralElement) firstRightSide;
-                code.append("iinc ").append(reg).append(" ").append("- ").append(Integer.parseInt(num.getLiteral()));
+            if (leftSide.getType().getTypeOfElement().equals(ElementType.INT32) && (op.equals(ADD) || op.equals(SUB))){
+                code.append(iincVar((Operand) assign.getDest(), (BinaryOpInstruction) assign.getRhs()));
             }
             if (!code.toString().isEmpty()){
                 curr_stack_value--;
                 maxStackValue();
                 return code.toString();
             }
-        }*/
+        }
+
+
 
         // store value in the stack in destination
         var lhs = assign.getDest();
@@ -446,7 +424,6 @@ public class JasminGenerator {
         }
 
         var operand = (Operand) lhs;
-
         // get register
         var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
         //deal with array content
@@ -464,7 +441,6 @@ public class JasminGenerator {
             }
         }
         code.append(generators.apply(assign.getRhs()));
-
         ElementType type = operand.getType().getTypeOfElement();
         switch (type) {
             case INT32, BOOLEAN:
@@ -503,6 +479,52 @@ public class JasminGenerator {
         }
 
         return code.toString();
+    }
+
+    private String iincVar(Operand dest, BinaryOpInstruction rhs) {
+        var code = new StringBuilder();
+        var firstRight = rhs.getChildren().get(0);
+        var secondRight = rhs.getChildren().get(1);
+        if (firstRight instanceof Operand && secondRight instanceof LiteralElement) {
+            if (((Operand) firstRight).getName().equals(dest.getName())) {
+                if (rhs.getOperation().getOpType().equals(ADD)) {
+                    int reg = currentMethod.getVarTable().get(dest.getName()).getVirtualReg();
+                    code.append("iinc ").append(reg).append(" ").append(((LiteralElement) secondRight).getLiteral());
+                }
+                else if (rhs.getOperation().getOpType().equals(SUB)) {
+                    int reg = currentMethod.getVarTable().get(dest.getName()).getVirtualReg();
+                    code.append("iinc ").append(reg).append(" -").append(((LiteralElement) secondRight).getLiteral());
+                }
+            }
+
+        }
+        else if (firstRight instanceof LiteralElement && secondRight instanceof Operand) {
+            if (((Operand) secondRight).getName().equals(dest.getName())) {
+                if (rhs.getOperation().getOpType().equals(ADD)) {
+                    int reg = currentMethod.getVarTable().get(dest.getName()).getVirtualReg();
+                    code.append("iinc ").append(reg).append(" ").append(((LiteralElement) firstRight).getLiteral());
+                }
+                else if (rhs.getOperation().getOpType().equals(SUB)) {
+                    int reg = currentMethod.getVarTable().get(dest.getName()).getVirtualReg();
+                    code.append("iinc ").append(reg).append(" -").append(((LiteralElement) firstRight).getLiteral());
+                }
+            }
+        }
+        return code.toString();
+    }
+
+    private String boolExprVar(Element dest, Instruction rhs) {
+        var code = new StringBuilder();
+        code.append(generators.apply(rhs));
+        for (var label : currentMethod.getLabels().entrySet()) {
+            if (label.getValue().getChildren().get(0).toString().equals(dest.toString())) {
+                code.append(label.getKey()).append(NL);
+                return code.toString();
+            }
+
+        }
+
+        return "";
     }
 
     private String generateCallInstruction(CallInstruction callInstruction) {
@@ -685,10 +707,9 @@ public class JasminGenerator {
     }
 
     private String generateBinaryOp(BinaryOpInstruction binaryOpInstruction) {
-        var code = new StringBuilder();
 
         switch (binaryOpInstruction.getOperation().getOpType()){
-            case LTH, GTH, EQ, NEQ, LTE, GTE, NOTB, NOT -> {
+            case LTH, GTH, EQ, NEQ, LTE, GTE -> {
                 return generateConditionalBinaryOp(binaryOpInstruction);
             }
 
@@ -698,7 +719,7 @@ public class JasminGenerator {
         }
         this.curr_stack_value--;
         maxStackValue();
-        return null;
+        return "";
     }
 
     //needs optimizations
@@ -744,18 +765,18 @@ public class JasminGenerator {
         maxStackValue();
 
         // apply operation
-        var op = switch (binaryOp.getOperation().getOpType()) {
-            case ADD -> "iadd";
-            case MUL -> "imul";
-            case SUB -> "isub";
-            case DIV -> "idiv";
-            case XOR -> "ixor";
-            case AND, ANDB -> "iand";
-            case OR, ORB -> "ior";
+        switch (binaryOp.getOperation().getOpType()) {
+            case ADD -> {
+                code.append("iadd").append(NL);
+            }
+            case MUL -> code.append("imul").append(NL);
+            case SUB -> code.append("isub").append(NL);
+            case DIV -> code.append("idiv").append(NL);
+            case XOR -> code.append("ixor").append(NL);
+            case AND, ANDB -> code.append("iand").append(NL);
+            case OR, ORB -> code.append("ior").append(NL);
             default -> throw new NotImplementedException(binaryOp.getOperation().getOpType());
-        };
-
-        code.append(op).append(NL);
+        }
 
         return code.toString();
     }
@@ -765,33 +786,106 @@ public class JasminGenerator {
         maxStackValue();
         code.append(generators.apply(binaryOpInstruction.getLeftOperand()));
         code.append(generators.apply(binaryOpInstruction.getRightOperand()));
-        var y = binaryOpInstruction.getLeftOperand();
-        var z = binaryOpInstruction.getRightOperand();
+        var leftOperand = binaryOpInstruction.getLeftOperand();
+        var rightOperand = binaryOpInstruction.getRightOperand();
         switch (binaryOpInstruction.getOperation().getOpType()) {
             case GTE -> {
-                //otimizacoes a implementar
-                code.append("if_icmpge ");
+                if ((leftOperand instanceof LiteralElement) && (rightOperand instanceof LiteralElement)){
+                    int compareValue = Integer.parseInt(((LiteralElement) leftOperand).getLiteral()) - Integer.parseInt(((LiteralElement) rightOperand).getLiteral());
+                    code.append("isub").append(NL);
+                    if (compareValue < 0){
+                        code.append("iflt ");
+                    }
+                    else {
+                        code.append("ifge ");
+                    }
+                }
+                else {
+                    code.append("if_icmpge ");
+                }
             }
             case LTH -> {
-                code.append("if_icmplt ");
+                if (((leftOperand instanceof LiteralElement) && (rightOperand instanceof LiteralElement))){
+                    int compareValue = Integer.parseInt(((LiteralElement) leftOperand).getLiteral()) - Integer.parseInt(((LiteralElement) rightOperand).getLiteral());
+                    code.append("isub").append(NL);
+                    if (compareValue < 0){
+                        code.append("iflt ");
+                    }
+                    else {
+                        code.append("ifge ");
+                    }
+                }
+                else {
+                    code.append("if_icmplt ");
+                }
             }
             case GTH -> {
-                code.append("if_icmpgt ");
+                if ((leftOperand instanceof LiteralElement) && (rightOperand instanceof LiteralElement)){
+                    int compareValue = Integer.parseInt(((LiteralElement) leftOperand).getLiteral()) - Integer.parseInt(((LiteralElement) rightOperand).getLiteral());
+                    code.append("isub").append(NL);
+                    if (compareValue < 0){
+                        code.append("iflt ");
+                    }
+                    else {
+                        code.append("ifge ");
+                    }
+                }
+                else {
+                    code.append("if_icmpgt ");
+                }
             }
             case EQ -> {
-                code.append("if_icmpeq ");
+                if ((leftOperand instanceof LiteralElement) && (rightOperand instanceof LiteralElement)){
+                    int compareValue = Integer.parseInt(((LiteralElement) leftOperand).getLiteral()) - Integer.parseInt(((LiteralElement) rightOperand).getLiteral());
+                    code.append("isub").append(NL);
+
+                    if (compareValue == 0){
+                        code.append("ifeq ");
+                    }
+                    else {
+                        code.append("ifne ");
+                    }
+                }
+                else {
+                    code.append("if_icmpeq ");
+                }
             }
             case NEQ -> {
-                code.append("if_icmpne ");
+                if ((leftOperand instanceof LiteralElement) && (rightOperand instanceof LiteralElement)){
+                    int compareValue = Integer.parseInt(((LiteralElement) leftOperand).getLiteral()) - Integer.parseInt(((LiteralElement) rightOperand).getLiteral());
+                    code.append("isub").append(NL);
+
+                    if (compareValue == 0){
+                        code.append("ifeq ");
+                    }
+                    else {
+                        code.append("ifne ");
+                    }
+                }
+                else {
+                    code.append("if_icmpne ");
+                }
             }
             case LTE -> {
-                code.append("if_icmple ");
+                if ((leftOperand instanceof LiteralElement) && (rightOperand instanceof LiteralElement)){
+                    int compareValue = Integer.parseInt(((LiteralElement) leftOperand).getLiteral()) - Integer.parseInt(((LiteralElement) rightOperand).getLiteral());
+                    code.append("isub").append(NL);
+                    if (compareValue < 0){
+                        code.append("iflt ");
+                    }
+                    else {
+                        code.append("ifge ");
+                    }
+                }
+                else {
+                    code.append("if_icmple ");
+                }
             }
-            case NOT -> code.append("not ");
             default -> {
                 return "";
             }
         }
+
         return code.toString();
     }
 
@@ -824,6 +918,7 @@ public class JasminGenerator {
 
         return code.toString();
     }
+
     private String generateBranch(CondBranchInstruction condBranchInstruction) {
         var code = new StringBuilder();
 
