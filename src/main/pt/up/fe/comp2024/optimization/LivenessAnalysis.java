@@ -18,53 +18,53 @@ public class LivenessAnalysis {
     }
 
     private void computeLiveness() {
+        initializeLivenessSets();
+        boolean changesMade;
 
-        for (int i = 0; i < method.getInstructions().size(); i++) {
-            Instruction inst = method.getInstructions().get(i);
-            liveIn.put(inst, new HashSet<>());
-            liveOut.put(inst, new HashSet<>());
-        }
-
-        boolean naoAcabou;
         do {
-            naoAcabou = false;
+            changesMade = false;
             if (method.getInstructions().size() > 1) {
                 for (int i = method.getInstructions().size() - 1; i >= 0; i--) {
+                    Instruction inst = method.getInstructions().get(i);
+                    Set<String> oldLiveOut = new HashSet<>(liveOut.get(inst));
+                    Set<String> oldLiveIn = new HashSet<>(liveIn.get(inst));
 
-                    var inst = method.getInstructions().get(i);
-                    var liveOutAntigoInst = liveOut.get(inst);
-                    var liveInAntigoInst = liveIn.get(inst);
+                    Set<String> newLiveOut = computeLiveOut(inst);
+                    Set<String> newLiveIn = computeLiveIn(inst, newLiveOut);
 
-                    var LiveInAtual = new HashSet<>(liveOutAntigoInst);
-                    var LiveOutAtual = new HashSet<>(liveInAntigoInst);
+                    liveOut.put(inst, newLiveOut);
+                    liveIn.put(inst, newLiveIn);
 
-                    Set<String> novoLiveOut = new HashSet<>();
-                    Set<String> novoLiveIn = new HashSet<>();
-                    var usos = getUse(inst);
-                    var defs = getDef(inst);
-                    var livoOutAtualInst = liveOut.get(inst);
-                    novoLiveIn.addAll(usos);
-                    novoLiveIn.addAll(livoOutAtualInst);
-                    novoLiveIn.removeAll(defs);
-
-                    var succList = inst.getSuccessors();
-                    for (var succ : succList) {
-                        var liveInAntigoSucc = liveIn.get(succ);
-                        novoLiveOut.addAll(liveInAntigoSucc);
-                    }
-                    liveOut.put(inst, novoLiveOut);
-                    liveIn.put(inst, novoLiveIn);
-
-                    var MudouLiveIn = !liveInAntigoInst.equals(novoLiveIn);
-                    var mudouLiveOut = !liveOutAntigoInst.equals(novoLiveOut);
-
-                    if (MudouLiveIn || mudouLiveOut) {
-                        naoAcabou = true;
+                    if (!oldLiveIn.equals(newLiveIn) || !oldLiveOut.equals(newLiveOut)) {
+                        changesMade = true;
                     }
                 }
             }
-        } while (naoAcabou);
+        } while (changesMade);
     }
+
+    private void initializeLivenessSets() {
+        for (Instruction inst : method.getInstructions()) {
+            liveIn.put(inst, new HashSet<>());
+            liveOut.put(inst, new HashSet<>());
+        }
+    }
+
+    private Set<String> computeLiveOut(Instruction inst) {
+        Set<String> newLiveOut = new HashSet<>();
+        for (Node succ : inst.getSuccessors()) {
+            newLiveOut.addAll(liveIn.get(succ));
+        }
+        return newLiveOut;
+    }
+
+    private Set<String> computeLiveIn(Instruction inst, Set<String> liveOut) {
+        Set<String> newLiveIn = new HashSet<>(liveOut);
+        newLiveIn.removeAll(getDef(inst));
+        newLiveIn.addAll(getUse(inst));
+        return newLiveIn;
+    }
+
 
     public Map<Object, Set<String>> getLiveIn() {
         return liveIn;
@@ -158,7 +158,7 @@ public class LivenessAnalysis {
                     }
             }
 
-            /*case "UNARYOPER" -> {
+            case "UNARYOPER" -> {
                 var unaryOpInst = ((UnaryOpInstruction) inst).getOperand();
                 if (unaryOpInst instanceof Operand) {
                     var unaryOpInstName = ((Operand) unaryOpInst).getName();
@@ -190,7 +190,7 @@ public class LivenessAnalysis {
                     uses.add(secondOpName);
                 }
 
-            }*/
+            }
 
             default -> {
                 throw new IllegalArgumentException("Unexpected instruction type: " + instType);
