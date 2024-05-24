@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 import static org.specs.comp.ollir.InstructionType.*;
 import static org.specs.comp.ollir.OperationType.*;
 
-//FALTAM OTIMIZACOES E STACK
 
 /**
  * Generates Jasmin code from an OllirResult.
@@ -309,34 +308,6 @@ public class JasminGenerator {
 
     }
 
-    private int calculateMaxStackSize(Method method) {
-        int maxStackSize = 0;
-        int currentStackSize = 0;
-
-        for (var inst : method.getInstructions()) {
-            switch (inst.getInstType().name()) { //este switch case ta mal
-                case "CALL":
-                    currentStackSize++;
-                    break;
-                case "BINARYOPER":
-                    currentStackSize += 3;
-                    break;
-                case "UNARYOPER", "RETURN":
-                    currentStackSize--;
-                    break;
-                case "ASSIGN":
-                    currentStackSize++;
-                    break;
-
-            }
-            if (currentStackSize > maxStackSize) {
-                maxStackSize = currentStackSize;
-            }
-        }
-
-        return maxStackSize;
-    }
-
 
     private String getJasminType(ElementType paramType) {
         switch (paramType) {
@@ -449,9 +420,13 @@ public class JasminGenerator {
             var firstVal = this.label_control;
             code.append("cmp_lt_").append(this.label_control).append("_true").append(NL);
             code.append("iconst_0").append(NL);
+            this.curr_stack_value++;
+            maxStackValue();
             code.append("goto ").append("cmp_lt_").append(this.label_control).append("_end").append(NL).append(NL);
             code.append("cmp_lt_").append(firstVal).append("_true").append(":").append(NL);
             code.append("iconst_m1").append(NL).append(NL);
+            this.curr_stack_value++;
+            maxStackValue();
             code.append("cmp_lt_").append(this.label_control).append("_end").append(":").append(NL);
             this.label_control++;
 
@@ -739,12 +714,10 @@ public class JasminGenerator {
     private String generateUnaryOp(UnaryOpInstruction unaryOpInstruction) {
         var code = new StringBuilder();
         code.append(generators.apply(unaryOpInstruction.getOperand()));
-        if (unaryOpInstruction.getOperation().getOpType() == NOT) {
-            code.append(NL).append("not");
-        } else if (unaryOpInstruction.getOperation().getOpType() == NOTB) {
+        if (unaryOpInstruction.getOperation().getOpType() == NOTB) {
             code.append(NL).append("iconst_1").append(NL);
             curr_stack_value++;
-            maxStackValue();
+            //maxStackValue();
             code.append(NL).append("ixor").append(NL);
         } else if (unaryOpInstruction.getOperation().getOpType() == GTH) {
             code.append(NL).append("ifgt");
