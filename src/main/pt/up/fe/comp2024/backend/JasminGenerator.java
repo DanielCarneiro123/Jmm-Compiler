@@ -168,8 +168,7 @@ public class JasminGenerator {
 
     private String generatePutFieldInstruction(PutFieldInstruction putFieldInst) {
         StringBuilder code = new StringBuilder();
-        this.curr_stack_value -= 2;
-        maxStackValue();
+
         // Load the object reference onto the stack
         code.append(generators.apply(putFieldInst.getObject()));
 
@@ -188,6 +187,9 @@ public class JasminGenerator {
                 .append(fieldType)
                 .append("\n");
 
+        //lets see if stack is rightfully handled
+        this.curr_stack_value -= 2;
+        maxStackValue();
         // Store the value in the appropriate local variable
         // code.append(getStoreInstruction(getFieldInst.getDestination()));
         return code.toString();
@@ -196,8 +198,6 @@ public class JasminGenerator {
 
     private String generateGetFieldInstruction(GetFieldInstruction getFieldInst) {
         StringBuilder code = new StringBuilder();
-        this.curr_stack_value++;
-        maxStackValue();
         // Load the object reference onto the stack
         code.append(generators.apply(getFieldInst.getObject()));
 
@@ -402,7 +402,6 @@ public class JasminGenerator {
         //having doubts about this
 
         var lhs = assign.getDest();
-
         if (!(lhs instanceof Operand)) {
             throw new NotImplementedException(lhs.getClass());
         }
@@ -487,9 +486,7 @@ public class JasminGenerator {
         var firstRight = rhs.getChildren().get(0);
         var secondRight = rhs.getChildren().get(1);
         if (firstRight instanceof Operand && secondRight instanceof LiteralElement) {
-            int regLeft = dest.getParamId();
-            int regRight = ((Operand) firstRight).getParamId();
-            if (regLeft == regRight) {
+            if (((Operand) firstRight).getName().equals(dest.getName())) {
                 if (rhs.getOperation().getOpType().equals(ADD)) {
                     int reg = currentMethod.getVarTable().get(dest.getName()).getVirtualReg();
                     code.append("iinc ").append(reg).append(" ").append(((LiteralElement) secondRight).getLiteral());
@@ -502,9 +499,7 @@ public class JasminGenerator {
 
         }
         else if (firstRight instanceof LiteralElement && secondRight instanceof Operand) {
-            int regLeft = dest.getParamId();
-            int regRight = ((Operand) secondRight).getParamId();
-            if (regLeft == regRight) {
+            if (((Operand) secondRight).getName().equals(dest.getName())) {
                 if (rhs.getOperation().getOpType().equals(ADD)) {
                     int reg = currentMethod.getVarTable().get(dest.getName()).getVirtualReg();
                     code.append("iinc ").append(reg).append(" ").append(((LiteralElement) firstRight).getLiteral());
