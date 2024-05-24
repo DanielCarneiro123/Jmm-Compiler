@@ -932,19 +932,15 @@ public class JasminGenerator {
         switch (returnType) {
             case INT32:
                 code.append(NL).append("ireturn").append(NL);
-                curr_stack_value = 0;
                 break;
             case BOOLEAN:
                 code.append(NL).append("ireturn").append(NL);
-                curr_stack_value = 0;
                 break;
             case VOID:
                 code.append(NL).append("return").append(NL);
-                curr_stack_value = 0;
                 break;
             case OBJECTREF, STRING, ARRAYREF:
                 code.append(NL).append("areturn").append(NL);
-                curr_stack_value = 0;
                 break;
             default:
                 throw new NotImplementedException("Return type not supported: " + returnType.name());
@@ -973,6 +969,8 @@ public class JasminGenerator {
 
     private String generateGoto(GotoInstruction gotoInstruction) {
         var code = new StringBuilder();
+        curr_stack_value++;
+        maxStackValue();
         code.append(NL).append("goto ").append(gotoInstruction.getLabel()).append(NL);
         return code.toString();
     }
