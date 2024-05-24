@@ -138,7 +138,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                     /*if (isVarArgBool){
                         computation.append(".array.i32");
                     }*/
-                    computation.append("[").append(indexNode.getCode()).append("].i32").append(END_STMT);
+            computation.append("[").append(indexNode.getCode()).append("].i32").append(END_STMT);
 
             code.append(temp);
 
@@ -388,10 +388,10 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 // instance from the current class
                 if (type.getName().equals(table.getClassName())) {
                     Type returnType = table.getReturnType(methodSignature);
-                   // returnS = OptUtils.toOllirType(returnType);
+                    // returnS = OptUtils.toOllirType(returnType);
                 }
 
-                 else {
+                else {
 
                     // io.println
                     if (table.getImports().contains(firstChildName)) {
@@ -456,7 +456,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
                         }
 
-                       else if(node.getParent().getKind().equals("BinaryOp")){
+                        else if(node.getParent().getKind().equals("BinaryOp")){
                             var aux = OptUtils.getTemp();
                             String resOllirType = node.getParent().get("op").equals("+") || node.getParent().get("op").equals("-") || node.getParent().get("op").equals("*") || node.getParent().get("op").equals("/") ? ".i32" : ".bool";
                             computation.append(aux).append(resOllirType).append(ASSIGN).append(" ").append(resOllirType).append(" ").append(code).append(")").append(resOllirType).append(END_STMT);
@@ -681,7 +681,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                             computation.append(getCurrentLabelArray()).append(".array.i32").append("[").append(j).append(".i32].i32").append(ASSIGN).append(".i32 ").append(node.getChild(1 + j+varArgParamNum).get("value")).append(".i32").append(END_STMT);
                         }
 
-                         break;
+                        break;
                     }
                     JmmNode argument = arguments.get(i);
 
