@@ -716,19 +716,31 @@ public class JasminGenerator {
     }
 
     private String generateBinaryOp(BinaryOpInstruction binaryOpInstruction) {
+        OperationType opType = binaryOpInstruction.getOperation().getOpType();
 
-        switch (binaryOpInstruction.getOperation().getOpType()){
-            case LTH, GTH, EQ, NEQ, LTE, GTE -> {
-                return generateConditionalBinaryOp(binaryOpInstruction);
-            }
-
-            case ADD, SUB, MUL, DIV, XOR, AND, OR, ANDB, ORB -> {
-                return generateAritmeticBinaryOp(binaryOpInstruction);
-            }
+        if (isConditionalOperation(opType)) {
+            return generateConditionalBinaryOp(binaryOpInstruction);
+        } else if (isArithmeticOperation(opType)) {
+            return generateAritmeticBinaryOp(binaryOpInstruction);
         }
+
         this.curr_stack_value--;
         maxStackValue();
         return "";
+    }
+
+    private boolean isConditionalOperation(OperationType opType) {
+        return switch (opType) {
+            case LTH, GTH, EQ, NEQ, LTE, GTE -> true;
+            default -> false;
+        };
+    }
+
+    private boolean isArithmeticOperation(OperationType opType) {
+        return switch (opType) {
+            case ADD, SUB, MUL, DIV, XOR, AND, OR, ANDB, ORB -> true;
+            default -> false;
+        };
     }
 
     //needs optimizations
@@ -810,6 +822,16 @@ public class JasminGenerator {
                         code.append("ifge ");
                     }
                 }
+                else if (((leftOperand instanceof Operand) && (rightOperand instanceof Operand))) {
+                    code.append("isub").append(NL);
+                    code.append("ifge ");
+                }
+                else if ((rightOperand instanceof LiteralElement) && ((LiteralElement) rightOperand).getLiteral().equals("0")) {
+                    code.append("iflt ");
+                }
+                else if ((leftOperand instanceof LiteralElement) && ((LiteralElement) leftOperand).getLiteral().equals("0")) {
+                    code.append("ifge ");
+                }
                 else {
                     curr_stack_value--;
                     code.append("if_icmpge ");
@@ -827,6 +849,10 @@ public class JasminGenerator {
                     else {
                         code.append("ifge ");
                     }
+                }
+                else if (((leftOperand instanceof Operand) && (rightOperand instanceof Operand))) {
+                    code.append("isub").append(NL);
+                    code.append("iflt ");
                 }
                 else if ((rightOperand instanceof LiteralElement) && ((LiteralElement) rightOperand).getLiteral().equals("0")) {
                     code.append("iflt ");
