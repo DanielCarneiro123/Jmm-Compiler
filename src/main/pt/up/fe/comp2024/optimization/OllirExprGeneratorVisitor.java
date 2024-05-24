@@ -546,7 +546,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
                             if (argument.getKind().equals("FunctionCall")) {   // tmp0.i32 =.i32 invokevirtual(tmp0.Simple, "add", 1.i32).i32
                                 String tmp = OptUtils.getTemp();
-                                String lastType = argCode.substring(argCode.lastIndexOf("."));
+                                String lastType = argCode.substring(argCode.indexOf("."));
                                 computation.append(tmp).append(lastType)
                                         .append(" :=").append(lastType).append(" ")
                                         .append(argCode).append(END_STMT);
