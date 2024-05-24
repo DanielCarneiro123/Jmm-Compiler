@@ -14,7 +14,6 @@ public class JasminGeneratorVisitor extends AJmmVisitor<Void, String> {
 
     private static final String NL = "\n";
     private static final String TAB = "   ";
-
     private final SymbolTable table;
 
     private JasminExprGeneratorVisitor exprGenerator;
