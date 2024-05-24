@@ -77,7 +77,7 @@ public class JasminGenerator {
         this.curr_stack_value++;
         maxStackValue();
         int reg = currentMethod.getVarTable().get(arrayOperand.getName()).getVirtualReg();
-        code.append("aload").append(reg < 4 ? '_' : ' ').append(reg).append(NL);
+        code.append(NL).append("aload").append(reg < 4 ? '_' : ' ').append(reg).append(NL);
         code.append(generators.apply(arrayOperand.getIndexOperands().get(0))).append(NL).append("iaload").append(NL);
         this.curr_stack_value--;
         maxStackValue();
@@ -297,7 +297,7 @@ public class JasminGenerator {
             }
 
             if (inst.getInstType() == ASSIGN && ((AssignInstruction) inst).getRhs().getInstType().equals(GETFIELD)){
-                code.append(NL).append(generators.apply(((AssignInstruction) inst).getRhs().getChildren().get(1))).append(NL);
+                code.append(NL).append(TAB).append(generators.apply(((AssignInstruction) inst).getRhs().getChildren().get(1))).append(NL);
             }
 
         }
@@ -420,7 +420,7 @@ public class JasminGenerator {
             curr_stack_value++;
             maxStackValue();
             for (var elem: arrayOperand.getIndexOperands()){
-                code.append(generators.apply(elem));
+                code.append(generators.apply(elem)).append(NL);
             }
         }
 
@@ -489,11 +489,11 @@ public class JasminGenerator {
             if (((Operand) firstRight).getName().equals(dest.getName())) {
                 if (rhs.getOperation().getOpType().equals(ADD)) {
                     int reg = currentMethod.getVarTable().get(dest.getName()).getVirtualReg();
-                    code.append("iinc ").append(reg).append(" ").append(((LiteralElement) secondRight).getLiteral());
+                    code.append("iinc ").append(reg).append(" ").append(((LiteralElement) secondRight).getLiteral()).append(NL);
                 }
                 else if (rhs.getOperation().getOpType().equals(SUB)) {
                     int reg = currentMethod.getVarTable().get(dest.getName()).getVirtualReg();
-                    code.append("iinc ").append(reg).append(" -").append(((LiteralElement) secondRight).getLiteral());
+                    code.append("iinc ").append(reg).append(" -").append(((LiteralElement) secondRight).getLiteral()).append(NL);
                 }
             }
 
@@ -502,11 +502,11 @@ public class JasminGenerator {
             if (((Operand) secondRight).getName().equals(dest.getName())) {
                 if (rhs.getOperation().getOpType().equals(ADD)) {
                     int reg = currentMethod.getVarTable().get(dest.getName()).getVirtualReg();
-                    code.append("iinc ").append(reg).append(" ").append(((LiteralElement) firstRight).getLiteral());
+                    code.append("iinc ").append(reg).append(" ").append(((LiteralElement) firstRight).getLiteral()).append(NL);
                 }
                 else if (rhs.getOperation().getOpType().equals(SUB)) {
                     int reg = currentMethod.getVarTable().get(dest.getName()).getVirtualReg();
-                    code.append("iinc ").append(reg).append(" -").append(((LiteralElement) firstRight).getLiteral());
+                    code.append("iinc ").append(reg).append(" -").append(((LiteralElement) firstRight).getLiteral()).append(NL);
                 }
             }
         }
@@ -669,7 +669,7 @@ public class JasminGenerator {
             int reg = currentMethod.getVarTable().get(name).getVirtualReg();
             String type = operand.getType().getTypeOfElement().name();
             if (type.equals("THIS")) {
-                return "aload_0";
+                return "aload_0" + NL;
             }
             else if (reg > -1){
                 if (type.equals("INT32") || type.equals("BOOLEAN")) {
@@ -726,20 +726,20 @@ public class JasminGenerator {
         var code = new StringBuilder();
         code.append(generators.apply(unaryOpInstruction.getOperand()));
         if (unaryOpInstruction.getOperation().getOpType() == NOT) {
-            code.append("not");
+            code.append(NL).append("not");
         } else if (unaryOpInstruction.getOperation().getOpType() == NOTB) {
-            code.append("iconst_1").append(NL);
+            code.append(NL).append("iconst_1").append(NL);
             curr_stack_value++;
             maxStackValue();
-            code.append("ixor").append(NL);
+            code.append(NL).append("ixor").append(NL);
         } else if (unaryOpInstruction.getOperation().getOpType() == GTH) {
-            code.append("ifgt");
+            code.append(NL).append("ifgt");
         } else if (unaryOpInstruction.getOperation().getOpType() == LTH) {
-            code.append("iflt");
+            code.append(NL).append("iflt");
         } else if (unaryOpInstruction.getOperation().getOpType() == NEQ) {
-            code.append("ifne");
+            code.append(NL).append("ifne");
         } else if (unaryOpInstruction.getOperation().getOpType() == EQ) {
-            code.append("ifeq");
+            code.append(NL).append("ifeq");
         } else if (unaryOpInstruction.getOperation().getOpType() == GTE) {
             code.append("ifge");
         } else if (unaryOpInstruction.getOperation().getOpType() == LTE) {
@@ -766,14 +766,14 @@ public class JasminGenerator {
         // apply operation
         switch (binaryOp.getOperation().getOpType()) {
             case ADD -> {
-                code.append("iadd").append(NL);
+                code.append(NL).append("iadd").append(NL);
             }
-            case MUL -> code.append("imul").append(NL);
-            case SUB -> code.append("isub").append(NL);
-            case DIV -> code.append("idiv").append(NL);
-            case XOR -> code.append("ixor").append(NL);
-            case AND, ANDB -> code.append("iand").append(NL);
-            case OR, ORB -> code.append("ior").append(NL);
+            case MUL -> code.append(NL).append("imul").append(NL);
+            case SUB -> code.append(NL).append("isub").append(NL);
+            case DIV -> code.append(NL).append("idiv").append(NL);
+            case XOR -> code.append(NL).append("ixor").append(NL);
+            case AND, ANDB -> code.append(NL).append("iand").append(NL);
+            case OR, ORB -> code.append(NL).append("ior").append(NL);
             default -> throw new NotImplementedException(binaryOp.getOperation().getOpType());
         }
         curr_stack_value--;
@@ -901,7 +901,7 @@ public class JasminGenerator {
 
         // generate code for the return value
         if (returnInst.getOperand() != null) {
-            code.append(generators.apply(returnInst.getOperand()));
+            code.append(NL).append(generators.apply(returnInst.getOperand())).append(NL);
         }
         curr_stack_value--;
         maxStackValue();
@@ -932,12 +932,12 @@ public class JasminGenerator {
         if (condBranchInstruction.getCondition().getInstType().equals(UNARYOPER)){
             var aritOp = (UnaryOpInstruction) condBranchInstruction.getCondition();
             var op = generateUnaryOp(aritOp);
-            code.append(op).append(condBranchInstruction.getLabel()).append(NL);
+            code.append(NL).append(op).append(condBranchInstruction.getLabel()).append(NL);
         }
         else if (condBranchInstruction.getCondition().getInstType().equals(BINARYOPER)){
             var binOp = (BinaryOpInstruction) condBranchInstruction.getCondition();
             var op = generateBinaryOp(binOp);
-            code.append(op).append(" ").append(condBranchInstruction.getLabel()).append(NL);
+            code.append(NL).append(op).append(" ").append(condBranchInstruction.getLabel()).append(NL);
         }
         else{
             code.append(generators.apply(condBranchInstruction.getCondition())).append(NL);
