@@ -316,8 +316,12 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
             return new OllirExprResult(computation.toString(),code);
         }
-        // Check if either lhs or rhs is a function call, and if so, store their result in temporary variables
 
+       if(rhs.getComputation().isEmpty() && lhs.getComputation().isEmpty() && node.getParent().getKind().equals("Assignment")){
+            StringBuilder code = new StringBuilder();
+            code.append(lhs.getCode()).append(" ").append(node.get("op")).append(resOllirType).append(" ").append(rhs.getCode());
+            return new OllirExprResult(code.toString(), computation);
+        }
 
         // Generate code for the computation of the result
         String code = OptUtils.getTemp() + resOllirType;
