@@ -419,7 +419,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                                     lastType = OptUtils.toOllirType(argType);
                                 }
                                 else {
-                                    lastType = argCode.substring(argCode.lastIndexOf("."));
+                                    lastType = argCode.substring(argCode.indexOf("."));
                                 }
                                 computation.append(tmp).append(lastType)
                                         .append(" :=").append(lastType).append(" ")
