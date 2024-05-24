@@ -3,7 +3,7 @@ import io;
 class ArrayInitialization {
 
     public static void main(String[] args) {
-        ArrayInitialization a.bana;
+        ArrayInitialization a;
         a = new ArrayInitialization();
 
         io.println(a.foo());

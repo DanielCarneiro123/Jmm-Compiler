@@ -397,6 +397,17 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         if (isStatic) {
             code.append("static ");
         }
+        var allParams= table.getParameters(node.get("name"));
+        int varArgParamNum = allParams.size()-1;
+
+        boolean isVarArgLastParam = false;
+        if(allParams.size() != 0){
+            isVarArgLastParam = (!allParams.get(allParams.size()-1).getType().getAttributes().isEmpty());
+        }
+        if(isVarArgLastParam){
+        code.append("varargs ");}
+
+
 
         // Get the method name
         String methodName = node.get("name");
