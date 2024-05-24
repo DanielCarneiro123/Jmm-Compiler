@@ -45,6 +45,8 @@ public class JasminGenerator {
 
     int array_length = 0;
 
+    int label_control = 0;
+
     private final FunctionClassMap<TreeNode, String> generators;
 
     public JasminGenerator(OllirResult ollirResult) {
@@ -298,6 +300,8 @@ public class JasminGenerator {
 
             if (inst.getInstType() == ASSIGN && ((AssignInstruction) inst).getRhs().getInstType().equals(GETFIELD)){
                 code.append(NL).append(TAB).append(generators.apply(((AssignInstruction) inst).getRhs().getChildren().get(1))).append(NL);
+                curr_stack_value++;
+                maxStackValue();
             }
 
         }
@@ -440,7 +444,19 @@ public class JasminGenerator {
             }
         }
 
-        code.append(generators.apply(assign.getRhs())).append(NL);
+
+        code.append(generators.apply(assign.getRhs()));
+        if (assign.getDest().getType().getTypeOfElement().equals(ElementType.BOOLEAN) && assign.getRhs() instanceof BinaryOpInstruction ) {
+            var firstVal = this.label_control;
+            code.append("cmp_lt_").append(this.label_control).append("_true").append(NL);
+            code.append("iconst_0").append(NL);
+            code.append("goto ").append("cmp_lt_").append(this.label_control).append("_end").append(NL).append(NL);
+            code.append("cmp_lt_").append(firstVal).append("_true").append(":").append(NL);
+            code.append("iconst_m1").append(NL).append(NL);
+            code.append("cmp_lt_").append(this.label_control).append("_end").append(":").append(NL);
+            this.label_control++;
+
+        }
         ElementType type = operand.getType().getTypeOfElement();
         switch (type) {
             case INT32, BOOLEAN:
@@ -481,6 +497,14 @@ public class JasminGenerator {
         return code.toString();
     }
 
+    private String boolExprVar(Element dest, Instruction rhs) {
+        var code = new StringBuilder();
+        code.append(generators.apply(rhs));
+
+
+        return "";
+    }
+
     private String iincVar(Operand dest, BinaryOpInstruction rhs) {
         var code = new StringBuilder();
         var firstRight = rhs.getChildren().get(0);
@@ -511,20 +535,6 @@ public class JasminGenerator {
             }
         }
         return code.toString();
-    }
-
-    private String boolExprVar(Element dest, Instruction rhs) {
-        var code = new StringBuilder();
-        code.append(generators.apply(rhs));
-        for (var label : currentMethod.getLabels().entrySet()) {
-            if (label.getValue().getChildren().get(0).toString().equals(dest.toString())) {
-                code.append(label.getKey()).append(NL);
-                return code.toString();
-            }
-
-        }
-
-        return "";
     }
 
     private String generateCallInstruction(CallInstruction callInstruction) {
@@ -806,6 +816,8 @@ public class JasminGenerator {
                 }
             }
             case LTH -> {
+                var y = leftOperand.toElement();
+                var x = rightOperand.toElement();
                 if (((leftOperand instanceof LiteralElement) && (rightOperand instanceof LiteralElement))){
                     int compareValue = Integer.parseInt(((LiteralElement) leftOperand).getLiteral()) - Integer.parseInt(((LiteralElement) rightOperand).getLiteral());
                     code.append("isub").append(NL);
