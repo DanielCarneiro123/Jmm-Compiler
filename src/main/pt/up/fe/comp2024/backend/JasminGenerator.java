@@ -170,13 +170,15 @@ public class JasminGenerator {
 
     private String generatePutFieldInstruction(PutFieldInstruction putFieldInst) {
         StringBuilder code = new StringBuilder();
-        this.curr_stack_value -= 2;
-        maxStackValue();
+
         // Load the object reference onto the stack
         code.append(generators.apply(putFieldInst.getObject()));
 
         // Load the value of the field onto the stack
         code.append(generators.apply(putFieldInst.getValue()));
+
+        this.curr_stack_value -= 2;
+        maxStackValue();
 
         String callObjName = getImportedClassName(putFieldInst.getObject().getName());
         String fieldName = putFieldInst.getField().getName();
@@ -198,8 +200,6 @@ public class JasminGenerator {
 
     private String generateGetFieldInstruction(GetFieldInstruction getFieldInst) {
         StringBuilder code = new StringBuilder();
-        curr_stack_value++;
-        maxStackValue();
         // Load the object reference onto the stack
         code.append(generators.apply(getFieldInst.getObject()));
 
@@ -298,11 +298,11 @@ public class JasminGenerator {
                 maxStackValue();
             }
 
-            if (inst.getInstType() == ASSIGN && ((AssignInstruction) inst).getRhs().getInstType().equals(GETFIELD)){
+            /*if (inst.getInstType() == ASSIGN && ((AssignInstruction) inst).getRhs().getInstType().equals(GETFIELD)){
                 code.append(NL).append(TAB).append(generators.apply(((AssignInstruction) inst).getRhs().getChildren().get(1))).append(NL);
                 curr_stack_value++;
                 maxStackValue();
-            }
+            }*/
 
         }
         return code.toString();
