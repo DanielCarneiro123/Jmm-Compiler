@@ -711,7 +711,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
                 if(node.getParent().getKind().equals("FunctionCall")){
                     var aux = OptUtils.getTemp();
-                    var lastType = code.substring(code.lastIndexOf("."));
+                    var lastType = code.substring(code.indexOf("."));
                     computation.append(aux).append(lastType).append(ASSIGN).append(" ").append(lastType).append(" ").append(code).append(lastType).append(END_STMT);
                     code = new StringBuilder(aux);
                     code.append(lastType);
@@ -780,7 +780,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                             lastType = OptUtils.toOllirType(argType);
                         }
                         else {
-                            lastType = argCode.substring(argCode.lastIndexOf("."));
+                            lastType = argCode.substring(argCode.indexOf("."));
                         }
                         computation.append(tmp).append(lastType)
                                 .append(" :=").append(lastType).append(" ")
