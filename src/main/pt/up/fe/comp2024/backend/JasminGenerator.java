@@ -43,6 +43,8 @@ public class JasminGenerator {
 
     int stackVariation;
 
+    int array_length = 0;
+
     private final FunctionClassMap<TreeNode, String> generators;
 
     public JasminGenerator(OllirResult ollirResult) {
@@ -398,25 +400,7 @@ public class JasminGenerator {
         /*this.curr_stack_value++;
         maxStackValue();*/
         //having doubts about this
-        if (assign.getRhs().getInstType().equals(BINARYOPER)){
-            var leftSide = assign.getDest();
-            var firstRightSide = assign.getRhs().getChildren().get(0);
-            var secondRightSide = assign.getRhs().getChildren().get(1);
-            var bin = (BinaryOpInstruction) assign.getRhs();
-            var op = bin.getOperation().getOpType();
-            if (leftSide.getType().getTypeOfElement().equals(ElementType.INT32) && (op.equals(ADD) || op.equals(SUB))){
-                code.append(iincVar((Operand) assign.getDest(), (BinaryOpInstruction) assign.getRhs()));
-            }
-            if (!code.toString().isEmpty()){
-                curr_stack_value--;
-                maxStackValue();
-                return code.toString();
-            }
-        }
 
-
-
-        // store value in the stack in destination
         var lhs = assign.getDest();
 
         if (!(lhs instanceof Operand)) {
@@ -440,6 +424,24 @@ public class JasminGenerator {
                 code.append(generators.apply(elem));
             }
         }
+
+        if (assign.getRhs().getInstType().equals(BINARYOPER)){
+            var leftSide = assign.getDest();
+            var firstRightSide = assign.getRhs().getChildren().get(0);
+            var secondRightSide = assign.getRhs().getChildren().get(1);
+            var bin = (BinaryOpInstruction) assign.getRhs();
+            var op = bin.getOperation().getOpType();
+            if (leftSide.getType().getTypeOfElement().equals(ElementType.INT32) && (op.equals(ADD) || op.equals(SUB)) && this.array_length == 0){
+                code.append(iincVar((Operand) assign.getDest(), (BinaryOpInstruction) assign.getRhs()));
+            }
+            if (!code.toString().isEmpty()){
+                curr_stack_value--;
+                maxStackValue();
+                return code.toString();
+            }
+            this.array_length = 0;
+        }
+
         code.append(generators.apply(assign.getRhs()));
         ElementType type = operand.getType().getTypeOfElement();
         switch (type) {
@@ -486,7 +488,9 @@ public class JasminGenerator {
         var firstRight = rhs.getChildren().get(0);
         var secondRight = rhs.getChildren().get(1);
         if (firstRight instanceof Operand && secondRight instanceof LiteralElement) {
-            if (((Operand) firstRight).getName().equals(dest.getName())) {
+            int regLeft = dest.getParamId();
+            int regRight = ((Operand) firstRight).getParamId();
+            if (regLeft == regRight) {
                 if (rhs.getOperation().getOpType().equals(ADD)) {
                     int reg = currentMethod.getVarTable().get(dest.getName()).getVirtualReg();
                     code.append("iinc ").append(reg).append(" ").append(((LiteralElement) secondRight).getLiteral());
@@ -499,7 +503,9 @@ public class JasminGenerator {
 
         }
         else if (firstRight instanceof LiteralElement && secondRight instanceof Operand) {
-            if (((Operand) secondRight).getName().equals(dest.getName())) {
+            int regLeft = dest.getParamId();
+            int regRight = ((Operand) secondRight).getParamId();
+            if (regLeft == regRight) {
                 if (rhs.getOperation().getOpType().equals(ADD)) {
                     int reg = currentMethod.getVarTable().get(dest.getName()).getVirtualReg();
                     code.append("iinc ").append(reg).append(" ").append(((LiteralElement) firstRight).getLiteral());
@@ -606,6 +612,7 @@ public class JasminGenerator {
             case arraylength:
                 code.append(generators.apply(callInstruction.getOperands().get(0)));
                 code.append("arraylength").append(NL);
+                this.array_length = 1;
                 break;
             case invokeinterface:
                 code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
