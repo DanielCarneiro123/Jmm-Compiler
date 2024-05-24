@@ -399,7 +399,28 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                         // arguments
                         List<JmmNode> arguments = child.getChildren().subList(1, child.getNumChildren());
 
+                        var allParams= table.getParameters(methodSignature);
+                        int varArgParamNum = allParams.size()-1;
+                        boolean varArgParamCurr = false;
+                        boolean isVarArgLastParam = false;
+                        if(allParams.size() != 0){
+                            isVarArgLastParam = (!allParams.get(allParams.size()-1).getType().getAttributes().isEmpty());
+                        }
+                        var tempVarArgAux = "";
+
                         for (int i = 0; i < arguments.size(); i++) {
+                            if(isVarArgLastParam && i== varArgParamNum){
+
+
+                                tempVarArgAux = OptUtils.getTemp() + ".array.i32";
+                                computation.append(tempVarArgAux).append(ASSIGN).append(" .array.i32").append(" new(array, ").append(arguments.size()-varArgParamNum).append(".i32).array.i32").append(END_STMT);
+                                computation.append(getNextLabelArray()).append(".array.i32").append(ASSIGN).append(".array.i32 ").append(tempVarArgAux).append(END_STMT);
+                                for(int j = 0; j < arguments.size()-varArgParamNum; j++){
+                                    computation.append(getCurrentLabelArray()).append(".array.i32").append("[").append(j).append(".i32].i32").append(ASSIGN).append(".i32 ").append(node.getChild(1 + j+varArgParamNum).get("value")).append(".i32").append(END_STMT);
+                                }
+
+                                break;
+                            }
                             JmmNode argument = arguments.get(i);
 
                             // Visit the argument to get its value
@@ -430,6 +451,9 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
                             code.append(", ").append(argCode);
 
+                        }
+                        if(isVarArgLastParam){
+                            code.append(", ").append(getCurrentLabelArray()).append(".array.i32");
                         }
                         if(node.getParent().getKind().equals("Assignment")){
                             code.append(")");
@@ -481,7 +505,34 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                         // arguments
                         List<JmmNode> arguments = child.getChildren().subList(1, child.getNumChildren());
 
+                        var allParams= table.getParameters(methodSignature);
+                        int varArgParamNum = allParams.size()-1;
+                        boolean varArgParamCurr = false;
+                        boolean isVarArgLastParam = false;
+                        if(allParams.size() != 0){
+                            isVarArgLastParam = (!allParams.get(allParams.size()-1).getType().getAttributes().isEmpty());
+                        }
+                        var tempVarArgAux = "";
+
+
+
+
+
                         for (int i = 0; i < arguments.size(); i++) {
+
+                            if(isVarArgLastParam && i== varArgParamNum){
+
+
+                                tempVarArgAux = OptUtils.getTemp() + ".array.i32";
+                                computation.append(tempVarArgAux).append(ASSIGN).append(" .array.i32").append(" new(array, ").append(arguments.size()-varArgParamNum).append(".i32).array.i32").append(END_STMT);
+                                computation.append(getNextLabelArray()).append(".array.i32").append(ASSIGN).append(".array.i32 ").append(tempVarArgAux).append(END_STMT);
+                                for(int j = 0; j < arguments.size()-varArgParamNum; j++){
+                                    computation.append(getCurrentLabelArray()).append(".array.i32").append("[").append(j).append(".i32].i32").append(ASSIGN).append(".i32 ").append(node.getChild(1 + j+varArgParamNum).get("value")).append(".i32").append(END_STMT);
+                                }
+
+                                break;
+                            }
+
                             JmmNode argument = arguments.get(i);
 
                             // Visit the argument to get its value
@@ -506,6 +557,10 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                             code.append(", ").append(argCode);
 
                         }
+                        if(isVarArgLastParam){
+                            code.append(", ").append(getCurrentLabelArray()).append(".array.i32");
+                        }
+
                         if(node.getParent().getKind().equals("Assignment")){
                             code.append(")");
                             String variableName = node.getParent().get("var");
@@ -572,7 +627,28 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 // arguments
                 List<JmmNode> arguments = child.getChildren().subList(1, child.getNumChildren());
 
+                var allParams= table.getParameters(methodSignature);
+                int varArgParamNum = allParams.size()-1;
+                boolean varArgParamCurr = false;
+                boolean isVarArgLastParam = false;
+                if(allParams.size() != 0){
+                    isVarArgLastParam = (!allParams.get(allParams.size()-1).getType().getAttributes().isEmpty());
+                }
+                var tempVarArgAux = "";
+
                 for (int i = 0; i < arguments.size(); i++) {
+                    if(isVarArgLastParam && i== varArgParamNum){
+
+
+                        tempVarArgAux = OptUtils.getTemp() + ".array.i32";
+                        computation.append(tempVarArgAux).append(ASSIGN).append(" .array.i32").append(" new(array, ").append(arguments.size()-varArgParamNum).append(".i32).array.i32").append(END_STMT);
+                        computation.append(getNextLabelArray()).append(".array.i32").append(ASSIGN).append(".array.i32 ").append(tempVarArgAux).append(END_STMT);
+                        for(int j = 0; j < arguments.size()-varArgParamNum; j++){
+                            computation.append(getCurrentLabelArray()).append(".array.i32").append("[").append(j).append(".i32].i32").append(ASSIGN).append(".i32 ").append(node.getChild(1 + j+varArgParamNum).get("value")).append(".i32").append(END_STMT);
+                        }
+
+                        break;
+                    }
                     JmmNode argument = arguments.get(i);
 
                     // Visit the argument to get its value
@@ -584,6 +660,9 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
                     code.append(", ").append(argumentResult.getCode());
 
+                }
+                if(isVarArgLastParam){
+                    code.append(", ").append(getCurrentLabelArray()).append(".array.i32");
                 }
                 code.append(")");
 
@@ -845,7 +924,31 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
 // Get the local variables for the current method
         List<JmmNode> arguments = child.getChildren().subList(1, child.getNumChildren());
+
+        var allParams= table.getParameters(methodSignature);
+        int varArgParamNum = allParams.size()-1;
+        boolean varArgParamCurr = false;
+        boolean isVarArgLastParam = false;
+        if(allParams.size() != 0){
+            isVarArgLastParam = (!allParams.get(allParams.size()-1).getType().getAttributes().isEmpty());
+        }
+        var tempVarArgAux = "";
+
+
+
         for (int i = 0; i < arguments.size(); i++) {
+            if(isVarArgLastParam && i== varArgParamNum){
+
+
+                tempVarArgAux = OptUtils.getTemp() + ".array.i32";
+                computation.append(tempVarArgAux).append(ASSIGN).append(" .array.i32").append(" new(array, ").append(arguments.size()-varArgParamNum).append(".i32).array.i32").append(END_STMT);
+                computation.append(getNextLabelArray()).append(".array.i32").append(ASSIGN).append(".array.i32 ").append(tempVarArgAux).append(END_STMT);
+                for(int j = 0; j < arguments.size()-varArgParamNum; j++){
+                    computation.append(getCurrentLabelArray()).append(".array.i32").append("[").append(j).append(".i32].i32").append(ASSIGN).append(".i32 ").append(node.getChild(1 + j+varArgParamNum).get("value")).append(".i32").append(END_STMT);
+                }
+
+                break;
+            }
             code.append(",");
             JmmNode argument = arguments.get(i);
 
@@ -875,7 +978,9 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             }
 
         }
-
+        if(isVarArgLastParam){
+            code.append(", ").append(getCurrentLabelArray()).append(".array.i32");
+        }
 
 
         code.append(")");
