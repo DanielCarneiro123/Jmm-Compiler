@@ -309,7 +309,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             return new OllirExprResult(computation.toString(),code);
         }
 
-       if(rhs.getComputation().isEmpty() && lhs.getComputation().isEmpty() && node.getParent().getKind().equals("Assignment")){
+        if(rhs.getComputation().isEmpty() && lhs.getComputation().isEmpty() && node.getParent().getKind().equals("Assignment")){
             StringBuilder code = new StringBuilder();
             code.append(lhs.getCode()).append(" ").append(node.get("op")).append(resOllirType).append(" ").append(rhs.getCode());
             return new OllirExprResult(code.toString(), computation);
@@ -411,21 +411,16 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
                             String argCode = argumentResult.getCode();
 
-                            if (argument.getKind().equals("FunctionCall")) {
+                            if (argument.getKind().equals("FunctionCall")) {   // tmp0.i32 =.i32 invokevirtual(tmp0.Simple, "add", 1.i32).i32
                                 String tmp = OptUtils.getTemp();
                                 String lastType = "";
                                 if (table.getMethods().contains(methodSignature)) {
                                     Type argType = table.getParameters(methodSignature).get(i).getType();
                                     lastType = OptUtils.toOllirType(argType);
                                 }
-
-                                if (argCode.indexOf(".") != argCode.lastIndexOf(".")) {
+                                else {
                                     lastType = argCode.substring(argCode.indexOf("."));
-
-                                } else {
-                                    lastType = argCode.substring(argCode.lastIndexOf("."));
                                 }
-
                                 computation.append(tmp).append(lastType)
                                         .append(" :=").append(lastType).append(" ")
                                         .append(argCode).append(END_STMT);
@@ -500,14 +495,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
                             if (argument.getKind().equals("FunctionCall")) {   // tmp0.i32 =.i32 invokevirtual(tmp0.Simple, "add", 1.i32).i32
                                 String tmp = OptUtils.getTemp();
-                                String lastType;
-                                if (argCode.indexOf(".") != argCode.lastIndexOf(".")) {
-                                    lastType = argCode.substring(argCode.indexOf("."));
-
-                                } else {
-                                    lastType = argCode.substring(argCode.lastIndexOf("."));
-                                }
-
+                                String lastType = argCode.substring(argCode.indexOf("."));
                                 computation.append(tmp).append(lastType)
                                         .append(" :=").append(lastType).append(" ")
                                         .append(argCode).append(END_STMT);
@@ -644,14 +632,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
                 if(node.getParent().getKind().equals("FunctionCall")){
                     var aux = OptUtils.getTemp();
-                    String lastType;
-                    if (code.indexOf(".") != code.lastIndexOf(".")) {
-                        lastType = code.substring(code.indexOf("."));
-
-                    } else {
-                        lastType = code.substring(code.lastIndexOf("."));
-                    }
-
+                    var lastType = code.substring(code.indexOf("."));
                     computation.append(aux).append(lastType).append(ASSIGN).append(" ").append(lastType).append(" ").append(code).append(lastType).append(END_STMT);
                     code = new StringBuilder(aux);
                     code.append(lastType);
@@ -683,7 +664,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 boolean varArgParamCurr = false;
                 boolean isVarArgLastParam = false;
                 if(allParams.size() != 0){
-                isVarArgLastParam = (!allParams.get(allParams.size()-1).getType().getAttributes().isEmpty());
+                    isVarArgLastParam = (!allParams.get(allParams.size()-1).getType().getAttributes().isEmpty());
                 }
                 var tempVarArgAux = "";
 
@@ -720,13 +701,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                             lastType = OptUtils.toOllirType(argType);
                         }
                         else {
-
-                            if (code.indexOf(".") != code.lastIndexOf(".")) {
-                                lastType = code.substring(code.indexOf("."));
-
-                            } else {
-                                lastType = code.substring(code.lastIndexOf("."));
-                            }
+                            lastType = argCode.substring(argCode.indexOf("."));
                         }
                         computation.append(tmp).append(lastType)
                                 .append(" :=").append(lastType).append(" ")
