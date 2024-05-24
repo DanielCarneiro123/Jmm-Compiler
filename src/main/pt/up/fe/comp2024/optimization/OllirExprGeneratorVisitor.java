@@ -741,7 +741,9 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 var allParams= table.getParameters(methodSignature);
                 int varArgParamNum = allParams.size()-1;
                 boolean varArgParamCurr = false;
+                OllirExprResult x1 = null;
                 boolean isVarArgLastParam = false;
+                boolean isVarArgLastParamArr = false;
                 if(allParams.size() != 0){
                     isVarArgLastParam = (!allParams.get(allParams.size()-1).getType().getAttributes().isEmpty());
                 }
@@ -750,14 +752,21 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
                 for (int i = 0; i < arguments.size(); i++) {
                     if(isVarArgLastParam && i== varArgParamNum){
-
-
+                        if(node.getChild(i+1).getKind().equals("Arraydefinition")){
+                            isVarArgLastParamArr = true;
+                            x1 = visit(node.getChild(i+1));
+                            computation.append(x1.getComputation());
+                        }
+                        else{
                         tempVarArgAux = OptUtils.getTemp() + ".array.i32";
                         computation.append(tempVarArgAux).append(ASSIGN).append(" .array.i32").append(" new(array, ").append(arguments.size()-varArgParamNum).append(".i32).array.i32").append(END_STMT);
                         computation.append(getNextLabelArray()).append(".array.i32").append(ASSIGN).append(".array.i32 ").append(tempVarArgAux).append(END_STMT);
+
+
+
                         for(int j = 0; j < arguments.size()-varArgParamNum; j++){
                             computation.append(getCurrentLabelArray()).append(".array.i32").append("[").append(j).append(".i32].i32").append(ASSIGN).append(".i32 ").append(node.getChild(1 + j+varArgParamNum).get("value")).append(".i32").append(END_STMT);
-                        }
+                        }}
 
                         break;
                     }
@@ -793,7 +802,11 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
                 }
                 if(isVarArgLastParam){
-                    code.append(", ").append(getCurrentLabelArray()).append(".array.i32");
+                    if(x1 != null){
+                        code.append(", ").append(x1.getCode());
+                    }
+                    else{
+                    code.append(", ").append(getCurrentLabelArray()).append(".array.i32");}
                 }
                 code.append(")");
 
@@ -929,6 +942,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         int varArgParamNum = allParams.size()-1;
         boolean varArgParamCurr = false;
         boolean isVarArgLastParam = false;
+        OllirExprResult x1;
         if(allParams.size() != 0){
             isVarArgLastParam = (!allParams.get(allParams.size()-1).getType().getAttributes().isEmpty());
         }
