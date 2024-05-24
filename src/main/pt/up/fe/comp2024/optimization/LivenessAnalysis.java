@@ -158,7 +158,7 @@ public class LivenessAnalysis {
                     }
             }
 
-            case "UNARYOPER" -> {
+            /*case "UNARYOPER" -> {
                 var unaryOpInst = ((UnaryOpInstruction) inst).getOperand();
                 if (unaryOpInst instanceof Operand) {
                     var unaryOpInstName = ((Operand) unaryOpInst).getName();
@@ -190,7 +190,7 @@ public class LivenessAnalysis {
                     uses.add(secondOpName);
                 }
 
-            }
+            }*/
 
             default -> {
                 throw new IllegalArgumentException("Unexpected instruction type: " + instType);
