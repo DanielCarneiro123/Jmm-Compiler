@@ -431,7 +431,7 @@ public class JasminGenerator {
             var secondRightSide = assign.getRhs().getChildren().get(1);
             var bin = (BinaryOpInstruction) assign.getRhs();
             var op = bin.getOperation().getOpType();
-            if (leftSide.getType().getTypeOfElement().equals(ElementType.INT32) && (op.equals(ADD) || op.equals(SUB)) && this.array_length == 0){
+            if (leftSide.getType().getTypeOfElement().equals(ElementType.INT32) && (op.equals(ADD) || op.equals(SUB))){
                 code.append(iincVar((Operand) assign.getDest(), (BinaryOpInstruction) assign.getRhs()));
             }
             if (!code.toString().isEmpty()){
@@ -439,7 +439,6 @@ public class JasminGenerator {
                 maxStackValue();
                 return code.toString();
             }
-            this.array_length = 0;
         }
 
         code.append(generators.apply(assign.getRhs()));
