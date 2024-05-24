@@ -751,9 +751,9 @@ public class JasminGenerator {
         } else if (unaryOpInstruction.getOperation().getOpType() == EQ) {
             code.append(NL).append("ifeq");
         } else if (unaryOpInstruction.getOperation().getOpType() == GTE) {
-            code.append("ifge");
+            code.append(NL).append("ifge");
         } else if (unaryOpInstruction.getOperation().getOpType() == LTE) {
-            code.append("ifle");
+            code.append(NL).append("ifle");
         }
         curr_stack_value--;
         maxStackValue();
@@ -828,6 +828,12 @@ public class JasminGenerator {
                         code.append("ifge ");
                     }
                 }
+                else if ((rightOperand instanceof LiteralElement) && ((LiteralElement) rightOperand).getLiteral().equals("0")) {
+                    code.append("iflt ");
+                }
+                else if ((leftOperand instanceof LiteralElement) && ((LiteralElement) leftOperand).getLiteral().equals("0")) {
+                    code.append("ifge ");
+                }
                 else {
                     curr_stack_value--;
                     code.append("if_icmplt ");
@@ -843,6 +849,12 @@ public class JasminGenerator {
                     else {
                         code.append("ifge ");
                     }
+                }
+                else if ((rightOperand instanceof LiteralElement) && ((LiteralElement) rightOperand).getLiteral().equals("0")) {
+                    code.append("iflt ");
+                }
+                else if ((leftOperand instanceof LiteralElement) && ((LiteralElement) leftOperand).getLiteral().equals("0")) {
+                    code.append("ifge ");
                 }
                 else {
                     curr_stack_value--;
