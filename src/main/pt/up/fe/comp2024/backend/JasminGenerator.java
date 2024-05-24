@@ -168,7 +168,8 @@ public class JasminGenerator {
 
     private String generatePutFieldInstruction(PutFieldInstruction putFieldInst) {
         StringBuilder code = new StringBuilder();
-
+        this.curr_stack_value -= 2;
+        maxStackValue();
         // Load the object reference onto the stack
         code.append(generators.apply(putFieldInst.getObject()));
 
@@ -187,9 +188,6 @@ public class JasminGenerator {
                 .append(fieldType)
                 .append("\n");
 
-        //lets see if stack is rightfully handled
-        this.curr_stack_value -= 2;
-        maxStackValue();
         // Store the value in the appropriate local variable
         // code.append(getStoreInstruction(getFieldInst.getDestination()));
         return code.toString();
@@ -534,7 +532,6 @@ public class JasminGenerator {
         this.stackVariation = 0;
         switch (callInstruction.getInvocationType()) {
             case invokestatic:
-                this.stackVariation = 0;
                 for (var op : callInstruction.getArguments()) {
                     this.stackVariation++;
                     code.append(generators.apply(op));
@@ -594,7 +591,6 @@ public class JasminGenerator {
                 this.stackVariation = 1;
                 for (var op : callInstruction.getArguments()) {
                     this.stackVariation++;
-                    maxStackValue();
                     code.append(generators.apply(op));
                 }
                 code.append("invokevirtual ").append(getImportedClassName(((ClassType) firstVirtual.getType()).getName())).append("/").append(generators.apply(callInstruction.getMethodName()));
@@ -643,12 +639,12 @@ public class JasminGenerator {
     private String generateLiteral(LiteralElement literal) {
         StringBuilder code = new StringBuilder();
         String literalStr = literal.getLiteral();
-        curr_stack_value++;
-        maxStackValue();
         if (literal.getType().getTypeOfElement().name().equals("STRING")) {
             code.append(literalStr.replaceAll("\"", "")).append("(");
             return code.toString();
         }
+        curr_stack_value++;
+        maxStackValue();
         int value = Integer.parseInt(literalStr);
         if (value == -1) {
             return NL + "iconst_m1" + NL;
@@ -728,13 +724,13 @@ public class JasminGenerator {
     //needs optimizations
     private String generateUnaryOp(UnaryOpInstruction unaryOpInstruction) {
         var code = new StringBuilder();
-        curr_stack_value--;
-        maxStackValue();
         code.append(generators.apply(unaryOpInstruction.getOperand()));
         if (unaryOpInstruction.getOperation().getOpType() == NOT) {
             code.append("not");
         } else if (unaryOpInstruction.getOperation().getOpType() == NOTB) {
             code.append("iconst_1").append(NL);
+            curr_stack_value++;
+            maxStackValue();
             code.append("ixor").append(NL);
         } else if (unaryOpInstruction.getOperation().getOpType() == GTH) {
             code.append("ifgt");
@@ -749,6 +745,8 @@ public class JasminGenerator {
         } else if (unaryOpInstruction.getOperation().getOpType() == LTE) {
             code.append("ifle");
         }
+        curr_stack_value--;
+        maxStackValue();
         return code.toString();
     }
 
@@ -764,8 +762,6 @@ public class JasminGenerator {
         // load values on the left and on the right
         code.append(generators.apply(binaryOp.getLeftOperand()));
         code.append(generators.apply(binaryOp.getRightOperand()));
-        curr_stack_value--;
-        maxStackValue();
 
         // apply operation
         switch (binaryOp.getOperation().getOpType()) {
@@ -780,13 +776,14 @@ public class JasminGenerator {
             case OR, ORB -> code.append("ior").append(NL);
             default -> throw new NotImplementedException(binaryOp.getOperation().getOpType());
         }
+        curr_stack_value--;
+        maxStackValue();
 
         return code.toString();
     }
     private String generateConditionalBinaryOp(BinaryOpInstruction binaryOpInstruction) {
         var code = new StringBuilder();
-        curr_stack_value--;
-        maxStackValue();
+
         code.append(generators.apply(binaryOpInstruction.getLeftOperand()));
         code.append(generators.apply(binaryOpInstruction.getRightOperand()));
         var leftOperand = binaryOpInstruction.getLeftOperand();
@@ -804,6 +801,7 @@ public class JasminGenerator {
                     }
                 }
                 else {
+                    curr_stack_value--;
                     code.append("if_icmpge ");
                 }
             }
@@ -819,6 +817,7 @@ public class JasminGenerator {
                     }
                 }
                 else {
+                    curr_stack_value--;
                     code.append("if_icmplt ");
                 }
             }
@@ -834,6 +833,7 @@ public class JasminGenerator {
                     }
                 }
                 else {
+                    curr_stack_value--;
                     code.append("if_icmpgt ");
                 }
             }
@@ -850,6 +850,7 @@ public class JasminGenerator {
                     }
                 }
                 else {
+                    curr_stack_value--;
                     code.append("if_icmpeq ");
                 }
             }
@@ -866,6 +867,7 @@ public class JasminGenerator {
                     }
                 }
                 else {
+                    curr_stack_value--;
                     code.append("if_icmpne ");
                 }
             }
@@ -881,6 +883,7 @@ public class JasminGenerator {
                     }
                 }
                 else {
+                    curr_stack_value--;
                     code.append("if_icmple ");
                 }
             }
@@ -888,7 +891,8 @@ public class JasminGenerator {
                 return "";
             }
         }
-
+        curr_stack_value--;
+        maxStackValue();
         return code.toString();
     }
 
@@ -939,8 +943,6 @@ public class JasminGenerator {
             code.append(generators.apply(condBranchInstruction.getCondition())).append(NL);
             code.append("ifne").append(" ").append(condBranchInstruction.getLabel()).append(NL);
         }
-        curr_stack_value--;
-        maxStackValue();
         return code.toString();
     }
 
