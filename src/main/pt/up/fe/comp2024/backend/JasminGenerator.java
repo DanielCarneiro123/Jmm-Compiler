@@ -899,20 +899,24 @@ public class JasminGenerator {
         if (returnInst.getOperand() != null) {
             code.append(NL).append(generators.apply(returnInst.getOperand())).append(NL);
         }
-        curr_stack_value--;
-        maxStackValue();
         ElementType returnType = returnInst.getReturnType().getTypeOfElement();
         switch (returnType) {
             case INT32:
+                curr_stack_value--;
+                maxStackValue();
                 code.append(NL).append("ireturn").append(NL);
                 break;
             case BOOLEAN:
+                curr_stack_value--;
+                maxStackValue();
                 code.append(NL).append("ireturn").append(NL);
                 break;
             case VOID:
                 code.append(NL).append("return").append(NL);
                 break;
             case OBJECTREF, STRING, ARRAYREF:
+                curr_stack_value--;
+                maxStackValue();
                 code.append(NL).append("areturn").append(NL);
                 break;
             default:
@@ -942,8 +946,6 @@ public class JasminGenerator {
 
     private String generateGoto(GotoInstruction gotoInstruction) {
         var code = new StringBuilder();
-        curr_stack_value++;
-        maxStackValue();
         code.append(NL).append("goto ").append(gotoInstruction.getLabel()).append(NL);
         return code.toString();
     }
