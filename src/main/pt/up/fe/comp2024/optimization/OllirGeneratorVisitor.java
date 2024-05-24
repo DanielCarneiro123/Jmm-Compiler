@@ -351,16 +351,16 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         String importNames = node.get("value");
 
-        // Remove leading and trailing brackets '[' and ']' if present
+
         importNames = importNames.replaceAll("^\\[|\\]$", "");
 
-        // Split import names by comma and trim each name
+
         String[] importNameArray = importNames.split(",");
         for (int i = 0; i < importNameArray.length; i++) {
             importNameArray[i] = importNameArray[i].trim();
         }
 
-        // Join import names with periods
+
         String joinedImportNames = String.join(".", importNameArray);
 
         code.append("import ").append(joinedImportNames).append(";").append(NL);
@@ -513,6 +513,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         node.getChildren().stream()
                 .map(this::visit)
                 .forEach(code::append);
+
         return code.toString();
     }
 
