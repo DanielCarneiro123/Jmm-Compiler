@@ -285,7 +285,7 @@ public class JasminGenerator {
         for (var inst : method.getInstructions()) {
             method.getLabels().entrySet().stream()
                     .filter(label -> label.getValue().equals(inst))
-                    .forEach(label -> code.append(label.getKey()).append(":").append(NL));
+                    .forEach(label -> code.append(NL).append(label.getKey()).append(":").append(NL));
             var instCode = StringLines.getLines(generators.apply(inst)).stream()
                     .collect(Collectors.joining(NL + TAB, TAB, NL));
 
@@ -948,7 +948,7 @@ public class JasminGenerator {
 
     private String generateGoto(GotoInstruction gotoInstruction) {
         var code = new StringBuilder();
-        code.append("goto ").append(gotoInstruction.getLabel()).append(NL);
+        code.append(NL).append("goto ").append(gotoInstruction.getLabel()).append(NL);
         return code.toString();
     }
 
