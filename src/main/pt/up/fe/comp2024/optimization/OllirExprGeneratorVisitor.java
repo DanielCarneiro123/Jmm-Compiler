@@ -419,7 +419,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                                     lastType = OptUtils.toOllirType(argType);
                                 }
                                 else {
-                                    lastType = argCode.substring(argCode.indexOf("."));
+                                    lastType = argCode.substring(argCode.lastIndexOf("."));
                                 }
                                 computation.append(tmp).append(lastType)
                                         .append(" :=").append(lastType).append(" ")
@@ -495,7 +495,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
                             if (argument.getKind().equals("FunctionCall")) {   // tmp0.i32 =.i32 invokevirtual(tmp0.Simple, "add", 1.i32).i32
                                 String tmp = OptUtils.getTemp();
-                                String lastType = argCode.substring(argCode.indexOf("."));
+                                String lastType = argCode.substring(argCode.lastIndexOf("."));
                                 computation.append(tmp).append(lastType)
                                         .append(" :=").append(lastType).append(" ")
                                         .append(argCode).append(END_STMT);
@@ -632,7 +632,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
                 if(node.getParent().getKind().equals("FunctionCall")){
                     var aux = OptUtils.getTemp();
-                    var lastType = code.substring(code.indexOf("."));
+                    var lastType = code.substring(code.lastIndexOf("."));
                     computation.append(aux).append(lastType).append(ASSIGN).append(" ").append(lastType).append(" ").append(code).append(lastType).append(END_STMT);
                     code = new StringBuilder(aux);
                     code.append(lastType);
@@ -701,7 +701,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                             lastType = OptUtils.toOllirType(argType);
                         }
                         else {
-                            lastType = argCode.substring(argCode.indexOf("."));
+                            lastType = argCode.substring(argCode.lastIndexOf("."));
                         }
                         computation.append(tmp).append(lastType)
                                 .append(" :=").append(lastType).append(" ")
