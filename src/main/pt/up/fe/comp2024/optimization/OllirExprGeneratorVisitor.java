@@ -78,12 +78,14 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         StringBuilder code = new StringBuilder();
         StringBuilder computation = new StringBuilder();
 
-        code.append(getNextLabelArray()).append(".array.i32");
+        //code.append(getNextLabelArray()).append(".array.i32");
+
         String tempInit = OptUtils.getTemp() + ".array.i32";
+        code.append(tempInit);
         computation.append(tempInit).append(ASSIGN).append(".array.i32 new(array, ").append(node.getChildren().size()).append(".i32)").append(".array.i32").append(END_STMT);
-        computation.append(getCurrentLabelArray()).append(".array.i32").append(ASSIGN).append(".array.i32 ").append(tempInit).append(END_STMT);
+        //computation.append(getCurrentLabelArray()).append(".array.i32").append(ASSIGN).append(".array.i32 ").append(tempInit).append(END_STMT);
         for(int i = 0; i < node.getChildren().size(); i++){
-            computation.append(getCurrentLabelArray()).append(".array.i32").append("[").append(i).append(".i32].i32").append(ASSIGN).append(".i32 ").append(node.getChild(i).get("value")).append(".i32").append(END_STMT);
+            computation.append(tempInit).append(".array.i32").append("[").append(i).append(".i32].i32").append(ASSIGN).append(".i32 ").append(node.getChild(i).get("value")).append(".i32").append(END_STMT);
         }
 
 

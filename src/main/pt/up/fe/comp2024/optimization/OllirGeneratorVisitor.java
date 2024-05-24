@@ -513,7 +513,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         node.getChildren().stream()
                 .map(this::visit)
                 .forEach(code::append);
-
+        code.append("banana");
         return code.toString();
     }
 
