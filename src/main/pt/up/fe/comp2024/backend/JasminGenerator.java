@@ -269,7 +269,7 @@ public class JasminGenerator {
         code.append(TAB).append(".limit locals ").append(locals_value).append(NL);
 
 
-        code.append(methodCode);
+        code.append(methodCode).append(NL);
 
 
         code.append(".end method\n");
@@ -297,7 +297,7 @@ public class JasminGenerator {
             }
 
             if (inst.getInstType() == ASSIGN && ((AssignInstruction) inst).getRhs().getInstType().equals(GETFIELD)){
-                code.append(generators.apply(((AssignInstruction) inst).getRhs().getChildren().get(1)));
+                code.append(NL).append(generators.apply(((AssignInstruction) inst).getRhs().getChildren().get(1))).append(NL);
             }
 
         }
@@ -424,7 +424,7 @@ public class JasminGenerator {
             }
         }
 
-        if (assign.getRhs().getInstType().equals(BINARYOPER)){
+        if (assign.getRhs().getInstType().equals(BINARYOPER)) {
             var leftSide = assign.getDest();
             var firstRightSide = assign.getRhs().getChildren().get(0);
             var secondRightSide = assign.getRhs().getChildren().get(1);
@@ -440,7 +440,7 @@ public class JasminGenerator {
             }
         }
 
-        code.append(generators.apply(assign.getRhs()));
+        code.append(generators.apply(assign.getRhs())).append(NL);
         ElementType type = operand.getType().getTypeOfElement();
         switch (type) {
             case INT32, BOOLEAN:
